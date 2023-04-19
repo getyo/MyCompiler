@@ -5,7 +5,7 @@ int regStrIndex;		//正则表达式字符串当前位置索引
 int curPos;				//叶子节点pos计数
 int curTreeID;			//当前正在构造的语法树ID
 string curReg;			//现在需要分析的正则表达式字符串
-
+vector<vector<int>> SyntalTree::leftNodeTable;
 bool SyntalNode::Nullable(SyntalNodePtr node) {
 	if (!node->leftChild && !node->rightChild && node->name != '\0') {
 		node->nullable = false;
@@ -147,7 +147,7 @@ SyntalNodePtr SyntalNode::Closure(SyntalNodePtr node) {
 	node = PrimarySymbol(node);
 	SyntalNodePtr father = node;
 	if (curReg[regStrIndex] == '*') {
-		father = make_shared<SyntalNode>(SyntalNode());
+		father = make_shared<SyntalNode>();
 		father->SetName(STAR_NODE);
 		father->SetLeftChild(node);
 		SyntalNode::Nullable(father);
@@ -161,7 +161,7 @@ SyntalNodePtr SyntalNode::Closure(SyntalNodePtr node) {
 SyntalNodePtr SyntalNode::Concatenation(SyntalNodePtr node) {
 	SyntalNodePtr left = Closure(node);
 	SyntalNodePtr father = left;
-	SyntalNodePtr right = make_shared<SyntalNode>(SyntalNode());
+	SyntalNodePtr right = make_shared<SyntalNode>();
 	while (curReg[regStrIndex] != '*' && curReg[regStrIndex] != '|' && curReg[regStrIndex] != '\0') {
 		father = make_shared<SyntalNode>(SyntalNode());
 		right = right->Closure(make_shared<SyntalNode>(SyntalNode()));
@@ -183,7 +183,7 @@ SyntalNodePtr SyntalNode::Union(SyntalNodePtr node) {
 	SyntalNodePtr right = make_shared<SyntalNode>(SyntalNode());
 	while (curReg[regStrIndex] == '|') {
 		++regStrIndex;
-		father = make_shared<SyntalNode>(SyntalNode());
+		father = make_shared<SyntalNode>();
 		right = right->Closure(make_shared<SyntalNode>(SyntalNode()));
 		father->SetName(OR_NODE);
 		father->SetLeftChild(left);
@@ -247,20 +247,34 @@ void SyntalTree::PrintTree(SyntalTreePtr tree) {
 	}
 }
 
-SyntalTree::SyntalTree(string& reg) {
-	this->reg = &reg;
-	this->id = treeID++;
-	curTreeID = this->id;
+void SyntalTree::InitContrustTree (SyntalTreePtr tree) {
+	curTreeID = tree->id;
 	leftNodeTable.push_back(vector<int>());
 	regStrIndex = 0;
 	curPos = 0;
-	curReg = reg;
-
+	curReg = *tree->reg;
 }
 
+SyntalTree::SyntalTree(string& reg) {
+	this->reg = &reg;
+	this->id = GetTreeID();
+}
+
+SyntalTreePtr SyntalTree::ConstructSyntalTree(string& reg) {
+	SyntalTreePtr tree = make_shared<SyntalTree>(reg);
+	SyntalNodePtr root = make_shared<SyntalNode>();
+	InitContrustTree(tree);
+	root = root->RegularExpression(root);
+	tree->root = root;
+	tree->maxPos = curPos - 1;
+	return tree;
+}
+
+/*
 int main() {
 	string s = "(a|b)*abb#";
 	SyntalTreePtr tree = SyntalTree::ConstructSyntalTree(s);
 	SyntalTree::PrintTree(tree);
 	return 0;
 }
+*/

@@ -18,6 +18,7 @@ private:
 	//将输入的正则表达式整理好，并且构建语法树，DAF
 	void InitLex();
 	void FollowPos(SyntalNodePtr& node,Ty_FollowPos& followPos);
+	void ConstrcutDAF();
 	Lexeme() {}
 public:
 	static int OUTPUT_TO_SCREEN;

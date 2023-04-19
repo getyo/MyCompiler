@@ -94,25 +94,20 @@ private:
 	string* reg;	//指向正则表达式的指针
 	int id;			//语法树索引
 	SyntalNodePtr root;
-	SyntalTree() {}
-	SyntalTree(string& reg);
 
 public:
 	//根据语法树索引和叶节点位置找到对应符号
 	static vector<vector<int>> leftNodeTable;
 	static void PrintTree(SyntalTreePtr node);
+	static void InitContrustTree(SyntalTreePtr tree);
 
+	SyntalTree() {}
+	SyntalTree(string& reg);
 	inline SyntalNodePtr GetRoot() const{ return root; }
 	inline int GetMaxPos() const{ return maxPos; }
-	inline int GetTreeID() const{ return id; }
+	inline int GetID() const{ return id; }
 	inline string* GetStr() const{ return reg; }
 
 
-	static SyntalTreePtr ConstructSyntalTree(string& reg) {
-		SyntalNodePtr root = make_shared<SyntalNode>(SyntalTree(reg));
-		root = root->RegularExpression(root);
-		SyntalTreePtr tree = make_shared<SyntalTree>(SyntalTree());
-		tree->root = root;
-		return tree;
-	}
+	static SyntalTreePtr ConstructSyntalTree(string& reg);
 };
