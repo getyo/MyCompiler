@@ -26,7 +26,7 @@ bool DFA::HasEdge(int from, char symbol) {
 #ifdef DEBUG
 	ASSERT(from <= statusCnt && symbol <= 127, "Incorrect status");
 #endif // DEBUG
-	if (transitionTable[from][symbol] == -1) return false;
+	if ((*transitionTable[from])[symbol] == -1) return false;
 	return true;
 }
 
@@ -34,7 +34,7 @@ bool DFA::HasEdgeTo(int from, int to, char symbol) {
 #ifdef DEBUG
 	ASSERT(from <= statusCnt && symbol <= 127 && to <= statusCnt, "Incorrect status");
 #endif // DEBUG
-	if (transitionTable[from][symbol] == to) return true;
+	if ((*transitionTable[from])[symbol] == to) return true;
 	return false;
 }
 
@@ -42,7 +42,7 @@ int DFA::EdgeTo(int from, char symbol) {
 #ifdef DEBUG
 	ASSERT(from <= statusCnt && symbol <= 127, "Incorrect status");
 #endif // DEBUG
-	return transitionTable[from][symbol];
+	return (*transitionTable[from])[symbol];
 }
 
 int DFA::FindStatus(vector<Ty_Status>& statusVec,Ty_Status &s) {
@@ -53,17 +53,17 @@ int DFA::FindStatus(vector<Ty_Status>& statusVec,Ty_Status &s) {
 }
 
 bool DFA::AddEdge(int from, int to, char symbol) {
-	if (transitionTable[from][symbol] == -1) {
-		transitionTable[from][symbol] = to;
+	if ((*transitionTable[from])[symbol] == -1) {
+		(*transitionTable[from])[symbol] = to;
 		return true;
 	}
 	return false;
 }
 
 void DFA::InsertStatus() {
-	transitionTable.push_back(new int[128]);
+	transitionTable.push_back(make_shared<array<int,128>>());
 	auto line = *(--transitionTable.end());
-	for (int i = 0; i < 128; i++) line[i] = -1;
+	for (int i = 0; i < 128; i++) (*line)[i] = -1;
 }
 
 void DFA::FindAccept(vector<Ty_Status>& statusVec,vector<int>& posName) {
@@ -81,8 +81,6 @@ DFA::DFA(SyntalTreePtr tree,Ty_FollowPos &followPos) {
 
 	//每个pos对应的char都可以用下标索引到
 	auto posName = SyntalTree::leftNodeTable[id];
-
-	cout << *followPos[4].cbegin() << " " << (char)posName[*followPos[4].cbegin()] << "\n";
 
 	queue<set<int>> statusQueue;
 	vector<set<int>> statusVec;

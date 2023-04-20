@@ -50,5 +50,8 @@
     <ClCompile Include="FiniteAutomata.cpp">
       <Filter>源文件\lex</Filter>
     </ClCompile>
+    <ClCompile Include="Debug.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

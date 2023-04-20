@@ -3,6 +3,7 @@
 #include "SyntaxTree.h"
 #include "Lex.h"
 #include "Debug.h"
+#include <array>
 using namespace std;
 
 class Lexeme;
@@ -19,11 +20,12 @@ public:
 	virtual bool HasEdgeTo(int from, int to, char symbol) = 0;
 	virtual	bool HasEdge(int from, char symbol) = 0;
 	virtual void Print() = 0;
+	virtual ~FiniteAutomata() {}
 };
 
 class DFA : public FiniteAutomata {
 private:
-	vector<int*>  transitionTable;
+	vector<shared_ptr<array<int,128>>>  transitionTable;
 	virtual bool AddEdge(int from, int to, char symbol);
 	//找到返回下标，即状态号，没找到返回-1
 	int FindStatus(vector<Ty_Status>&,Ty_Status&);
@@ -37,6 +39,7 @@ public:
 	inline bool HasEdge(int from, char symbol);
 	inline bool IsAccept(int status);
 	void Print();
+	virtual ~DFA() {}
 };
 
 
