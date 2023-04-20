@@ -141,11 +141,13 @@
   <ItemGroup>
     <ClInclude Include="Debug.h" />
     <ClInclude Include="FileManager.h" />
+    <ClInclude Include="FiniteAutomata.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="SyntaxTree.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FileManager.cpp" />
+    <ClCompile Include="FiniteAutomata.cpp" />
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SyntaxTree.cpp" />

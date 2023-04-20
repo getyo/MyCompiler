@@ -30,6 +30,9 @@
     <ClInclude Include="FileManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="FiniteAutomata.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SyntaxTree.cpp">
@@ -43,6 +46,9 @@
     </ClCompile>
     <ClCompile Include="FileManager.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FiniteAutomata.cpp">
+      <Filter>源文件\lex</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

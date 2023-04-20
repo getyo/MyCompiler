@@ -2,23 +2,29 @@
 #include "SyntaxTree.h"
 #include "Debug.h"
 #include <set>
-using namespace std;
+#include "FiniteAutomata.h"
 
+using namespace std;
+class FiniteAutomata;
+class DFA;
+class NFA;
 typedef vector<set<int>> Ty_FollowPos;
 class Lexeme {
 private:
 	ios* regIn;
 	ios* out;
 	ios* input;
-	vector<Ty_FollowPos> followPosTable;
+	vector	<Ty_FollowPos> followPosTable;
 	vector <string> regArray;
 	vector <SyntalTreePtr> treeArray;
-
+	vector <DFA> DfaVec;
 
 	//将输入的正则表达式整理好，并且构建语法树，DAF
 	void InitLex();
 	void FollowPos(SyntalNodePtr& node,Ty_FollowPos& followPos);
-	void ConstrcutDAF();
+	void InputReg();
+	void ConstructFollowPosTable();
+	void Tree2DFA();
 	Lexeme() {}
 public:
 	static int OUTPUT_TO_SCREEN;
@@ -30,5 +36,3 @@ public:
 	void SetInput(ios& in) { this->input = &in; }
 	void SetOutput(ios& out) { this->out = &out; }
 };
-int Lexeme::OUTPUT_TO_SCREEN = 1;
-int Lexeme::OUTPUT_TO_FILE = 2;

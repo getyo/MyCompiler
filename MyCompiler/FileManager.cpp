@@ -9,7 +9,7 @@ bool FileManager::IsDir(string dirPath) {
 	return false;    // this is not a directory! 
 }
 
-bool CreateMultDir(string relativePath) {
+bool FileManager::CreateMultDir(string relativePath) {
 	if (relativePath[0] == '\0') return true;
 	int sub = relativePath.find_first_of('\\', 1);
 	return CreateDir(relativePath.substr(0, sub)) &&
@@ -17,7 +17,7 @@ bool CreateMultDir(string relativePath) {
 
 }
 
-bool CreateDir(string relativePath) {
+bool FileManager::CreateDir(string relativePath) {
 	char buf[256];
 	_getcwd(buf, 256);
 	strcat_s(buf, "\\");				//在当前路径后面加"\"
