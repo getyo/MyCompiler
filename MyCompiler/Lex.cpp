@@ -52,27 +52,34 @@ void Lexeme::ConstructFollowPosTable() {
 	}
 }
 
-void Lexeme::Tree2DFA() {
+void Lexeme::Tree2Dfa() {
 	int treeCnt = treeArray.size();
 	for (size_t i = 0; i < treeCnt; i++)
 	{
-		DfaVec.push_back(DFA(treeArray[i], followPosTable[i]));
-		DfaVec[i].Print();
+		dfaVec.push_back(DFA(treeArray[i], followPosTable[i]));
+		dfaVec[i].Print();
 	}
+}
+
+void Lexeme::Dfa2Nfa() {
+	NfaPtr = make_shared<NFA>(dfaVec);
 }
 
 void Lexeme::InitLex() {
 	InputReg();
 	ConstructFollowPosTable();
-	Tree2DFA();
+	Tree2Dfa();
+	Dfa2Nfa();
+	NfaPtr->Print();
 }
 
 
 int main() {
-	if (!FileManager::CreateDir("Lex\\input")) {
+	if (!FileManager::CreateMultDir("Lex\\input")) {
 		cerr << "Directory creat failed \n";
 		abort();
 	}
 	ifstream regIn("Lex\\Input\\reg.txt");
+	if (!regIn.is_open()) abort();
 	Lexeme lex(regIn);
 }

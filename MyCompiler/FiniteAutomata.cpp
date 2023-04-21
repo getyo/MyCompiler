@@ -1,14 +1,22 @@
 #include "FiniteAutomata.h"
 #include <queue>
 
-bool DFA::IsAccept(int status) {
+set<int> FiniteAutomata::GetAcceptStatus() const{ 
+	return acceptStatus; 
+}
+
+int FiniteAutomata::GetStatusCnt() const { 
+	return this->statusCnt; 
+}
+
+bool FiniteAutomata::IsAccept(int status) const {
 #ifdef DEBUG
 	ASSERT(status <= this->statusCnt, "Incorrect status");
 #endif // DEBUG
-	return acceptStatus.find(status) == acceptStatus.end();
+	return !(acceptStatus.find(status) == acceptStatus.end());
 }
 
-void DFA::Print() {
+void DFA::Print()const {
 	for (int i = 0; i < this->statusCnt; ++i) {
 		cout << i << ":" << "	";
 		for (int j = 0; j < 128; j++) {
@@ -18,11 +26,11 @@ void DFA::Print() {
 		cout << "\n";
 	}
 	cout << "accept status :";
-	for (auto& i : acceptStatus) cout << i <<" ";
+	for (auto& i : acceptStatus) cout << i << " ";
 	cout << endl;
 }
 
-bool DFA::HasEdge(int from, char symbol) {
+bool DFA::HasEdge(int from, char symbol)const {
 #ifdef DEBUG
 	ASSERT(from <= statusCnt && symbol <= 127, "Incorrect status");
 #endif // DEBUG
@@ -30,7 +38,7 @@ bool DFA::HasEdge(int from, char symbol) {
 	return true;
 }
 
-bool DFA::HasEdgeTo(int from, int to, char symbol) {
+bool DFA::HasEdgeTo(int from, int to, char symbol)const {
 #ifdef DEBUG
 	ASSERT(from <= statusCnt && symbol <= 127 && to <= statusCnt, "Incorrect status");
 #endif // DEBUG
@@ -38,14 +46,14 @@ bool DFA::HasEdgeTo(int from, int to, char symbol) {
 	return false;
 }
 
-int DFA::EdgeTo(int from, char symbol) {
+int DFA::EdgeTo(int from, char symbol)const {
 #ifdef DEBUG
 	ASSERT(from <= statusCnt && symbol <= 127, "Incorrect status");
 #endif // DEBUG
 	return (*transitionTable[from])[symbol];
 }
 
-int DFA::FindStatus(vector<Ty_Status>& statusVec,Ty_Status &s) {
+int DFA::FindStatus(vector<Ty_Status>& statusVec, Ty_Status& s) {
 	size_t size = statusVec.size();
 	for (size_t i = 0; i < size; i++)
 		if (statusVec[i] == s) return i;
@@ -61,12 +69,12 @@ bool DFA::AddEdge(int from, int to, char symbol) {
 }
 
 void DFA::InsertStatus() {
-	transitionTable.push_back(make_shared<array<int,128>>());
+	transitionTable.push_back(make_shared<array<int, 128>>());
 	auto line = *(--transitionTable.end());
 	for (int i = 0; i < 128; i++) (*line)[i] = -1;
 }
 
-void DFA::FindAccept(vector<Ty_Status>& statusVec,vector<int>& posName) {
+void DFA::FindAccept(vector<Ty_Status>& statusVec, vector<int>& posName) {
 	int size = statusVec.size();
 	for (int i = 0; i < size; i++)
 	{
@@ -75,7 +83,7 @@ void DFA::FindAccept(vector<Ty_Status>& statusVec,vector<int>& posName) {
 	}
 }
 
-DFA::DFA(SyntalTreePtr tree,Ty_FollowPos &followPos) {
+DFA::DFA(SyntalTreePtr tree, Ty_FollowPos& followPos) {
 	int id = tree->GetID();
 	auto root = tree->GetRoot();
 
@@ -92,15 +100,15 @@ DFA::DFA(SyntalTreePtr tree,Ty_FollowPos &followPos) {
 	set<int>* curStatus;
 	set<int> nextStatus;
 
-	while (!statusQueue.empty()){
+	while (!statusQueue.empty()) {
 		curStatus = &statusQueue.front();
 		//对于每一个输入
 		int c;
 		for (c = 0; c < 128; ++c) {
-			for (auto &pos: *curStatus) {
+			for (auto& pos : *curStatus) {
 				//如果当前pos和char相关联，说明输入c以后会进入到followPos(pos)
 				if (posName[pos] == c)
-					nextStatus.insert(followPos[pos].begin(), followPos[pos].end()); 
+					nextStatus.insert(followPos[pos].begin(), followPos[pos].end());
 			}
 			if (!nextStatus.empty()) {
 				//若是已经有了该状态，添加边即可，如果没有，把该状态加入集合
@@ -125,5 +133,78 @@ DFA::DFA(SyntalTreePtr tree,Ty_FollowPos &followPos) {
 	}
 
 	this->statusCnt = statusVec.size();
-	FindAccept(statusVec,posName);
+	FindAccept(statusVec, posName);
+}
+
+bool NFA::AddEdge(int from, int to, char c) {
+#ifdef DEBUG
+	ASSERT(from < statusCnt&& to < statusCnt \
+		&& c <= 127, "Incorrect status");
+#endif // DEBUG
+	transitionTable[from][c].insert(to);
+}
+
+bool NFA::HasEdge(int from, char c) const {
+#ifdef DEBUG
+	ASSERT(from < statusCnt&& c <= 127, "Incorrect status");
+#endif // DEBUG
+	return !transitionTable[from][c].empty();
+}
+
+bool NFA::HasEdgeTo(int from, int to, char c)const {
+#ifdef DEBUG
+	ASSERT(from < statusCnt&& to < statusCnt \
+		&& c <= 127, "Incorrect status");
+#endif // DEBUG
+	return !(transitionTable[from][c].find(to) == transitionTable[from][c].end());
+}
+
+set<int> NFA::EdgeTo(int from,char c) const{
+#ifdef DEBUG
+	ASSERT(from < statusCnt&& c <= 127, "Incorrect status");
+#endif // DEBUG
+	return transitionTable[from][c];
+}
+
+void NFA::Print() const{
+	for (int i = 0; i < statusCnt; ++i) {
+		cout << i << ": ";
+		for (int c = 0; c < 128; ++c)
+			if (HasEdge(i, c))
+				for (auto& s : transitionTable[i][c])
+					cout << "symbol:" << c << " " \
+					<< s << "	";
+		cout << "\n";
+	}
+	cout << "accept status :";
+	for (auto& i : acceptStatus) cout << i << " ";
+	cout << endl;
+}
+
+NFA::NFA(vector<DFA>& dfaVec) {
+	//NFA的状态数是所有DFA之和+1
+	this->statusCnt = 0;
+	for (auto& dfa : dfaVec) statusCnt += dfa.GetStatusCnt();
+	++statusCnt;
+
+	transitionTable.resize(statusCnt);
+	for (auto& s : transitionTable) s.resize(128);
+
+	int offset = 1;
+	for (auto& dfa : dfaVec) {
+		//NFA初始状态可以空转到DFA初始状态
+		AddEdge(0, offset, 0);
+
+		for (int i = 0; i < dfa.GetStatusCnt(); i++) {
+			for (int j = 0; j < 128; j++)
+				if (dfa.HasEdge(i, j)) {
+					AddEdge(i + offset, dfa.EdgeTo(i, j) + offset, j);
+				}
+		}
+		for (auto& accStatus : dfa.GetAcceptStatus()) {
+			this->acceptStatus.insert(accStatus + offset);
+		}
+
+		offset += dfa.GetStatusCnt();
+	}
 }
