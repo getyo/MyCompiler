@@ -57,20 +57,30 @@ void Lexeme::Tree2Dfa() {
 	for (size_t i = 0; i < treeCnt; i++)
 	{
 		dfaVec.push_back(DFA(treeArray[i], followPosTable[i]));
-		dfaVec[i].Print();
+		//dfaVec[i].Print();
 	}
 }
 
-void Lexeme::Dfa2Nfa() {
-	NfaPtr = make_shared<NFA>(dfaVec);
+void Lexeme::DfaVec2Nfa() {
+	nfaPtr = make_shared<NFA>(dfaVec);
+}
+
+void Lexeme::Nfa2Dfa() {
+	unoptimizedDaf = FiniteAutomata::Nfa2Dfa(*nfaPtr);
 }
 
 void Lexeme::InitLex() {
 	InputReg();
 	ConstructFollowPosTable();
 	Tree2Dfa();
-	Dfa2Nfa();
-	NfaPtr->Print();
+	DfaVec2Nfa();
+	Nfa2Dfa();
+	for (auto& i : dfaVec) i.Print();
+	cout << "\n";
+	nfaPtr->Print();
+	cout << "\n";
+	unoptimizedDaf.Print();
+	cout << "\n";
 }
 
 

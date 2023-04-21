@@ -1,5 +1,6 @@
 #include "FiniteAutomata.h"
 #include <queue>
+#include <stack>
 
 set<int> FiniteAutomata::GetAcceptStatus() const{ 
 	return acceptStatus; 
@@ -20,7 +21,7 @@ void DFA::Print()const {
 	for (int i = 0; i < this->statusCnt; ++i) {
 		cout << i << ":" << "	";
 		for (int j = 0; j < 128; j++) {
-			if (EdgeTo(i, j) != -1) cout << "symbol: " << j << " " \
+			if (EdgeTo(i, j) != -1) cout << "symbol:" << j << " " \
 				<< EdgeTo(i, j) << "	";
 		}
 		cout << "\n";
@@ -93,6 +94,7 @@ DFA::DFA(SyntalTreePtr tree, Ty_FollowPos& followPos) {
 	queue<set<int>> statusQueue;
 	vector<set<int>> statusVec;
 	int curStatusNum = 0;
+	int addStatusCnt = 1;
 	statusQueue.push(root->firstPos);
 	statusVec.push_back(root->firstPos);
 
@@ -120,7 +122,7 @@ DFA::DFA(SyntalTreePtr tree, Ty_FollowPos& followPos) {
 					InsertStatus();
 					statusQueue.push(nextStatus);
 					statusVec.push_back(nextStatus);
-					nextStatusNum = curStatusNum + 1;
+					nextStatusNum = curStatusNum + addStatusCnt;
 					AddEdge(curStatusNum, nextStatusNum, c);
 
 					if (c == '#') acceptStatus.insert(nextStatusNum);
@@ -130,10 +132,42 @@ DFA::DFA(SyntalTreePtr tree, Ty_FollowPos& followPos) {
 		}
 		statusQueue.pop();
 		++curStatusNum;
+		addStatusCnt = 1;
 	}
 
 	this->statusCnt = statusVec.size();
 	FindAccept(statusVec, posName);
+}
+
+DFA& DFA::operator=(DFA&& rhs) {
+	if (this != &rhs) {
+		statusCnt = rhs.statusCnt;
+		acceptStatus = rhs.acceptStatus;
+		transitionTable = rhs.transitionTable;
+	}
+	return *this;
+}
+
+DFA::DFA(DFA& src) {
+	this->statusCnt = src.statusCnt;
+	this->acceptStatus = src.acceptStatus;
+	this->transitionTable = src.transitionTable;
+}
+
+DFA::DFA(DFA&& src) {
+	this->statusCnt = src.statusCnt;
+	this->acceptStatus = src.acceptStatus;
+	this->transitionTable = src.transitionTable;
+}
+
+
+NFA& NFA::operator=(NFA&& rhs) {
+	if (this != &rhs) {
+		statusCnt = rhs.statusCnt;
+		acceptStatus = rhs.acceptStatus;
+		transitionTable = rhs.transitionTable;
+	}
+	return *this;
 }
 
 bool NFA::AddEdge(int from, int to, char c) {
@@ -159,21 +193,23 @@ bool NFA::HasEdgeTo(int from, int to, char c)const {
 	return !(transitionTable[from][c].find(to) == transitionTable[from][c].end());
 }
 
-set<int> NFA::EdgeTo(int from,char c) const{
+const set<int> * NFA::EdgeTo(int from,char c) {
 #ifdef DEBUG
 	ASSERT(from < statusCnt&& c <= 127, "Incorrect status");
 #endif // DEBUG
-	return transitionTable[from][c];
+	return &transitionTable[from][c];
 }
 
 void NFA::Print() const{
 	for (int i = 0; i < statusCnt; ++i) {
 		cout << i << ": ";
 		for (int c = 0; c < 128; ++c)
-			if (HasEdge(i, c))
+			if (HasEdge(i, c)) {
+				cout << "symbol:" << c << "	";
 				for (auto& s : transitionTable[i][c])
-					cout << "symbol:" << c << " " \
-					<< s << "	";
+					cout << s << " ";
+				cout << "	";
+			}
 		cout << "\n";
 	}
 	cout << "accept status :";
@@ -207,4 +243,77 @@ NFA::NFA(vector<DFA>& dfaVec) {
 
 		offset += dfa.GetStatusCnt();
 	}
+}
+
+
+
+DFA FiniteAutomata::Nfa2Dfa(NFA &nfa) {
+	//将第一Dfa状态设置为NFA开始节点的闭包
+	set<int> nfaStartStatus;
+	nfaStartStatus.insert(0);
+	set<int> startStatus = FiniteAutomata::Closure(nfa, nfaStartStatus);
+	vector<set<int>> dfaStatus;
+	dfaStatus.push_back(startStatus);
+
+	queue<set<int>> q;
+	q.push(startStatus);
+	set<int> curStatus;
+	int curStatusNum = -1;
+	int addStatusCnt = 1;
+	set<int> nextStatus;
+
+	DFA dfa;
+	dfa.statusCnt = 1;
+	dfa.InsertStatus();
+	while (!q.empty()) {
+		curStatus = q.front();
+		++curStatusNum;
+		addStatusCnt = 1;
+		q.pop();
+		for (int i = 1; i < 128; i++) {
+
+			for (auto &s:curStatus) {
+				if (nfa.HasEdge(s, i)) {
+					nextStatus.insert(nfa.EdgeTo(s, i)->begin(), \
+						nfa.EdgeTo(s, i)->end());
+					nextStatus = FiniteAutomata::Closure(nfa, nextStatus);
+				}
+				if (nfa.IsAccept(s)) dfa.acceptStatus.insert(curStatusNum);
+			}
+			//nextStatus不为空，说明对于输出字符i，该状态有出边
+			if (!nextStatus.empty()) {
+				int sub;
+				//如果到达的状态是新状态,更新Dfa数据
+				if ((sub = dfa.FindStatus(dfaStatus,nextStatus)) == -1) {
+					++dfa.statusCnt;
+					dfa.InsertStatus();
+					dfaStatus.push_back(nextStatus);
+					Ty_Status temp = *(--dfaStatus.end());
+					q.push(temp);
+					dfa.AddEdge(curStatusNum, curStatusNum+ addStatusCnt++,i);
+				}
+				else {
+					//否则添加边即可
+					dfa.AddEdge(curStatusNum, sub,i);
+				}
+				nextStatus.clear();
+			}
+		}
+	};
+
+	return dfa;
+}
+
+set<int> FiniteAutomata::Closure(NFA& nfa, set<int>& s) {
+	set<int> closureOfS;
+	stack <int> st;
+	closureOfS.insert(s.begin(),s.end());
+	for (auto& i : s) st.push(i);
+	while (!st.empty()) {
+		auto reached = nfa.EdgeTo(st.top(), 0);
+		st.pop();
+		if (!reached->empty())
+			closureOfS.insert(reached->begin(), reached->end());
+	}
+	return closureOfS;
 }

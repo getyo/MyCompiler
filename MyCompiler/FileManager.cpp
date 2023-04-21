@@ -11,14 +11,17 @@ bool FileManager::IsDir(string dirPath) {
 
 bool FileManager::CreateMultDir(string relativePath) {
 	int sub = relativePath.find_first_of('\\', 1);
-	if (sub == -1) return true;
+	if (sub == -1) {
+		return CreateDir(relativePath);
+	}
+
 	char nextBuf[256],curBuf[256];
 	bool createCur = CreateDir(relativePath.substr(0, sub));
-	string nextWordDir = "\\";
-	nextWordDir += relativePath.substr(0, sub);
+	string nextWorkDir = "\\";
+	nextWorkDir += relativePath.substr(0, sub);
 	_getcwd(nextBuf, 256);
 	_getcwd(curBuf, 256);
-	strcat_s(nextBuf, nextWordDir.c_str());
+	strcat_s(nextBuf, nextWorkDir.c_str());
 	_chdir(nextBuf);
 	bool createNext = CreateMultDir(relativePath.substr(sub+1, relativePath.length() - 1));
 	_chdir(curBuf);
