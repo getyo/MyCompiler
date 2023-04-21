@@ -16,13 +16,16 @@ protected:
 	set <int> acceptStatus;
 	virtual bool AddEdge(int from, int to, char symbol) = 0;
 public:
-	virtual bool IsAccept(int status) = 0;
-	virtual bool HasEdgeTo(int from, int to, char symbol) = 0;
-	virtual	bool HasEdge(int from, char symbol) = 0;
-	virtual void Print() = 0;
+	set<int> GetAcceptStatus() const;
+	int GetStatusCnt() const;
+	bool IsAccept(int status) const;
+	virtual bool HasEdgeTo(int from, int to, char symbol) const = 0;
+	virtual	bool HasEdge(int from, char symbol) const = 0;
+	virtual void Print() const = 0;
 	virtual ~FiniteAutomata() {}
 };
 
+class NFA;
 class DFA : public FiniteAutomata {
 private:
 	vector<shared_ptr<array<int,128>>>  transitionTable;
@@ -34,13 +37,24 @@ private:
 public:
 	DFA() {}
 	DFA(SyntalTreePtr tree,Ty_FollowPos& followPos);
-	inline int EdgeTo(int from, char symbol);
-	inline bool HasEdgeTo(int from, int to, char symbol);
-	inline bool HasEdge(int from, char symbol);
-	inline bool IsAccept(int status);
-	void Print();
+	inline int EdgeTo(int from, char symbol) const;
+	inline bool HasEdgeTo(int from, int to, char symbol) const;
+	inline bool HasEdge(int from, char symbol) const;
+	void Print() const;
 	virtual ~DFA() {}
 };
 
-
+class NFA :FiniteAutomata{
+private:
+	vector<vector<set<int>>> transitionTable;
+	bool AddEdge(int from, int to, char symbol);
+public:
+	NFA() {}
+	NFA(vector<DFA>& dfaVec);
+	inline set<int> EdgeTo(int from, char symbol) const;
+	inline bool HasEdgeTo(int from, int to, char symbol) const;
+	inline bool HasEdge(int from, char symbol) const;
+	void Print() const;
+	~NFA() {}
+};
 
