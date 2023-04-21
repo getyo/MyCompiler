@@ -10,10 +10,19 @@ bool FileManager::IsDir(string dirPath) {
 }
 
 bool FileManager::CreateMultDir(string relativePath) {
-	if (relativePath[0] == '\0') return true;
 	int sub = relativePath.find_first_of('\\', 1);
-	return CreateDir(relativePath.substr(0, sub)) &&
-		CreateMultDir(relativePath.substr(sub, relativePath.length() - 1));
+	if (sub == -1) return true;
+	char nextBuf[256],curBuf[256];
+	bool createCur = CreateDir(relativePath.substr(0, sub));
+	string nextWordDir = "\\";
+	nextWordDir += relativePath.substr(0, sub);
+	_getcwd(nextBuf, 256);
+	_getcwd(curBuf, 256);
+	strcat_s(nextBuf, nextWordDir.c_str());
+	_chdir(nextBuf);
+	bool createNext = CreateMultDir(relativePath.substr(sub+1, relativePath.length() - 1));
+	_chdir(curBuf);
+	return createCur && createNext;
 
 }
 

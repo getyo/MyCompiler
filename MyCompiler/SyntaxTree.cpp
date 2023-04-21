@@ -1,11 +1,16 @@
 #include "SyntaxTree.h"
 #include <queue>
 #include "Debug.h"
-int regStrIndex;		//正则表达式字符串当前位置索引
-int curPos;				//叶子节点pos计数
-int curTreeID;			//当前正在构造的语法树ID
-string curReg;			//现在需要分析的正则表达式字符串
+static int regStrIndex;		//正则表达式字符串当前位置索引
+static int curPos;				//叶子节点pos计数
+static int curTreeID;			//当前正在构造的语法树ID
+static string curReg;			//现在需要分析的正则表达式字符串
 vector<vector<int>> SyntalTree::leftNodeTable;
+static int treeID = 0;
+
+static int GetTreeID() {
+	return treeID++;
+}
 bool SyntalNode::Nullable(SyntalNodePtr node) {
 	if (!node->leftChild && !node->rightChild && node->name != '\0') {
 		node->nullable = false;
