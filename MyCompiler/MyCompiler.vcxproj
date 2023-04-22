@@ -150,6 +150,7 @@
     <ClInclude Include="FiniteAutomata.h" />
     <ClInclude Include="Lex.h" />
     <ClInclude Include="SyntaxTree.h" />
+    <ClInclude Include="Token.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Debug.cpp" />

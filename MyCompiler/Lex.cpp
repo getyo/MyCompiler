@@ -77,8 +77,12 @@ void Lexeme::Tree2Dfa() {
 	}
 }
 
-void Lexeme::Dfa2Nfa() {
-	NfaPtr = make_shared<NFA>(dfaVec);
+void Lexeme::DfaVec2Nfa() {
+	nfaPtr = make_shared<NFA>(dfaVec);
+}
+
+void Lexeme::Nfa2Dfa() {
+	unoptimizedDaf = FiniteAutomata::Nfa2Dfa(*nfaPtr);
 }
 
 void Lexeme::InitLex() {

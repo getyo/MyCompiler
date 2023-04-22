@@ -1,13 +1,14 @@
 #pragma once
 #include <set>
 #include "SyntaxTree.h"
-#include "Lex.h"
 #include "Debug.h"
 #include <array>
 #include "Token.h"
 #include <unordered_map>
 using namespace std;
 
+class NFA;
+class DFA;
 class Lexeme;
 typedef vector<set<int>> Ty_FollowPos;
 typedef Ty_FollowPos Ty_StatusVec;
@@ -20,6 +21,7 @@ protected:
 	int statusCnt;
 	set <int> acceptStatus;
 	virtual bool AddEdge(int from, int to, char symbol) = 0;
+	static set<int> Closure(NFA&, set<int>&);
 public:
 	bool SetAccpetTokenKind(int acceptStatusNum, Ty_TokenKind tokenKind);
 	Ty_TokenKind GetAcceptTokenKind(int acceptStatusNum) const;
@@ -30,10 +32,11 @@ public:
 	virtual	bool HasEdge(int from, char symbol) const = 0;
 	virtual void Print() const = 0;
 	virtual ~FiniteAutomata() {}
+	static DFA Nfa2Dfa(NFA&);
 };
 
-class NFA;
 class DFA : public FiniteAutomata {
+	friend class FiniteAutomata;
 private:
 	vector<shared_ptr<array<int,128>>>  transitionTable;
 	virtual bool AddEdge(int from, int to, char symbol);
@@ -54,14 +57,15 @@ public:
 	virtual ~DFA() {}
 };
 
-class NFA :FiniteAutomata{
+class NFA :public FiniteAutomata{
 private:
 	vector<vector<set<int>>> transitionTable;
 	bool AddEdge(int from, int to, char symbol);
 public:
 	NFA() {}
 	NFA(vector<DFA>& dfaVec);
-	inline set<int> EdgeTo(int from, char symbol) const;
+	const set<int> * EdgeTo(int from, char symbol);
+	NFA& operator=(NFA&&);
 	inline bool HasEdgeTo(int from, int to, char symbol) const;
 	inline bool HasEdge(int from, char symbol) const;
 	void Print() const;

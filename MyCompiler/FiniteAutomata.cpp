@@ -104,6 +104,7 @@ DFA::DFA(SyntalTreePtr tree, Ty_FollowPos& followPos,Ty_TokenKind acceptedToken)
 	queue<set<int>> statusQueue;
 	vector<set<int>> statusVec;
 	int curStatusNum = 0;
+	int addStatusCnt = 1;
 	statusQueue.push(root->firstPos);
 	statusVec.push_back(root->firstPos);
 
@@ -131,7 +132,7 @@ DFA::DFA(SyntalTreePtr tree, Ty_FollowPos& followPos,Ty_TokenKind acceptedToken)
 					InsertStatus();
 					statusQueue.push(nextStatus);
 					statusVec.push_back(nextStatus);
-					nextStatusNum = curStatusNum + 1;
+					nextStatusNum = curStatusNum + addStatusCnt;
 					AddEdge(curStatusNum, nextStatusNum, c);
 
 					if (c == '#') acceptStatus.insert(nextStatusNum);
@@ -141,6 +142,7 @@ DFA::DFA(SyntalTreePtr tree, Ty_FollowPos& followPos,Ty_TokenKind acceptedToken)
 		}
 		statusQueue.pop();
 		++curStatusNum;
+		addStatusCnt = 1;
 	}
 
 	this->statusCnt = statusVec.size();
@@ -217,11 +219,11 @@ bool NFA::HasEdgeTo(int from, int to, char c)const {
 	return !(transitionTable[from][c].find(to) == transitionTable[from][c].end());
 }
 
-set<int> NFA::EdgeTo(int from,char c) const{
+const set<int> * NFA::EdgeTo(int from,char c) {
 #ifdef DEBUG
 	ASSERT(from < statusCnt&& c <= 127, "Incorrect status");
 #endif // DEBUG
-	return transitionTable[from][c];
+	return &transitionTable[from][c];
 }
 
 void NFA::Print() const{
@@ -231,8 +233,9 @@ void NFA::Print() const{
 			if (HasEdge(i, c)) {
 				cout << "symbol:" << (char)c << "	";
 				for (auto& s : transitionTable[i][c])
-					cout << "symbol:" << c << " " \
-					<< s << "	";
+					cout << s << " ";
+				cout << "	";
+			}
 		cout << "\n";
 	}
 	cout << "accept status :\n";
