@@ -3,6 +3,9 @@
 #include <stack>
 #include "Lex.h"
 
+extern SymbolTable symbolTable;
+const int DFA::UNMATCHED = -1;
+
 set<int> FiniteAutomata::GetAcceptStatus() const{ 
 	return acceptStatus; 
 }
@@ -26,7 +29,7 @@ void DFA::Print()const {
 	for (int i = 0; i < this->statusCnt; ++i) {
 		cout << i << ":" << "	";
 		for (int j = 0; j < 128; j++) {
-			if (EdgeTo(i, j) != -1) cout << "symbol:" << (char)j << " " \
+			if (EdgeTo(i, j) != UNMATCHED) cout << "symbol:" << (char)j << " " \
 				<< EdgeTo(i, j) << "	";
 		}
 		cout << "\n";
@@ -41,7 +44,7 @@ bool DFA::HasEdge(int from, char symbol)const {
 #ifdef DEBUG
 	ASSERT(from <= statusCnt && symbol <= 127, "Incorrect status");
 #endif // DEBUG
-	if ((*transitionTable[from])[symbol] == -1) return false;
+	if ((*transitionTable[from])[symbol] == UNMATCHED) return false;
 	return true;
 }
 
@@ -68,7 +71,7 @@ int DFA::FindStatus(vector<Ty_Status>& statusVec, Ty_Status& s) {
 }
 
 bool DFA::AddEdge(int from, int to, char symbol) {
-	if ((*transitionTable[from])[symbol] == -1) {
+	if ((*transitionTable[from])[symbol] == UNMATCHED) {
 		(*transitionTable[from])[symbol] = to;
 		return true;
 	}
@@ -78,7 +81,7 @@ bool DFA::AddEdge(int from, int to, char symbol) {
 void DFA::InsertStatus() {
 	transitionTable.push_back(make_shared<array<int, 128>>());
 	auto line = *(--transitionTable.end());
-	for (int i = 0; i < 128; i++) (*line)[i] = -1;
+	for (int i = 0; i < 128; i++) (*line)[i] = UNMATCHED;
 }
 
 void DFA::FindAccept(vector<Ty_Status>& statusVec, vector<int>& posName,Ty_TokenKind acceptedToken) {
@@ -171,6 +174,30 @@ DFA::DFA(DFA&& src) {
 	this->acceptStatus = src.acceptStatus;
 	this->acceptTokenTable = src.acceptTokenTable;
 	this->transitionTable = src.transitionTable;
+}
+
+Ty_TokenKind DFA::Recognize(string &word,int &ptr)const {
+	ptr = 0;
+	char lookAhead;
+	int status = 0;
+	Ty_TokenKind lastMatched = Token::FAILED;
+	while (true) {
+		status = EdgeTo(status, word[ptr]);
+		lookAhead = word[++ptr];
+		if (status == -1) return Token::FAILED;
+		if (IsAccept(status)) {
+			Ty_TokenKind matched = GetAcceptTokenKind(status);
+			if (EdgeTo(status, lookAhead) == -1)
+				return matched;
+			else
+				lastMatched = matched;
+		}
+		else {
+			if (EdgeTo(status, lookAhead) == -1)
+				return lastMatched;
+			else continue;
+		}
+	}
 }
 
 bool FiniteAutomata::SetAccpetTokenKind(int acceptStatusNum,Ty_TokenKind tokenKind) {

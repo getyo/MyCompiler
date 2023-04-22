@@ -1,3 +1,3 @@
-test1:(a|b)*abb#
-test2:abb#
-test3:bba#
+test1:ifffff#
+test2:if#
+test3:(a|b|c|d|i|f)*#
