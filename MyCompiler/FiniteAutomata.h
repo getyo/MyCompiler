@@ -55,7 +55,10 @@ public:
 	inline bool HasEdgeTo(int from, int to, char symbol) const;
 	inline bool HasEdge(int from, char symbol) const;
 	void Print() const;
+	//返回需要记录在文件中的信息
+	string Info();
 	virtual ~DFA() {}
+	static DFA ReadDfa(ifstream& in);
 };
 
 class NFA :public FiniteAutomata{

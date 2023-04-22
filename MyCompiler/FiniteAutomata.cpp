@@ -6,6 +6,59 @@
 extern SymbolTable symbolTable;
 const int DFA::UNMATCHED = -1;
 
+DFA DFA::ReadDfa(ifstream &in) {
+	DFA d;
+	int accCnt;
+	int temp0,temp1;
+	in >> d.statusCnt;
+	in >> accCnt;
+	for (int i = 0; i < accCnt; i++) {
+		in >> temp0;
+		d.acceptStatus.insert(temp0);
+	}
+	for (int i = 0; i < accCnt; i++) {
+		in >> temp0 >> temp1;
+		d.acceptTokenTable.insert({temp0,temp1});
+	}
+	for (int i = 0; i < d.statusCnt;i++) {
+		d.transitionTable.push_back(make_shared<array<int,128>>());
+		for (int j = 0; j < 128; j++) {
+			in >> temp0;
+			(*d.transitionTable[i])[j] = temp0;
+		}
+	}
+	return d;
+}
+
+string DFA::Info() {
+	/*
+	* ∏Ò Ω£∫
+	* statusCnt
+	* acceptSet
+	* acceptTokenTable
+	* transitionTable
+	*/
+	string info;
+	info = info + to_string(statusCnt) + "\n";
+	info += (to_string(acceptStatus.size()) + " ");
+	for (auto& s : acceptStatus) {
+		info += (to_string(s) + " ");
+	}
+	info += '\n';
+	for (auto& p: acceptTokenTable) {
+		info += (to_string(p.first) + " ");
+		info += (to_string(p.second) + " ");
+	}
+	info += '\n';
+	for (auto line : transitionTable) {
+		for (auto i : *line) {
+			info += (to_string(i) + " ");
+		}
+		info += '\n';
+	}
+	return info;
+}
+
 set<int> FiniteAutomata::GetAcceptStatus() const{ 
 	return acceptStatus; 
 }
@@ -176,25 +229,30 @@ DFA::DFA(DFA&& src) {
 	this->transitionTable = src.transitionTable;
 }
 
+bool IsBlank(char c) {
+	if (c == ' ' || c == '\t' || c == '\n' || c == '\0')
+		return true;
+	return false;
+}
+
 Ty_TokenKind DFA::Recognize(string &word,int &ptr)const {
 	ptr = 0;
 	char lookAhead;
 	int status = 0;
-	Ty_TokenKind lastMatched = Token::FAILED;
 	while (true) {
 		status = EdgeTo(status, word[ptr]);
 		lookAhead = word[++ptr];
 		if (status == -1) return Token::FAILED;
 		if (IsAccept(status)) {
 			Ty_TokenKind matched = GetAcceptTokenKind(status);
-			if (EdgeTo(status, lookAhead) == -1)
+			if (EdgeTo(status, lookAhead) == -1 && !IsBlank(lookAhead))
+				return Token::FAILED;
+			else if (EdgeTo(status, lookAhead) == -1 && IsBlank(lookAhead))
 				return matched;
-			else
-				lastMatched = matched;
 		}
 		else {
 			if (EdgeTo(status, lookAhead) == -1)
-				return lastMatched;
+				return Token::FAILED;
 			else continue;
 		}
 	}
