@@ -72,7 +72,7 @@ void Lexeme::Tree2Dfa() {
 	int treeCnt = treeArray.size();
 	for (size_t i = 0; i < treeCnt; i++)
 	{
-		dfaVec.push_back(DFA(treeArray[i], followPosTable[i]));
+		dfaVec.push_back(DFA(treeArray[i], followPosTable[i],i));
 		//dfaVec[i].Print();
 	}
 }

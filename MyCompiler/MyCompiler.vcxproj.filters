@@ -33,9 +33,6 @@
     <ClInclude Include="FiniteAutomata.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Token.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SyntaxTree.cpp">
