@@ -1,8 +1,10 @@
 #include "Lex.h"
 #include <fstream>
 #include "FileManager.h"
+#include "Token.h"
 
-map <string, Ty_TokenKind> Lexeme::tokenKindStr2Num;
+extern SymbolTable symbolTable;;
+unordered_map <string, Ty_TokenKind> Lexeme::tokenKindStr2Num;
 vector<string> Lexeme::tokenKindNum2Str;
 
 void Lexeme::FollowPos(SyntalNodePtr& node, Ty_FollowPos& followPos) {
@@ -82,7 +84,7 @@ void Lexeme::DfaVec2Nfa() {
 }
 
 void Lexeme::Nfa2Dfa() {
-	unoptimizedDaf = FiniteAutomata::Nfa2Dfa(*nfaPtr);
+	unoptimizedDfa = FiniteAutomata::Nfa2Dfa(*nfaPtr);
 }
 
 void Lexeme::InitLex() {
@@ -99,10 +101,51 @@ void Lexeme::InitLex() {
 	nfaPtr->Print();
 	Nfa2Dfa();
 	cout << "\n";
-	unoptimizedDaf.Print();
+	unoptimizedDfa.Print();
 	cout << "\n";
 }
 
+string JumpBlank(string& s,int &ptr) {
+	while (s[ptr] == ' ')ptr++;
+	return s.substr(ptr, s.size());
+}
+
+vector<Token> Lexeme::Analyse() const {
+	vector<Token> tokenVec;
+	if (istream* in = dynamic_cast<istream*>(input)) {
+		string line;
+		int row = 1,ptr = 0;
+		int col = 0;
+		while (in->good()) {
+			getline(*in, line);
+			string word = line;
+			while (word.size() > 0) {
+				word = JumpBlank(line, ptr);
+				col += ptr;
+				ptr = 0;
+				Ty_TokenKind tokenKind = unoptimizedDfa.Recognize(word, ptr);
+				string lexeme = word.substr(0, ptr);
+				if (tokenKind != Token::FAILED) {
+					Token token;
+					token.kind = tokenKind;
+					token.symbolTableIndex = symbolTable.Size();
+					symbolTable.Push(TokenAttribute(lexeme, row, col + 1, -1));
+					tokenVec.push_back(token);
+				}
+				else {
+					cerr << "Lexeme recognize error: row " << row << \
+						" col " << col << "lexeme : " << lexeme << "\n";
+				}
+				word = word.substr(ptr, word.size());
+				col += ptr;
+				ptr = 0;
+			}
+			++row;
+			col = 0;
+		}
+	}
+	return tokenVec;
+}
 
 int main() {
 	if (!FileManager::CreateMultDir("Lex\\input")) {
@@ -112,4 +155,12 @@ int main() {
 	ifstream regIn("Lex\\Input\\reg.txt");
 	if (!regIn.is_open()) abort();
 	Lexeme lex(regIn);
+	lex.InitLex();
+	lex.SetInput(cin);
+	auto tokenVec = lex.Analyse();
+	for (auto token : tokenVec) {
+		token.Print();
+		symbolTable[token.symbolTableIndex].Print();
+		cout << "\n";
+	}
 }

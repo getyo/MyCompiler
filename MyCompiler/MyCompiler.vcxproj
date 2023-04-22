@@ -159,6 +159,7 @@
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SyntaxTree.cpp" />
+    <ClCompile Include="Token.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
