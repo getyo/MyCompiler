@@ -176,25 +176,30 @@ DFA::DFA(DFA&& src) {
 	this->transitionTable = src.transitionTable;
 }
 
+bool IsBlank(char c) {
+	if (c == ' ' || c == '\t' || c == '\n' || c == '\0')
+		return true;
+	return false;
+}
+
 Ty_TokenKind DFA::Recognize(string &word,int &ptr)const {
 	ptr = 0;
 	char lookAhead;
 	int status = 0;
-	Ty_TokenKind lastMatched = Token::FAILED;
 	while (true) {
 		status = EdgeTo(status, word[ptr]);
 		lookAhead = word[++ptr];
 		if (status == -1) return Token::FAILED;
 		if (IsAccept(status)) {
 			Ty_TokenKind matched = GetAcceptTokenKind(status);
-			if (EdgeTo(status, lookAhead) == -1)
+			if (EdgeTo(status, lookAhead) == -1 && !IsBlank(lookAhead))
+				return Token::FAILED;
+			else if (EdgeTo(status, lookAhead) == -1 && IsBlank(lookAhead))
 				return matched;
-			else
-				lastMatched = matched;
 		}
 		else {
 			if (EdgeTo(status, lookAhead) == -1)
-				return lastMatched;
+				return Token::FAILED;
 			else continue;
 		}
 	}

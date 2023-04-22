@@ -3,6 +3,7 @@
 #include "FileManager.h"
 #include "Token.h"
 
+extern FileManager fileManager;
 extern SymbolTable symbolTable;;
 unordered_map <string, Ty_TokenKind> Lexeme::tokenKindStr2Num;
 vector<string> Lexeme::tokenKindNum2Str;
@@ -110,35 +111,61 @@ string JumpBlank(string& s,int &ptr) {
 	return s.substr(ptr, s.size());
 }
 
+string nextWord(string s) {
+	int findBlank = s.find_first_of(' ');
+	int findTab = s.find_first_of('\t');
+	if (findBlank == -1 && findTab == -1)
+		return s;
+	else if (findBlank == -1 && findTab != -1)
+		return s.substr(0, findTab);
+	else if (findBlank != -1 && findTab == -1)
+		return s.substr(0, findBlank);
+	else {
+		int end = min(findBlank, findTab);
+		return s.substr(0, end);
+	}
+}
+
 vector<Token> Lexeme::Analyse() const {
 	vector<Token> tokenVec;
 	if (istream* in = dynamic_cast<istream*>(input)) {
 		string line;
-		int row = 1,ptr = 0;
-		int col = 0;
+		int row = 1,JumpedCharCnt;
+		int col = 1;
 		while (in->good()) {
 			getline(*in, line);
 			string word = line;
 			while (word.size() > 0) {
-				word = JumpBlank(line, ptr);
-				col += ptr;
-				ptr = 0;
-				Ty_TokenKind tokenKind = unoptimizedDfa.Recognize(word, ptr);
-				string lexeme = word.substr(0, ptr);
+				word = JumpBlank(word, JumpedCharCnt);
+				col += JumpedCharCnt;
+				JumpedCharCnt = 0;
+				Ty_TokenKind tokenKind = unoptimizedDfa.Recognize(word, JumpedCharCnt);
+				string lexeme = word.substr(0, JumpedCharCnt);
 				if (tokenKind != Token::FAILED) {
 					Token token;
 					token.kind = tokenKind;
 					token.symbolTableIndex = symbolTable.Size();
 					symbolTable.Push(TokenAttribute(lexeme, row, col + 1, -1));
 					tokenVec.push_back(token);
+					word = word.substr(JumpedCharCnt, word.size());
 				}
 				else {
+					int blankSub = word.find_first_of(' ');
+					string str;
+					if (blankSub == -1) {
+						str = word;
+						word = "";
+					}
+					else {
+						str = word.substr(0, blankSub);
+						word = word.substr(blankSub, word.size());
+						JumpedCharCnt = blankSub;
+					}
 					cerr << "Lexeme recognize error: row " << row << \
-						" col " << col << "lexeme : " << lexeme << "\n";
+						" col " << col << " lexeme : " << str << "\n";
 				}
-				word = word.substr(ptr, word.size());
-				col += ptr;
-				ptr = 0;
+				col += JumpedCharCnt;
+				JumpedCharCnt = 0;
 			}
 			++row;
 			col = 0;
@@ -148,7 +175,8 @@ vector<Token> Lexeme::Analyse() const {
 }
 
 int main() {
-	if (!FileManager::CreateMultDir("Lex\\input")) {
+	if (!fileManager.IsDir("Lex\\input")) {
+		fileManager.CreateDir("Lex\\input");
 		cerr << "Directory creat failed \n";
 		abort();
 	}

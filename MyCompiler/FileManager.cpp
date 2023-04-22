@@ -1,6 +1,20 @@
 #include "FileManager.h"
 
+FileManager::FileManager() {
+	char buf[265];
+	_getcwd(buf, 256);
+	workPath = string(buf);
+}
+
+string FileManager::getWorkPath() {
+	return workPath;
+}
+
 bool FileManager::IsDir(string dirPath) {
+	return _IsDir(getWorkPath() + "\\" + dirPath);
+}
+
+bool FileManager::_IsDir(string dirPath) {
 	DWORD ftyp = GetFileAttributesA(dirPath.c_str());
 	if (ftyp == INVALID_FILE_ATTRIBUTES)
 		return false;  //something is wrong with your path! 
@@ -9,27 +23,33 @@ bool FileManager::IsDir(string dirPath) {
 	return false;    // this is not a directory! 
 }
 
-bool FileManager::CreateMultDir(string relativePath) {
+bool FileManager::ChangeWorkPath(string path) {
+	int flag = _chdir(path.c_str());
+	if (flag == -1) return false;
+	return true;
+}
+
+bool FileManager::CreateDir(string relativePath) {
 	int sub = relativePath.find_first_of('\\', 1);
 	if (sub == -1) {
-		return CreateDir(relativePath);
+		return _CreateDir(relativePath);
 	}
 
-	char nextBuf[256],curBuf[256];
-	bool createCur = CreateDir(relativePath.substr(0, sub));
-	string nextWorkDir = "\\";
-	nextWorkDir += relativePath.substr(0, sub);
-	_getcwd(nextBuf, 256);
-	_getcwd(curBuf, 256);
-	strcat_s(nextBuf, nextWorkDir.c_str());
-	_chdir(nextBuf);
-	bool createNext = CreateMultDir(relativePath.substr(sub+1, relativePath.length() - 1));
-	_chdir(curBuf);
+	string curPath = getWorkPath();
+	bool createCur = _CreateDir(relativePath.substr(0, sub));
+
+	string  nextPath = getWorkPath();
+	nextPath +=("\\" + relativePath.substr(0, sub));
+
+	ChangeWorkPath(nextPath);
+	bool createNext = CreateDir(relativePath.substr(sub+1, relativePath.length()));
+	ChangeWorkPath(curPath);
+
 	return createCur && createNext;
 
 }
 
-bool FileManager::CreateDir(string relativePath) {
+bool FileManager::_CreateDir(string relativePath) {
 	char buf[256];
 	_getcwd(buf, 256);
 	strcat_s(buf, "\\");				//在当前路径后面加"\"
