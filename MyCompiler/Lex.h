@@ -10,8 +10,10 @@ using namespace std;
 typedef vector<set<int>> Ty_FollowPos;
 class Lexeme {
 private:
-	ios* regIn;
-	ofstream out;
+	string regInDir = "Lex\\input";
+	string regOutDir = "Lex\\output";
+	ifstream regIn;
+	ofstream regOut;
 	ios* input;
 	vector	<Ty_FollowPos> followPosTable;
 	vector <string> regArray;
@@ -36,10 +38,18 @@ public:
 	static unordered_map <string, Ty_TokenKind> tokenKindStr2Num;
 	static vector<string> tokenKindNum2Str;
 	void InitLex();
-	Lexeme(ios& regIn) {
-		this->regIn = &regIn;
+	Lexeme() {
 		this->input = nullptr;
-		out.open("DFA.txt");
+		if (!fileManager.IsDir(regInDir)) {
+			fileManager.CreateDir(regInDir);
+		}
+		regIn.open(regInDir + "\\reg.txt");
+		if (!regIn.is_open())
+			cerr << "No input file :" << regInDir + "\\reg.txt";
+		if (!fileManager.CreateDir(regOutDir)) {
+			fileManager.CreateDir(regOutDir);
+		}
+		regOut.open(regOutDir + "\\dfa.txt");
 	}
 	void SetInput(ios& in) { this->input = &in; }
 	vector<Token> Analyse() const;
