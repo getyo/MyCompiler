@@ -128,6 +128,21 @@ string nextWord(string s) {
 	}
 }
 
+string nextWord(string s) {
+	int findBlank = s.find_first_of(' ');
+	int findTab = s.find_first_of('\t');
+	if (findBlank == -1 && findTab == -1)
+		return s;
+	else if (findBlank == -1 && findTab != -1)
+		return s.substr(0, findTab);
+	else if (findBlank != -1 && findTab == -1)
+		return s.substr(0, findBlank);
+	else {
+		int end = min(findBlank, findTab);
+		return s.substr(0, end);
+	}
+}
+
 vector<Token> Lexeme::Analyse() const {
 	vector<Token> tokenVec;
 	if (istream* in = dynamic_cast<istream*>(input)) {
