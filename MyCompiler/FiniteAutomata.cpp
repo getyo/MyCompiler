@@ -6,6 +6,59 @@
 extern SymbolTable symbolTable;
 const int DFA::UNMATCHED = -1;
 
+DFA DFA::ReadDfa(ifstream &in) {
+	DFA d;
+	int accCnt;
+	int temp0,temp1;
+	in >> d.statusCnt;
+	in >> accCnt;
+	for (int i = 0; i < accCnt; i++) {
+		in >> temp0;
+		d.acceptStatus.insert(temp0);
+	}
+	for (int i = 0; i < accCnt; i++) {
+		in >> temp0 >> temp1;
+		d.acceptTokenTable.insert({temp0,temp1});
+	}
+	for (int i = 0; i < d.statusCnt;i++) {
+		d.transitionTable.push_back(make_shared<array<int,128>>());
+		for (int j = 0; j < 128; j++) {
+			in >> temp0;
+			(*d.transitionTable[i])[j] = temp0;
+		}
+	}
+	return d;
+}
+
+string DFA::Info() {
+	/*
+	* ∏Ò Ω£∫
+	* statusCnt
+	* acceptSet
+	* acceptTokenTable
+	* transitionTable
+	*/
+	string info;
+	info = info + to_string(statusCnt) + "\n";
+	info += (to_string(acceptStatus.size()) + " ");
+	for (auto& s : acceptStatus) {
+		info += (to_string(s) + " ");
+	}
+	info += '\n';
+	for (auto& p: acceptTokenTable) {
+		info += (to_string(p.first) + " ");
+		info += (to_string(p.second) + " ");
+	}
+	info += '\n';
+	for (auto line : transitionTable) {
+		for (auto i : *line) {
+			info += (to_string(i) + " ");
+		}
+		info += '\n';
+	}
+	return info;
+}
+
 set<int> FiniteAutomata::GetAcceptStatus() const{ 
 	return acceptStatus; 
 }

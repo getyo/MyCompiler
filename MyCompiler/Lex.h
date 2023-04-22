@@ -10,11 +10,11 @@ using namespace std;
 typedef vector<set<int>> Ty_FollowPos;
 class Lexeme {
 private:
-	string regInDir = "Lex\\input";
-	string regOutDir = "Lex\\output";
 	ifstream regIn;
 	ofstream regOut;
 	ios* input;
+	string regInDir = "Lex\\Input";
+	string regOutDir = "Lex\\output";
 	vector	<Ty_FollowPos> followPosTable;
 	vector <string> regArray;
 	vector <SyntalTreePtr> treeArray;
@@ -31,26 +31,14 @@ private:
 	void OutputDfa(DFA &dfa);
 	void ReadDfa(DFA& dfa);
 
-	Lexeme() {}
 public:
 	class NoInputStreamException : exception {};
 	class NoOutputOutputStreamException :exception {};
 	static unordered_map <string, Ty_TokenKind> tokenKindStr2Num;
 	static vector<string> tokenKindNum2Str;
 	void InitLex();
-	Lexeme() {
-		this->input = nullptr;
-		if (!fileManager.IsDir(regInDir)) {
-			fileManager.CreateDir(regInDir);
-		}
-		regIn.open(regInDir + "\\reg.txt");
-		if (!regIn.is_open())
-			cerr << "No input file :" << regInDir + "\\reg.txt";
-		if (!fileManager.CreateDir(regOutDir)) {
-			fileManager.CreateDir(regOutDir);
-		}
-		regOut.open(regOutDir + "\\dfa.txt");
-	}
+	vector<Token> Recognize();
+	Lexeme();
 	void SetInput(ios& in) { this->input = &in; }
 	vector<Token> Analyse() const;
 };
