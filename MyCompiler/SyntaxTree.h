@@ -11,12 +11,6 @@ using namespace std;
 #define STAR_NODE 258
 #define REG_END '#'
 
-static int treeID = 0;
-
-static int GetTreeID() {
-	return treeID++;
-}
-
 class SyntalNode;
 class SyntalTree;
 typedef shared_ptr<SyntalTree> SyntalTreePtr;

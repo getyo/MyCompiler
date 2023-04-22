@@ -1,6 +1,7 @@
 #include "FiniteAutomata.h"
 #include <queue>
 #include <stack>
+#include "Lex.h"
 
 set<int> FiniteAutomata::GetAcceptStatus() const{ 
 	return acceptStatus; 
@@ -17,17 +18,22 @@ bool FiniteAutomata::IsAccept(int status) const {
 	return !(acceptStatus.find(status) == acceptStatus.end());
 }
 
+Ty_TokenKind FiniteAutomata::GetAcceptTokenKind(int acceptStatusNum) const{
+	return acceptTokenTable.at(acceptStatusNum);
+}
+
 void DFA::Print()const {
 	for (int i = 0; i < this->statusCnt; ++i) {
 		cout << i << ":" << "	";
 		for (int j = 0; j < 128; j++) {
-			if (EdgeTo(i, j) != -1) cout << "symbol:" << j << " " \
+			if (EdgeTo(i, j) != -1) cout << "symbol:" << (char)j << " " \
 				<< EdgeTo(i, j) << "	";
 		}
 		cout << "\n";
 	}
-	cout << "accept status :";
-	for (auto& i : acceptStatus) cout << i << " ";
+	cout << "accept status :\n";
+	for (auto& i : acceptStatus) cout<< "  " << i << "	" << \
+		"TokenKind: " <<  Lexeme::tokenKindNum2Str[GetAcceptTokenKind(i)] << "\n";
 	cout << endl;
 }
 
@@ -75,16 +81,20 @@ void DFA::InsertStatus() {
 	for (int i = 0; i < 128; i++) (*line)[i] = -1;
 }
 
-void DFA::FindAccept(vector<Ty_Status>& statusVec, vector<int>& posName) {
+void DFA::FindAccept(vector<Ty_Status>& statusVec, vector<int>& posName,Ty_TokenKind acceptedToken) {
 	int size = statusVec.size();
 	for (int i = 0; i < size; i++)
 	{
-		for (auto& pos : statusVec[i])
-			if (posName[pos] == '#') acceptStatus.insert(i);
+		for (auto& pos : statusVec[i]) {
+			if (posName[pos] == '#') {
+				acceptStatus.insert(i);
+				SetAccpetTokenKind(i, acceptedToken);
+			}
+		}
 	}
 }
 
-DFA::DFA(SyntalTreePtr tree, Ty_FollowPos& followPos) {
+DFA::DFA(SyntalTreePtr tree, Ty_FollowPos& followPos,Ty_TokenKind acceptedToken) {
 	int id = tree->GetID();
 	auto root = tree->GetRoot();
 
@@ -136,7 +146,7 @@ DFA::DFA(SyntalTreePtr tree, Ty_FollowPos& followPos) {
 	}
 
 	this->statusCnt = statusVec.size();
-	FindAccept(statusVec, posName);
+	FindAccept(statusVec, posName,acceptedToken);
 }
 
 DFA& DFA::operator=(DFA&& rhs) {
@@ -144,6 +154,7 @@ DFA& DFA::operator=(DFA&& rhs) {
 		statusCnt = rhs.statusCnt;
 		acceptStatus = rhs.acceptStatus;
 		transitionTable = rhs.transitionTable;
+		acceptTokenTable = rhs.acceptTokenTable;
 	}
 	return *this;
 }
@@ -151,15 +162,30 @@ DFA& DFA::operator=(DFA&& rhs) {
 DFA::DFA(DFA& src) {
 	this->statusCnt = src.statusCnt;
 	this->acceptStatus = src.acceptStatus;
+	this->acceptTokenTable = src.acceptTokenTable;
 	this->transitionTable = src.transitionTable;
 }
 
 DFA::DFA(DFA&& src) {
 	this->statusCnt = src.statusCnt;
 	this->acceptStatus = src.acceptStatus;
+	this->acceptTokenTable = src.acceptTokenTable;
 	this->transitionTable = src.transitionTable;
 }
 
+bool FiniteAutomata::SetAccpetTokenKind(int acceptStatusNum,Ty_TokenKind tokenKind) {
+#ifdef DEBUG
+	char buf[256]; 
+	_snprintf_s(buf,256,"Status %d is not a accpeted status", acceptStatusNum);
+	ASSERT(IsAccept(acceptStatusNum), buf);
+#endif // DEBUG
+	if (acceptTokenTable.count(acceptStatusNum)) {
+		//cerr << "acceptTokenKind has been set" << endl;
+		return false;
+	}
+	else acceptTokenTable[acceptStatusNum] = tokenKind;
+	return true;
+}
 
 NFA& NFA::operator=(NFA&& rhs) {
 	if (this != &rhs) {
@@ -205,15 +231,16 @@ void NFA::Print() const{
 		cout << i << ": ";
 		for (int c = 0; c < 128; ++c)
 			if (HasEdge(i, c)) {
-				cout << "symbol:" << c << "	";
+				cout << "symbol:" << (char)c << "	";
 				for (auto& s : transitionTable[i][c])
 					cout << s << " ";
 				cout << "	";
 			}
 		cout << "\n";
 	}
-	cout << "accept status :";
-	for (auto& i : acceptStatus) cout << i << " ";
+	cout << "accept status :\n";
+	for (auto& i : acceptStatus) cout << "  " << i << "	" << \
+		"TokenKind: " << Lexeme::tokenKindNum2Str[GetAcceptTokenKind(i)] << "\n";
 	cout << endl;
 }
 
@@ -239,13 +266,13 @@ NFA::NFA(vector<DFA>& dfaVec) {
 		}
 		for (auto& accStatus : dfa.GetAcceptStatus()) {
 			this->acceptStatus.insert(accStatus + offset);
+			this->SetAccpetTokenKind(accStatus + offset, \
+				dfa.GetAcceptTokenKind(accStatus));
 		}
 
 		offset += dfa.GetStatusCnt();
 	}
 }
-
-
 
 DFA FiniteAutomata::Nfa2Dfa(NFA &nfa) {
 	//将第一Dfa状态设置为NFA开始节点的闭包
@@ -258,8 +285,7 @@ DFA FiniteAutomata::Nfa2Dfa(NFA &nfa) {
 	queue<set<int>> q;
 	q.push(startStatus);
 	set<int> curStatus;
-	int curStatusNum = -1;
-	int addStatusCnt = 1;
+	int curStatusNum = 0;
 	set<int> nextStatus;
 
 	DFA dfa;
@@ -267,8 +293,6 @@ DFA FiniteAutomata::Nfa2Dfa(NFA &nfa) {
 	dfa.InsertStatus();
 	while (!q.empty()) {
 		curStatus = q.front();
-		++curStatusNum;
-		addStatusCnt = 1;
 		q.pop();
 		for (int i = 1; i < 128; i++) {
 
@@ -278,7 +302,10 @@ DFA FiniteAutomata::Nfa2Dfa(NFA &nfa) {
 						nfa.EdgeTo(s, i)->end());
 					nextStatus = FiniteAutomata::Closure(nfa, nextStatus);
 				}
-				if (nfa.IsAccept(s)) dfa.acceptStatus.insert(curStatusNum);
+				if (nfa.IsAccept(s)) {
+					dfa.acceptStatus.insert(curStatusNum);
+					dfa.SetAccpetTokenKind(curStatusNum, nfa.GetAcceptTokenKind(s));
+				}
 			}
 			//nextStatus不为空，说明对于输出字符i，该状态有出边
 			if (!nextStatus.empty()) {
@@ -290,7 +317,7 @@ DFA FiniteAutomata::Nfa2Dfa(NFA &nfa) {
 					dfaStatus.push_back(nextStatus);
 					Ty_Status temp = *(--dfaStatus.end());
 					q.push(temp);
-					dfa.AddEdge(curStatusNum, curStatusNum+ addStatusCnt++,i);
+					dfa.AddEdge(curStatusNum, dfaStatus.size()-1,i);
 				}
 				else {
 					//否则添加边即可
@@ -299,6 +326,7 @@ DFA FiniteAutomata::Nfa2Dfa(NFA &nfa) {
 				nextStatus.clear();
 			}
 		}
+		++curStatusNum;
 	};
 
 	return dfa;

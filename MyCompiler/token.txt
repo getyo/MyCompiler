@@ -1,0 +1,4 @@
+#ifndef TOKEN
+#error "You must define TOKEN macro before include this file"
+#endif
+
