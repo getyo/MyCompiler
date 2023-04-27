@@ -229,31 +229,28 @@ DFA::DFA(DFA&& src) {
 	this->transitionTable = src.transitionTable;
 }
 
-bool IsBlank(char c) {
+bool IsBlankOrPunctuation(char c) {
 	if (c == ' ' || c == '\t' || c == '\n' || c == '\0')
 		return true;
 	return false;
 }
 
 Ty_TokenKind DFA::Recognize(string &word,int &ptr)const {
-	ptr = 0;
-	char lookAhead;
+	while (ptr < word.size() && (word[ptr] == ' ' || word[ptr] == '\t'))
+		++ptr;
 	int status = 0;
-	while (true) {
-		status = EdgeTo(status, word[ptr]);
-		lookAhead = word[++ptr];
-		if (status == -1) return Token::FAILED;
+	Ty_TokenKind lastMatchedToken = Token::FAILED;
+	int lastMatchedPos = ptr; 
+	while (true)
+	{
+		status = EdgeTo(status, word[ptr++]);
 		if (IsAccept(status)) {
-			Ty_TokenKind matched = GetAcceptTokenKind(status);
-			if (EdgeTo(status, lookAhead) == -1 && !IsBlank(lookAhead))
-				return Token::FAILED;
-			else if (EdgeTo(status, lookAhead) == -1 && IsBlank(lookAhead))
-				return matched;
+			lastMatchedToken = GetAcceptTokenKind(status);
+			lastMatchedPos = ptr;
 		}
-		else {
-			if (EdgeTo(status, lookAhead) == -1)
-				return Token::FAILED;
-			else continue;
+		else if (status == -1) {
+			ptr = lastMatchedPos;
+			return lastMatchedToken;
 		}
 	}
 }

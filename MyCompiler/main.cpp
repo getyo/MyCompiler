@@ -12,7 +12,9 @@ int main() {
 	Lexeme* lex = new Lexeme();
 	lex->InitLex();
 	lex->SetInput(cin);
-	lex->Analyse();
+	auto tokenVec = lex->Analyse();
+	for (auto& i : tokenVec)
+		cout << Lexeme::tokenKindNum2Str[i.kind] << "\n";
 	grammer = Grammer::GrammerFactory();
 	grammer->Print();
 }

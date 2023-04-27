@@ -116,77 +116,41 @@ string JumpBlank(string& s, int& ptr) {
 	return s.substr(ptr, s.size());
 }
 
-string nextWord(string s) {
-	int findBlank = s.find_first_of(' ');
-	int findTab = s.find_first_of('\t');
-	if (findBlank == -1 && findTab == -1)
-		return s;
-	else if (findBlank == -1 && findTab != -1)
-		return s.substr(0, findTab);
-	else if (findBlank != -1 && findTab == -1)
-		return s.substr(0, findBlank);
-	else {
-		int end = min(findBlank, findTab);
-		return s.substr(0, end);
-	}
-}
+int curPos;
 
 vector<Token> Lexeme::Analyse() const {
 	vector<Token> tokenVec;
 	if (istream* in = dynamic_cast<istream*>(input)) {
 		string line;
-		int row = 1, JumpedCharCnt = 0;
-		int col = 1;
+		int row = 0;
+		bool errorFlag = false;
 		while (in->good()) {
+			++row;
+			curPos = 0;
 			getline(*in, line);
-			string word = line;
-			while (word.size() > 0) {
-				word = JumpBlank(word, JumpedCharCnt);
-				col += JumpedCharCnt;
-				JumpedCharCnt = 0;
-				//只有空格，不进行识别
-				if (word.size() == 0) break;
-
-				//识别成功时，JumpedCharCnt保存识别到的Token长度
-				Ty_TokenKind tokenKind = unoptimizedDfa.Recognize(word, JumpedCharCnt);
-				string lexeme = word.substr(0, JumpedCharCnt);
+			while (curPos < line.size()) {
+				int prePos = curPos;
+				Ty_TokenKind tokenKind = unoptimizedDfa.Recognize(line, curPos);
 				if (tokenKind != Token::FAILED) {
 					Token token;
 					token.kind = tokenKind;
 					token.symbolTableIndex = symbolTable.Size();
-					symbolTable.Push(TokenAttribute(lexeme, row, col + 1, -1));
+					string lexeme = line.substr(prePos, curPos - prePos);
+					symbolTable.Push(TokenAttribute(lexeme, row, prePos + 1, -1));
 					tokenVec.push_back(token);
-					//跳过已识别的token
-					word = word.substr(JumpedCharCnt, word.size());
+					if (errorFlag) errorFlag = false;
 				}
 				else {
-					//未识别成功，跳过当前第一个不为“ ”的子串
-					int blankSub = word.find_first_of(' ');
-					int tabSub = word.find_first_of('\t');
-					string str;
-					//如果word中已经没有空格，说明跳过了word的全部内容
-					if (blankSub == -1 && tabSub == -1) {
-						str = word;
-						word = "";
-						JumpedCharCnt = str.size();
+					//第一次出现错误，打印信息，否则跳过当前符号继续分析
+					if (!errorFlag) {
+						cout << "Error: line " << row \
+							<< " col " << prePos+1 << " " << "Unidentified Symbol:"\
+							<< line.substr(prePos,curPos-prePos) << '\n';
+						errorFlag = true;
 					}
-					else {
-						int end;
-						if (blankSub != -1) end = blankSub;
-						else if (tabSub != -1) end = tabSub;
-						else end = min(blankSub, tabSub);
-						str = word.substr(0, end);
-						word = word.substr(end, word.size());
-						JumpedCharCnt = blankSub;
-					}
-					cerr << "Lexeme recognize error: row " << row << \
-						" col " << col << " lexeme : " << str << "\n";
+					++curPos;
 				}
-				col += JumpedCharCnt;
-				JumpedCharCnt = 0;
 			}
-			++row;
-			col = 0;
 		}
 	}
 	return tokenVec;
