@@ -16,6 +16,9 @@
     <Filter Include="源文件\lex">
       <UniqueIdentifier>{fec0b82b-4830-4ebe-b60d-742150b8d600}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\syntax">
+      <UniqueIdentifier>{ce00c422-0d25-4110-a900-07a6295eb9d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lex.h">
@@ -34,6 +37,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Token.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Production.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Grammer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -58,6 +67,12 @@
     </ClCompile>
     <ClCompile Include="Token.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Production.cpp">
+      <Filter>源文件\syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="Grammer.cpp">
+      <Filter>源文件\syntax</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

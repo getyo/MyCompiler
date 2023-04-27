@@ -3,7 +3,7 @@
 #include "FileManager.h"
 #include "Token.h"
 
-extern FileManager fileManager;
+extern FileManager* fileManager;
 extern SymbolTable symbolTable;;
 unordered_map <string, Ty_TokenKind> Lexeme::tokenKindStr2Num;
 vector<string> Lexeme::tokenKindNum2Str;
@@ -32,6 +32,9 @@ void Lexeme::InputReg() {
 	while (regIn.good()) {
 		string s;
 		getline(regIn, s);
+		if (s == "") continue;
+		//注释行
+		else if (s[0] == '/' && s[1] == '/') continue;
 		string tokenKindName = s.substr(0, s.find_first_of(":"));
 		string reg = s.substr(s.find_first_of(":") + 1, s.size());
 		//暂且不填写map中tokenKindName对应的tokenKind
@@ -191,18 +194,19 @@ vector<Token> Lexeme::Analyse() const {
 
 Lexeme::Lexeme() {
 	this->input = nullptr;
-	if (!fileManager.IsDir(regInDir)) {
-		fileManager.CreateDir(regInDir);
+	if (!fileManager->IsDir(regInDir)) {
+		fileManager->CreateDir(regInDir);
 	}
 	regIn.open(regInDir + "\\reg.txt");
 	if (!regIn.is_open())
 		cerr << "No input file :" << regInDir + "\\reg.txt";
-	if (!fileManager.CreateDir(regOutDir)) {
-		fileManager.CreateDir(regOutDir);
+	if (!fileManager->CreateDir(regOutDir)) {
+		fileManager->CreateDir(regOutDir);
 	}
 	regOut.open(regOutDir + "\\dfa.txt");
 }
 
+/*
 int main() {
 	Lexeme lex;
 	lex.InitLex();
@@ -214,3 +218,4 @@ int main() {
 		cout << "\n";
 	}
 }
+**/

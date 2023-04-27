@@ -1,4 +1,14 @@
 #include "FileManager.h"
+FileManager* FileManager::fileMangerPtr = nullptr;
+
+FileManager* FileManager::FileManagerFactory() {
+	if (fileMangerPtr != nullptr)
+		return fileMangerPtr;
+	else {
+		fileMangerPtr = new FileManager();
+		return fileMangerPtr;
+	}
+}
 
 FileManager::FileManager() {
 	char buf[265];
@@ -56,4 +66,8 @@ bool FileManager::_CreateDir(string relativePath) {
 	strcat_s(buf, relativePath.c_str());				//在"\"后面加文件夹名
 	if (IsDir(buf)) return true;
 	return CreateDirectoryA(buf, NULL);
+}
+
+string FileNotOpen::what() {
+	return error;
 }

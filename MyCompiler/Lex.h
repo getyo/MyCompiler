@@ -13,8 +13,8 @@ private:
 	ifstream regIn;
 	ofstream regOut;
 	ios* input;
-	string regInDir = "Lex\\Input";
-	string regOutDir = "Lex\\output";
+	string regInDir = "Input";
+	string regOutDir = "output";
 	vector	<Ty_FollowPos> followPosTable;
 	vector <string> regArray;
 	vector <SyntalTreePtr> treeArray;
@@ -29,7 +29,6 @@ private:
 	void DfaVec2Nfa();
 	void Nfa2Dfa();
 	void OutputDfa(DFA &dfa);
-	void ReadDfa(DFA& dfa);
 
 public:
 	class NoInputStreamException : exception {};
@@ -37,7 +36,6 @@ public:
 	static unordered_map <string, Ty_TokenKind> tokenKindStr2Num;
 	static vector<string> tokenKindNum2Str;
 	void InitLex();
-	vector<Token> Recognize();
 	Lexeme();
 	void SetInput(ios& in) { this->input = &in; }
 	vector<Token> Analyse() const;
