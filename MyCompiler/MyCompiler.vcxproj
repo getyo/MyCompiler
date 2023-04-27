@@ -148,7 +148,9 @@
     <ClInclude Include="Debug.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="FiniteAutomata.h" />
+    <ClInclude Include="Grammer.h" />
     <ClInclude Include="Lex.h" />
+    <ClInclude Include="Production.h" />
     <ClInclude Include="SyntaxTree.h" />
     <ClInclude Include="Token.h" />
   </ItemGroup>
@@ -156,8 +158,10 @@
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="FiniteAutomata.cpp" />
+    <ClCompile Include="Grammer.cpp" />
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Production.cpp" />
     <ClCompile Include="SyntaxTree.cpp" />
     <ClCompile Include="Token.cpp" />
   </ItemGroup>

@@ -1,3 +1,0 @@
-test1:ifffff#
-test2:if#
-test3:(a|b|c|d|i|f)*#

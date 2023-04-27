@@ -121,7 +121,7 @@ SyntalNodePtr SyntalNode::PrimarySymbol(SyntalNodePtr node) {
 			curReg[regStrIndex] == ')' ||
 			curReg[regStrIndex] == '\'' ||
 			curReg[regStrIndex] == REG_END)
-			node->SetName(curReg[regStrIndex]);
+			node->SetName(curReg[regStrIndex++]);
 		else {
 			cerr << "Symbol " << curReg[regStrIndex] <<
 				" is not a special symbol which need to follow by \\" << endl;
@@ -151,7 +151,7 @@ SyntalNodePtr SyntalNode::PrimarySymbol(SyntalNodePtr node) {
 SyntalNodePtr SyntalNode::Closure(SyntalNodePtr node) {
 	node = PrimarySymbol(node);
 	SyntalNodePtr father = node;
-	if (curReg[regStrIndex] == '*') {
+	if (regStrIndex < curReg.size() && curReg[regStrIndex] == '*' && regStrIndex <= curReg.size()) {
 		father = make_shared<SyntalNode>();
 		father->SetName(STAR_NODE);
 		father->SetLeftChild(node);
@@ -167,7 +167,7 @@ SyntalNodePtr SyntalNode::Concatenation(SyntalNodePtr node) {
 	SyntalNodePtr left = Closure(node);
 	SyntalNodePtr father = left;
 	SyntalNodePtr right = make_shared<SyntalNode>();
-	while (curReg[regStrIndex] != '*' && curReg[regStrIndex] != '|' && curReg[regStrIndex] != '\0') {
+	while (regStrIndex < curReg.size() && curReg[regStrIndex] != '*' && curReg[regStrIndex] != '|' && curReg[regStrIndex] != ')') {
 		father = make_shared<SyntalNode>(SyntalNode());
 		right = right->Closure(make_shared<SyntalNode>(SyntalNode()));
 		father->SetName(CAT_NODE);
@@ -176,7 +176,7 @@ SyntalNodePtr SyntalNode::Concatenation(SyntalNodePtr node) {
 		SyntalNode::Nullable(father);
 		SyntalNode::FirstPos(father);
 		SyntalNode::LastPos(father);
-		if (curReg[regStrIndex] != '*' && curReg[regStrIndex] != '|' && curReg[regStrIndex] != '\0')
+		if (regStrIndex < curReg.size() && curReg[regStrIndex] != '*' && curReg[regStrIndex] != '|' && curReg[regStrIndex] != ')')
 			left = father;
 	}
 	return father;
@@ -186,7 +186,7 @@ SyntalNodePtr SyntalNode::Union(SyntalNodePtr node) {
 	SyntalNodePtr left = Concatenation(node);
 	SyntalNodePtr father = left;
 	SyntalNodePtr right = make_shared<SyntalNode>(SyntalNode());
-	while (curReg[regStrIndex] == '|') {
+	while (regStrIndex < curReg.size() && curReg[regStrIndex] == '|') {
 		++regStrIndex;
 		father = make_shared<SyntalNode>();
 		right = right->Closure(make_shared<SyntalNode>(SyntalNode()));
