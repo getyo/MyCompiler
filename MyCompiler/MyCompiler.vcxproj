@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Collection.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="FiniteAutomata.h" />
@@ -155,6 +156,7 @@
     <ClInclude Include="Token.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Collection.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="FiniteAutomata.cpp" />

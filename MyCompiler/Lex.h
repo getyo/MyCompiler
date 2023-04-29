@@ -30,13 +30,17 @@ private:
 	void Nfa2Dfa();
 	void OutputDfa(DFA &dfa);
 
+	Lexeme();
+	Lexeme(const Lexeme&) {}
+	Lexeme(const Lexeme&&) {}
+	void operator=(const Lexeme&) {}
+	~Lexeme();
+	static Lexeme* lexemePtr;
 public:
-	class NoInputStreamException : exception {};
-	class NoOutputOutputStreamException :exception {};
+	static Lexeme* LexemeFactory();
 	static unordered_map <string, Ty_TokenKind> tokenKindStr2Num;
 	static vector<string> tokenKindNum2Str;
 	void InitLex();
-	Lexeme();
 	void SetInput(ios& in) { this->input = &in; }
 	vector<Token> Analyse() const;
 };

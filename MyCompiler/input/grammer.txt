@@ -1,2 +1,6 @@
-IfStatement -> if ( Expression ) Statement
-IfStatement -> if ( Expression ) Statement else Statement
+S' -> S
+S -> L = R
+S -> R
+L -> * R
+L -> id
+R -> L

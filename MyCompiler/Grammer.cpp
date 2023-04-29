@@ -4,6 +4,7 @@
 #include "FileManager.h"
 #include "Lex.h"
 
+int Grammer::END_OF_GRAMMER;
 string curSymbol;
 string curLine;
 int curLineIt;
@@ -11,8 +12,20 @@ Grammer* Grammer::grammerPtr = nullptr;
 vector<string> Grammer::grammerSymbolNum2Str;
 unordered_map<string, int> Grammer::grammerSymbolStr2Num;
 
+size_t Grammer::ProductionCnt() {
+	return productions.size();
+}
+
 Grammer::~Grammer() {
 	if (grammerPtr != nullptr) delete grammerPtr;
+}
+
+Production& Grammer::operator[](size_t sub) {
+	return productions[sub];
+}
+
+size_t Grammer::GrammerSymbolCnt() {
+	return maxUnterminal + 1;
 }
 
 bool Grammer::IsUnterminal(int val) {
@@ -57,6 +70,13 @@ Grammer::Grammer() {
 		Lexeme::tokenKindNum2Str.begin(), Lexeme::tokenKindNum2Str.end());
 	grammerSymbolStr2Num.insert(Lexeme::tokenKindStr2Num.begin(), \
 		Lexeme::tokenKindStr2Num.end());
+	//插入语法结束标志
+	END_OF_GRAMMER = grammerSymbolNum2Str.size();
+	grammerSymbolNum2Str.push_back("$");
+	grammerSymbolStr2Num.insert({ "$", END_OF_GRAMMER });
+
+	maxTerminal = grammerSymbolNum2Str.size()-1;
+	startSymbol = maxTerminal + 1;
 	//存贮当前行的Production
 	vector <int> p;
 	while (in.good()) {
@@ -75,6 +95,11 @@ Grammer::Grammer() {
 		productions.push_back(Production(p));
 		p.clear();
 	}
+	maxUnterminal = grammerSymbolNum2Str.size()-1;
+}
+
+int Grammer::StartSymbol() {
+	return startSymbol;
 }
 
 Grammer* Grammer::GrammerFactory() {
@@ -100,4 +125,8 @@ void Grammer::Print() {
 		p.Print();
 		cout << '\n';
 	}
+	cout << "Unterminal: ";
+	for (int i = maxTerminal + 1; i <= maxUnterminal; i++)
+		cout << Grammer::grammerSymbolNum2Str[i] << " ";
+	cout << "\n";
 }

@@ -45,6 +45,9 @@
     <ClInclude Include="Grammer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Collection.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SyntaxTree.cpp">
@@ -72,6 +75,9 @@
       <Filter>源文件\syntax</Filter>
     </ClCompile>
     <ClCompile Include="Grammer.cpp">
+      <Filter>源文件\syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="Collection.cpp">
       <Filter>源文件\syntax</Filter>
     </ClCompile>
   </ItemGroup>
