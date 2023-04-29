@@ -3,10 +3,21 @@
 #include "FileManager.h"
 #include "Token.h"
 
+Lexeme* Lexeme::lexemePtr = nullptr;
 extern FileManager* fileManager;
 extern SymbolTable symbolTable;;
 unordered_map <string, Ty_TokenKind> Lexeme::tokenKindStr2Num;
 vector<string> Lexeme::tokenKindNum2Str;
+
+Lexeme::~Lexeme(){
+	if (lexemePtr != nullptr) delete lexemePtr;
+}
+
+Lexeme* Lexeme::LexemeFactory() {
+	if (lexemePtr == nullptr)
+		lexemePtr = new Lexeme();
+	return lexemePtr;
+}
 
 void Lexeme::FollowPos(SyntalNodePtr& node, Ty_FollowPos& followPos) {
 	if (!node->leftChild && !node->rightChild) return;
