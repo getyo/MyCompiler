@@ -40,7 +40,7 @@ vector<int> Production::GetBody() const {
 	return this->body;
 }
 
-int& Production::operator[](size_t index) {
+int& Production::operator[](int index) {
 	if (!index) return head;
 	else return body[index - 1];
 }
@@ -94,17 +94,17 @@ int Item::GetDotPos() const {
 	return dotPos;
 }
 
-Item::Item(const Production& p) :Production(p) {
+Item::Item(const Production& p,int pItr) :Production(p),pItr(pItr) {
 	//默认点在产生式体开头，利用body[]可以直接返回dot后的语法符号
 	this->dotPos = 0;
 }
 
-Item::Item(Production& p, initializer_list<int> l) : Production(p) {
+Item::Item(Production& p,int pItr,initializer_list<int> l) : Production(p),pItr(pItr) {
 	this->dotPos = 0;
 	for (auto c : l) lookAhead.insert(c);
 }
 
-Item::Item(Production& p, int dotPos, initializer_list<int> l) : Item(p, l) {
+Item::Item(Production& p,int pItr, int dotPos, initializer_list<int> l) : Item(p, pItr,l) {
 	this->dotPos = dotPos;
 }
 
@@ -113,6 +113,7 @@ Item::Item(const Item& item) {
 	this->body = item.body;
 	this->dotPos = item.dotPos;
 	this->lookAhead = item.lookAhead;
+	this->pItr = item.pItr;
 }
 
 Item::Item(const Item& item, int dotPos) :Item(item) {
@@ -128,6 +129,7 @@ Item& Item::operator=(const Item& item) {
 	this->body = item.body;
 	this->dotPos = item.dotPos;
 	this->lookAhead = item.lookAhead;
+	this->pItr = item.pItr;
 	return *this;
 }
 
@@ -167,6 +169,11 @@ bool Item::IsDerived(const Item& item) const{
 	if (item.dotPos == (dotPos + 1) && ProductionEqual(*this, item))
 		return true;
 	return false;
+}
+
+
+int Item::GetPItr() const{
+	return pItr+1;
 }
 
 string Item::Info() const {
