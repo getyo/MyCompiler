@@ -3,6 +3,7 @@
 #include <stack>
 Collection* Collection::collectionPtr = nullptr;
 const int Collection::LOOKAHEAD_ATHAND = -3;
+const int Collection::NON_ENTRY = 99999999;
 
 Collection* Collection::CollectionFactory(Grammer* g) {
 	if (collectionPtr == nullptr) collectionPtr = new Collection(g);
@@ -11,10 +12,10 @@ Collection* Collection::CollectionFactory(Grammer* g) {
 
 void Collection::InsertItemSet() {
 	collection.push_back(ItemSet());
-	gotoTable.push_back(new int[grammerSymbolCnt]);
-	auto line = gotoTable[gotoTable.size() - 1];
+	praserTable.push_back(new int[grammerSymbolCnt]);
+	auto line = praserTable[praserTable.size() - 1];
 	for (int i = 0; i < grammerSymbolCnt; i++) {
-		line[i] = -1;
+		line[i] = NON_ENTRY;
 	}
 }
 
@@ -54,7 +55,7 @@ void Collection::ClosureLR0(ItemSet& itemSet) {
 		for (int j = 0; j < grammer->ProductionCnt(); j++) {
 			Production& p = (*grammer)[j];
 			if (p.GetHead() == item->FollowDot()) {
-				Item temp(p, 0, {});
+				Item temp(p, j,0, {});
 				if (!HasItem(itemSet, temp)) itemSet.push_back(temp);
 			}
 		}
@@ -66,7 +67,7 @@ void Collection::ConstructLR0() {
 		ClosureLR0(collection[i]);
 		for (int j = 0; j < grammer->GrammerSymbolCnt(); j++) {
 			int gotoStatus = InputSymbol(collection[i], j);
-			if (gotoStatus != -1) gotoTable[i][j] = gotoStatus;
+			if (gotoStatus != -1) praserTable[i][j] = gotoStatus;
 		}
 	}
 }
@@ -128,7 +129,7 @@ vector<Item> Collection::ClosureLR1(Item& item) {
 		for (int i = 0; i < grammer->ProductionCnt(); i++) {
 			Production p = grammer->operator[](i);
 			if (followDot == p.GetHead()) {
-				Item temp(p);
+				Item temp(p,i);
 				auto s = FirstTerminalAfterDot(item);
 				for (auto& i : s) temp.AddLookAhead(i);
 				itemVec.push_back(temp);
@@ -138,8 +139,8 @@ vector<Item> Collection::ClosureLR1(Item& item) {
 	return itemVec;
 }
 
-int Collection::Goto(int curStatus, int terminal) {
-	return gotoTable[curStatus][terminal];
+int Collection::Goto(int curStatus, int symbol) {
+	return praserTable[curStatus][symbol];
 }
 
 void Collection::IntiLookAhead() {
@@ -162,7 +163,8 @@ void Collection::IntiLookAhead() {
 				for (auto lookAhead : item.GetLookAheadSet()) {
 					int followDot = item.FollowDot();
 					if (followDot == Item::BLANK_FOLLOW_DOT) continue;
-					ItemSet& gotoStatus = collection[Goto(status, followDot)];
+					int nextStatus = Goto(status, followDot);
+					ItemSet& gotoStatus = collection[nextStatus];
 					//如果当前lookAhead是自发生成
 					if (lookAhead != LOOKAHEAD_ATHAND) {
 						//item.Print();
@@ -171,7 +173,10 @@ void Collection::IntiLookAhead() {
 							//向对应kernel Item添加lookAhead
 							if (item.IsDerived(i)) {
 								i.AddLookAhead(lookAhead);
-								fromTo[kernelItem].insert(&i);
+								//如果当前dot已经到了最后位置,添加reduce操作
+								if (i.FollowDot() == Item::BLANK_FOLLOW_DOT)
+									praserTable[nextStatus][lookAhead] = (-i.GetPItr());
+								fromTo[kernelItem].push_back(Pair(&i,nextStatus));
 							}
 						}
 					}
@@ -179,7 +184,7 @@ void Collection::IntiLookAhead() {
 					else {
 						for (auto& i : gotoStatus) {
 							if (item.IsDerived(i)) {
-								fromTo[kernelItem].insert(&i);
+								fromTo[kernelItem].push_back(Pair(&i,nextStatus));
 							}
 						}
 					}
@@ -190,6 +195,8 @@ void Collection::IntiLookAhead() {
 	}
 	//向起始符号所在的item添加$
 	collection[0].begin()->AddLookAhead(Grammer::END_OF_GRAMMER);
+	//Print();
+	//cout << "\n\n\n";
 }
 
 void Collection::LookAheadPorpagate() {
@@ -202,8 +209,12 @@ void Collection::LookAheadPorpagate() {
 				if (!fromTo.count(from)) continue;
 				//将当前Item的lookAhead传播到所有
 				for (auto to : fromTo[from])
-					for (int lookAhead : from.GetLookAheadSet())
-						to->AddLookAhead(lookAhead);
+					for (int lookAhead : from.GetLookAheadSet()) {
+						to.itemPtr->AddLookAhead(lookAhead);
+						//如果当前dot已经到了最后位置,添加reduce操作
+						if (to.itemPtr->FollowDot() == Item::BLANK_FOLLOW_DOT) 
+							praserTable[to.status][lookAhead] = (-to.itemPtr->GetPItr());
+					}
 			}
 		}
 		++status;
@@ -215,7 +226,7 @@ Collection::Collection(Grammer* g) {
 	grammer = g;
 	grammerSymbolCnt = grammer->GrammerSymbolCnt();
 	InsertItemSet();
-	collection[0].push_back(Item((*grammer)[0], {}));
+	collection[0].push_back(Item((*grammer)[0],0, {}));
 
 	//构建LR（0）Item集合；
 	ConstructLR0();
@@ -236,14 +247,21 @@ void Collection::Print() {
 			i.Print();
 			cout << '\n';
 		}
-		auto line = gotoTable[i];
+		auto line = praserTable[i];
 		cout << "Goto: \t";
 		for (int j = 0; j < grammerSymbolCnt; j++) {
-			if (line[j] != -1)
+			if (line[j] != NON_ENTRY && line[j] >= 0)
 				cout << Grammer::grammerSymbolNum2Str[j] \
-				<< " " << gotoTable[i][j] << " \t";
+				<< " " << praserTable[i][j] << " \t";
 		}
 		cout << "\n";
+		cout << "Reduce: \t";
+		for (int j = 0; j < grammerSymbolCnt; j++) {
+			if (line[j] != NON_ENTRY && line[j] < 0)
+				cout << Grammer::grammerSymbolNum2Str[j] \
+				<< " " << praserTable[i][j] << " \t";
+		}
+		cout << "\n\n";
 		++i;
 	}
 }

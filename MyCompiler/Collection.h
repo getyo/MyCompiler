@@ -13,9 +13,15 @@ private:
 	size_t grammerSymbolCnt;
 	Grammer* grammer;
 	vector<ItemSet> collection;
-	vector<int*> gotoTable;
+	vector<int*> praserTable;
+
+	struct Pair {
+		Item* itemPtr;
+		int status;
+		Pair(Item * itemPtr,int status):itemPtr(itemPtr),status(status){}
+	};
 	//保存从某个Item能到其他那些Item
-	unordered_map<Item, set<Item*>, ItemHash, ItemEqual> fromTo;
+	unordered_map<Item, vector<Pair>, ItemHash, ItemEqual> fromTo;
 
 	int HasItemSet(ItemSet& itemSet);
 	bool HasItem(ItemSet& itemSet, Item& item);
@@ -39,7 +45,7 @@ private:
 	Collection(const Collection&);
 	void operator=(const Collection&) {}
 public:
-	static const int END_OF_GRAMMER;
+	static const int NON_ENTRY;
 	static const int LOOKAHEAD_ATHAND;
 	static Collection* collectionPtr;
 	static Collection* CollectionFactory(Grammer * g);
