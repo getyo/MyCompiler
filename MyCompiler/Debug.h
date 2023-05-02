@@ -1,12 +1,22 @@
 #pragma once
-#define DEBUG 
 #include <iostream>
 #include <Windows.h>
 #include <DbgHelp.h>
 #include <stdio.h>
 
-#define _GRAMMER_PRINT
-#define _LR0_PRINT
+#define DEBUG 
+#ifdef DEBUG
+#define _PARSER
+	#ifdef _PARSER
+		#define _GRAMMER_PRINT
+		//#define _LR0_PRINT
+		#define _REDUCE_OPERATION_PRINT
+		#define _COLLECTION_PRINT
+	#endif // _PARSER
+
+
+#endif // DEBUG
+
 
 void PrintStackTrace();
 #define ASSERT(expr,info) {if(!(expr)) {\

@@ -21,6 +21,7 @@ private:
 
 	Parser();
 	Parser(const Parser& p) {}
+	~Parser() {}
 	void operator=(const Parser& p) {}
 	string makeErrorInfo(Token);
 	bool RedressNon();
@@ -34,5 +35,4 @@ public:
 	void SetInput(vector <Token>& tokenStream);
 	bool Analyse();
 	void PrintError();
-	~Parser();
 };

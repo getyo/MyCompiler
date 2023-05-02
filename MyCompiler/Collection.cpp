@@ -372,6 +372,5 @@ Grammer* Collection::GetGrammer() {
 Collection::~Collection() {
 	if (collectionPtr != nullptr) {
 		for (auto& p : parserTable) delete[] p;
-		delete grammer;
 	}
 }

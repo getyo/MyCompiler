@@ -17,6 +17,7 @@ private:
 	vector <Production> productions;
 	Grammer();
 	Grammer (const Grammer&) {}
+	~Grammer();
 	string NextSymbol();
 	void operator=(const Grammer&) {}
 public:
@@ -35,5 +36,4 @@ public:
 	int StartSymbol();
 	string Info();
 	void Print();
-	~Grammer();
 };

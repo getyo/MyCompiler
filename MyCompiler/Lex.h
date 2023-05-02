@@ -21,6 +21,9 @@ private:
 	vector <DFA> dfaVec;
 	shared_ptr <NFA> nfaPtr;
 	DFA unoptimizedDfa;
+	vector<string> errorInfo;
+	
+	string MakeErrorInfo(string symbol, int row, int col) const;
 	//将输入的正则表达式整理好，并且构建语法树，DAF
 	void FollowPos(SyntalNodePtr& node,Ty_FollowPos& followPos);
 	void InputReg();
@@ -42,5 +45,6 @@ public:
 	static vector<string> tokenKindNum2Str;
 	void InitLex();
 	void SetInput(ios& in) { this->input = &in; }
-	vector<Token> Analyse() const;
+	vector<Token> Analyse();
+	void PrintError();
 };

@@ -11,8 +11,8 @@ SubAddtiveExpr -> + MultiplicativeExpr SubAddtiveExpr
 SubAddtiveExpr -> - MultiplicativeExpr SubAddtiveExpr
 SubAddtiveExpr -> _NON
 MultiplicativeExpr -> PrimaryExpr SubMultiplicativeExpr 
-SubMultiplicativeExpr  -> / PrimaryExpr 
-SubMultiplicativeExpr  -> * PrimaryExpr 
+SubMultiplicativeExpr  -> / PrimaryExpr SubMultiplicativeExpr 
+SubMultiplicativeExpr  -> * PrimaryExpr SubMultiplicativeExpr 
 SubMultiplicativeExpr  -> _NON
 PrimaryExpr -> id
 PrimaryExpr -> digit
