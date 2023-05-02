@@ -19,7 +19,6 @@ private:
 	Grammer (const Grammer&) {}
 	string NextSymbol();
 	void operator=(const Grammer&) {}
-	~Grammer();
 public:
 	static int END_OF_GRAMMER;
 	static vector<string> grammerSymbolNum2Str;
@@ -36,4 +35,5 @@ public:
 	int StartSymbol();
 	string Info();
 	void Print();
+	~Grammer();
 };

@@ -1,6 +1,19 @@
-S' -> S
-S -> L = R
-S -> R
-L -> * R
-L -> id
-R -> L
+Statement' -> Statement
+Statement -> ExprStatement
+
+ExprStatement -> Expr ;
+//计算表达式
+Expr -> AddtiveExpr 
+Expr -> AssignExpr 
+AssignExpr -> id = AddtiveExpr 
+AddtiveExpr -> MultiplicativeExpr SubAddtiveExpr 
+SubAddtiveExpr -> + MultiplicativeExpr SubAddtiveExpr
+SubAddtiveExpr -> - MultiplicativeExpr SubAddtiveExpr
+SubAddtiveExpr -> _NON
+MultiplicativeExpr -> PrimaryExpr SubMultiplicativeExpr 
+SubMultiplicativeExpr  -> / PrimaryExpr 
+SubMultiplicativeExpr  -> * PrimaryExpr 
+SubMultiplicativeExpr  -> _NON
+PrimaryExpr -> id
+PrimaryExpr -> digit
+PrimaryExpr -> ( Expr )

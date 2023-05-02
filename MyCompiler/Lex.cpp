@@ -9,7 +9,7 @@ extern SymbolTable symbolTable;;
 unordered_map <string, Ty_TokenKind> Lexeme::tokenKindStr2Num;
 vector<string> Lexeme::tokenKindNum2Str;
 
-Lexeme::~Lexeme(){
+Lexeme::~Lexeme() {
 	if (lexemePtr != nullptr) delete lexemePtr;
 }
 
@@ -139,6 +139,7 @@ vector<Token> Lexeme::Analyse() const {
 			++row;
 			curPos = 0;
 			getline(*in, line);
+			if (line.empty()) break;
 			while (curPos < line.size()) {
 				int prePos = curPos;
 				Ty_TokenKind tokenKind = unoptimizedDfa.Recognize(line, curPos);
@@ -155,14 +156,20 @@ vector<Token> Lexeme::Analyse() const {
 					//第一次出现错误，打印信息，否则跳过当前符号继续分析
 					if (!errorFlag) {
 						cout << "Error: line " << row \
-							<< " col " << prePos+1 << " " << "Unidentified Symbol:"\
-							<< line.substr(prePos,curPos-prePos) << '\n';
+							<< " col " << prePos + 1 << " " << "Unidentified Symbol:"\
+							<< line.substr(prePos, curPos - prePos) << '\n';
 						errorFlag = true;
 					}
 					++curPos;
 				}
 			}
 		}
+		Token end;
+		end.kind = tokenKindStr2Num["$"];
+		end.symbolTableIndex = symbolTable.Size();
+		string endlexeme = "$";
+		symbolTable.Push(TokenAttribute(endlexeme,row+1 ,1, -1));
+		tokenVec.push_back(end);
 	}
 	return tokenVec;
 }

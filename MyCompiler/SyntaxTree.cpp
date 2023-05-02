@@ -17,9 +17,10 @@ bool SyntalNode::Nullable(SyntalNodePtr node) {
 		return false;
 	}
 	else if (node->name == STAR_NODE ||
+		node->name == '\0'	||
 		node->leftChild->name == '\0' ||
-		node->rightChild->name == '\0' ||
-		node->name == '\0') {
+		node->rightChild->name == '\0'
+		) {
 		node->nullable = true;
 		return true;
 	}
