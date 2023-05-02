@@ -1,5 +1,6 @@
 #include "Parser.h"
 #include <stack>
+#include "Debug.h"
 Parser* Parser::parserPtr = nullptr;
 extern SymbolTable symbolTable;
 
@@ -7,14 +8,9 @@ Parser::Parser() {
 	collectionPtr = Collection::CollectionFactory();
 	grammer = collectionPtr->GetGrammer();
 	nonInt = grammer->grammerSymbolStr2Num["_NON"];
-	grammer->Print();
+#ifdef _COLLECTION_PRINT
 	collectionPtr->Print();
-}
-
-Parser::~Parser() {
-	if (parserPtr != nullptr) {
-		delete collectionPtr;
-	}
+#endif
 }
 
 void Parser::SetInput(vector <Token>& tokenStream) {
@@ -24,7 +20,7 @@ void Parser::SetInput(vector <Token>& tokenStream) {
 string Parser::makeErrorInfo(Token t) {
 	int index = t.symbolTableIndex;
 	string s = "Syntal Error: line " + to_string(symbolTable[index].row) \
-				+ " column " + to_string(symbolTable[index].row) \
+				+ " column " + to_string(symbolTable[index].col) \
 				+ " illegal word : " + symbolTable[index].lexeme + "\n";
 	return s;
 }
@@ -70,10 +66,14 @@ bool Parser::RedressNon() {
 	else if(action < 0) {
 		//注意 在PraserTable中-1代表使用Production0进行归约
 		curInputToken = Reduce(-(action + 1));
+
+#ifdef _REDUCE_OPERATION_PRINT
 		(*grammer)[-(action + 1)].Print();
+		cout << "\n";
+#endif // _REDUCE_OPERATION_PRINT
+
 		shift(curInputToken);
 		curInputToken = (*tokenStream)[tokenIndex].kind;
-		cout << "\n";
 		return true;
 	}
 	return false;
@@ -104,11 +104,14 @@ bool Parser::Analyse() {
 		else {
 			//注意 在PraserTable中-1代表使用Production0进行归约
 			curInputToken = Reduce(-(action + 1));
+
+#ifdef _REDUCE_OPERATION_PRINT
 			(*grammer)[-(action + 1)].Print();
+			cout << "\n";
+#endif
 			if (action == Collection::ACCESS) return true;
 			shift(curInputToken);
 			curInputToken = (*tokenStream)[tokenIndex].kind;
-			cout << "\n";
 		}
 Continue:
 		action = collectionPtr->Goto(curStatus, curInputToken);

@@ -97,39 +97,21 @@ void Lexeme::InitLex() {
 	InputReg();
 	ConstructFollowPosTable();
 	Tree2Dfa();
-	/*
-	cout << "\n";
-	for (auto& i : dfaVec) {
-		i.Print();
-		cout << "\n";
-	}
-	*/
 	DfaVec2Nfa();
-	//cout << "\n";
-	//nfaPtr->Print();
 	Nfa2Dfa();
-	//cout << "\n";
-	//unoptimizedDfa.Print();
-	//cout << "\n";
 	OutputDfa(unoptimizedDfa);
-	/*测试：ReadDFA
-	ifstream in(regOutDir + "\\" + "dfa.txt");
-	if (in.is_open()) {
-		DFA d = DFA::ReadDfa(in);
-		d.Print();
-		in.close();
-	}
-	*/
 }
 
-string JumpBlank(string& s, int& ptr) {
-	while (s[ptr] == ' ' || s[ptr] == '\t')ptr++;
-	return s.substr(ptr, s.size());
+string Lexeme::MakeErrorInfo(string symbol, int row, int col) const{
+	string s = "Unrecognied Symbol : " + symbol  \
+				+ " \t row : " + to_string(row)  \
+				+ " \t column : " + to_string(col);
+	return s;
 }
 
 int curPos;
 
-vector<Token> Lexeme::Analyse() const {
+vector<Token> Lexeme::Analyse() {
 	vector<Token> tokenVec;
 	if (istream* in = dynamic_cast<istream*>(input)) {
 		string line;
@@ -155,9 +137,9 @@ vector<Token> Lexeme::Analyse() const {
 				else {
 					//第一次出现错误，打印信息，否则跳过当前符号继续分析
 					if (!errorFlag) {
-						cout << "Error: line " << row \
-							<< " col " << prePos + 1 << " " << "Unidentified Symbol:"\
-							<< line.substr(prePos, curPos - prePos) << '\n';
+						string lexeme = line.substr(prePos, curPos - prePos + 1);
+						string error = MakeErrorInfo(lexeme, row, prePos + 1);
+						errorInfo.push_back(error);
 						errorFlag = true;
 					}
 					++curPos;
@@ -172,6 +154,11 @@ vector<Token> Lexeme::Analyse() const {
 		tokenVec.push_back(end);
 	}
 	return tokenVec;
+}
+
+void Lexeme::PrintError() {
+	for (auto& s : errorInfo)
+		cout << s << "\n";
 }
 
 Lexeme::Lexeme() {

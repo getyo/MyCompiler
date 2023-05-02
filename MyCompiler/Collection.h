@@ -49,6 +49,7 @@ private:
 
 	Collection();
 	Collection(const Collection&);
+	~Collection();
 	void operator=(const Collection&) {}
 public:
 	static const int NON_ENTRY;
@@ -59,6 +60,5 @@ public:
 	int Goto(int curStatus, int symbol);
 	string Info();
 	void Print();
-	~Collection();
 };
 
