@@ -17,7 +17,7 @@ size_t Grammer::ProductionCnt() {
 }
 
 Grammer::~Grammer() {
-	if (grammerPtr != nullptr) delete grammerPtr;
+	if (grammerPtr == nullptr) return;
 }
 
 Production& Grammer::operator[](size_t sub) {
@@ -70,10 +70,6 @@ Grammer::Grammer() {
 		Lexeme::tokenKindNum2Str.begin(), Lexeme::tokenKindNum2Str.end());
 	grammerSymbolStr2Num.insert(Lexeme::tokenKindStr2Num.begin(), \
 		Lexeme::tokenKindStr2Num.end());
-	//插入语法结束标志
-	END_OF_GRAMMER = grammerSymbolNum2Str.size();
-	grammerSymbolNum2Str.push_back("$");
-	grammerSymbolStr2Num.insert({ "$", END_OF_GRAMMER });
 
 	maxTerminal = grammerSymbolNum2Str.size()-1;
 	startSymbol = maxTerminal + 1;
@@ -82,9 +78,10 @@ Grammer::Grammer() {
 	while (in.good()) {
 		getline(in, curLine);
 		curLineIt = 0;
+		if (!curLine.size() || (curLine[0] == '/' && curLine[1] == '/')) continue;
 		while (curLineIt < curLine.size()) {
 			grammerSymbol = NextSymbol();
-			if (grammerSymbol == "->") continue;
+			if (grammerSymbol == "->" || grammerSymbol == "") continue;
 			//如果没有语法符号的话
 			if (!grammerSymbolStr2Num.count(grammerSymbol)) {
 				grammerSymbolStr2Num.insert({ grammerSymbol,grammerSymbolNum2Str.size() });
@@ -121,7 +118,9 @@ string Grammer::Info() {
 }
 
 void Grammer::Print() {
+	int i = 0;
 	for (auto& p : productions) {
+		cout << i++ << " : ";
 		p.Print();
 		cout << '\n';
 	}

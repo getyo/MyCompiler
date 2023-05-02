@@ -5,6 +5,9 @@
 #include <DbgHelp.h>
 #include <stdio.h>
 
+#define _GRAMMER_PRINT
+#define _LR0_PRINT
+
 void PrintStackTrace();
 #define ASSERT(expr,info) {if(!(expr)) {\
 		cerr << "\n" << info << "\n";\

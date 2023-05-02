@@ -10,10 +10,14 @@ typedef list<Item> ItemSet;
 
 class Collection {
 private:
-	size_t grammerSymbolCnt;
 	Grammer* grammer;
+	static Collection* collectionPtr;
+	size_t grammerSymbolCnt;
 	vector<ItemSet> collection;
-	vector<int*> praserTable;
+	vector<int*> parserTable;
+	//int nonInt;
+	//bool* isNonAble;
+
 
 	struct Pair {
 		Item* itemPtr;
@@ -23,11 +27,15 @@ private:
 	//保存从某个Item能到其他那些Item
 	unordered_map<Item, vector<Pair>, ItemHash, ItemEqual> fromTo;
 
+	//bool Reduciable(Item&);
+	//void GrammerSymbolIsNonAble();
+	bool VectorFind(vector<Pair>& vec, Item& item);
 	int HasItemSet(ItemSet& itemSet);
 	bool HasItem(ItemSet& itemSet, Item& item);
 
 	set<int> FirstTerminalAfterDot(Item );
 	vector<Item> ClosureLR1(Item& item);
+	void AddFromTo(Item& from, int status);
 	void IntiLookAhead();
 	void LookAheadPorpagate();
 
@@ -38,18 +46,19 @@ private:
 	void InsertItemSet();
 	void ConstructLR0();
 
-	int Goto(int curStatus, int terminal);
 
-	Collection(Grammer *);
-	~Collection();
+	Collection();
 	Collection(const Collection&);
 	void operator=(const Collection&) {}
 public:
 	static const int NON_ENTRY;
 	static const int LOOKAHEAD_ATHAND;
-	static Collection* collectionPtr;
-	static Collection* CollectionFactory(Grammer * g);
+	static const int ACCESS;
+	static Collection* CollectionFactory();
+	Grammer* GetGrammer();
+	int Goto(int curStatus, int symbol);
 	string Info();
 	void Print();
+	~Collection();
 };
 

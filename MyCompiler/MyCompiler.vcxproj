@@ -151,6 +151,7 @@
     <ClInclude Include="FiniteAutomata.h" />
     <ClInclude Include="Grammer.h" />
     <ClInclude Include="Lex.h" />
+    <ClInclude Include="Parser.h" />
     <ClInclude Include="Production.h" />
     <ClInclude Include="SyntaxTree.h" />
     <ClInclude Include="Token.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="Grammer.cpp" />
     <ClCompile Include="Lex.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Production.cpp" />
     <ClCompile Include="SyntaxTree.cpp" />
     <ClCompile Include="Token.cpp" />

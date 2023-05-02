@@ -1,3 +1,6 @@
+$:$#
+_NON:\\0#
+
 if:if#
 else:else#
 while:while#

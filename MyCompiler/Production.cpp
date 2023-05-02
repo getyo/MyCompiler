@@ -4,7 +4,7 @@
 #include "Grammer.h"
 #include "Collection.h"
 
-int Item::BLANK_FOLLOW_DOT = -1;
+int Item::BLANK_FOLLOW_DOT = -100000000;
 
 Production::Production(const Production&& p) {
 	this->head = p.head;
@@ -73,6 +73,7 @@ bool Production::operator()(const Production& p)const {
 
 bool Production::operator==(const Production& p) const {
 	if (this->head != p.head) return false;
+	if (this->body.size() != p.body.size()) return false;
 	for (int i = 0; i < body.size(); i++)
 		if (body[i] != p.body[i]) return false;
 	return true;
@@ -165,8 +166,8 @@ bool Item::ProductionEqual(const Item& i1, const Item& i2) {
 	return i1.Production::operator==(i2);
 }
 
-bool Item::IsDerived(const Item& item) const{
-	if (item.dotPos == (dotPos + 1) && ProductionEqual(*this, item))
+bool Item::IsDerived(const Item& origin) const{
+	if (origin.dotPos == (dotPos - 1) && ProductionEqual(*this, origin))
 		return true;
 	return false;
 }
