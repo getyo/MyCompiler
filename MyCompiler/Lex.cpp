@@ -102,57 +102,77 @@ void Lexeme::InitLex() {
 	OutputDfa(unoptimizedDfa);
 }
 
-string Lexeme::MakeErrorInfo(string symbol, int row, int col) const{
+string Lexeme::MakeErrorInfo(string symbol, int row, int col) const {
 	string s = "Unrecognied Symbol : " + symbol  \
-				+ " \t row : " + to_string(row)  \
-				+ " \t column : " + to_string(col);
+		+ " \t row : " + to_string(row)  \
+		+ " \t column : " + to_string(col);
 	return s;
+}
+
+void Lexeme::GetInput() {
+	string line;
+	if (istream* in = dynamic_cast<istream*>(input)) {
+		while (in->good()) {
+			getline(*in, line);
+			if (!line.size()) break;
+			sourceCode.push_back(line);
+		}
+	}
+	else if (ifstream* in = dynamic_cast<ifstream*>(input)) {
+		while (in->good()) {
+			getline(*in, line);
+			sourceCode.push_back(line);
+		}
+	}
+	else {
+		cerr << "Incorrect regInputStream;\n";
+		exit(1);
+	}
 }
 
 int curPos;
 
 vector<Token> Lexeme::Analyse() {
 	vector<Token> tokenVec;
-	if (istream* in = dynamic_cast<istream*>(input)) {
-		string line;
-		int row = 0;
-		bool errorFlag = false;
-		while (in->good()) {
-			++row;
-			curPos = 0;
-			getline(*in, line);
-			if (line.empty()) break;
-			while (curPos < line.size()) {
-				int prePos = curPos;
-				Ty_TokenKind tokenKind = unoptimizedDfa.Recognize(line, curPos);
-				if (tokenKind != Token::FAILED) {
-					Token token;
-					token.kind = tokenKind;
-					token.symbolTableIndex = symbolTable.Size();
-					string lexeme = line.substr(prePos, curPos - prePos);
-					symbolTable.Push(TokenAttribute(lexeme, row, prePos + 1, -1));
-					tokenVec.push_back(token);
-					if (errorFlag) errorFlag = false;
+	GetInput();
+	string line;
+	int row = 0;
+	bool errorFlag = false;
+	while (row < sourceCode.size()) {
+		line = sourceCode[row];
+		++row;
+		curPos = 0;
+		if (line.empty()) break;
+		while (curPos < line.size()) {
+			int prePos = curPos;
+			Ty_TokenKind tokenKind = unoptimizedDfa.Recognize(line, curPos);
+			if (tokenKind != Token::FAILED) {
+				Token token;
+				token.kind = tokenKind;
+				token.symbolTableIndex = symbolTable.Size();
+				string lexeme = line.substr(prePos, curPos - prePos);
+				symbolTable.Push(TokenAttribute(lexeme, row, prePos + 1, -1));
+				tokenVec.push_back(token);
+				if (errorFlag) errorFlag = false;
+			}
+			else {
+				//第一次出现错误，打印信息，否则跳过当前符号继续分析
+				if (!errorFlag) {
+					string lexeme = line.substr(prePos, curPos - prePos + 1);
+					string error = MakeErrorInfo(lexeme, row, prePos + 1);
+					errorInfo.push_back(error);
+					errorFlag = true;
 				}
-				else {
-					//第一次出现错误，打印信息，否则跳过当前符号继续分析
-					if (!errorFlag) {
-						string lexeme = line.substr(prePos, curPos - prePos + 1);
-						string error = MakeErrorInfo(lexeme, row, prePos + 1);
-						errorInfo.push_back(error);
-						errorFlag = true;
-					}
-					++curPos;
-				}
+				++curPos;
 			}
 		}
-		Token end;
-		end.kind = tokenKindStr2Num["$"];
-		end.symbolTableIndex = symbolTable.Size();
-		string endlexeme = "$";
-		symbolTable.Push(TokenAttribute(endlexeme,row+1 ,1, -1));
-		tokenVec.push_back(end);
 	}
+	Token end;
+	end.kind = tokenKindStr2Num["$"];
+	end.symbolTableIndex = symbolTable.Size();
+	string endlexeme = "$";
+	symbolTable.Push(TokenAttribute(endlexeme, row + 1, 1, -1));
+	tokenVec.push_back(end);
 	return tokenVec;
 }
 

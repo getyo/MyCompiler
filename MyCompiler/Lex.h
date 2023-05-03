@@ -22,6 +22,7 @@ private:
 	shared_ptr <NFA> nfaPtr;
 	DFA unoptimizedDfa;
 	vector<string> errorInfo;
+	vector<string> sourceCode;
 	
 	string MakeErrorInfo(string symbol, int row, int col) const;
 	//将输入的正则表达式整理好，并且构建语法树，DAF
@@ -32,6 +33,8 @@ private:
 	void DfaVec2Nfa();
 	void Nfa2Dfa();
 	void OutputDfa(DFA &dfa);
+
+	void GetInput();
 
 	Lexeme();
 	Lexeme(const Lexeme&) {}

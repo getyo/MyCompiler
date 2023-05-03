@@ -158,7 +158,6 @@ bool Collection::VectorFind(vector<Pair>& vec, Item& item) {
 			item.GetDotPos() == i.itemPtr->GetDotPos()) return true;
 	return false;
 }
-
 void Collection::AddFromTo(Item& from, int status) {
 	queue<int> headQueue;
 	unordered_set<Item, ItemHash, ItemEqual> closure;
@@ -203,53 +202,83 @@ void Collection::IntiLookAhead() {
 	for (auto& itemSet : tempCollection) {
 		for (auto& kernelItem : itemSet) {
 			AddFromTo(kernelItem, status);
+			if (kernelItem.FollowDot() == Item::BLANK_FOLLOW_DOT) continue;
 			kernelItem.AddLookAhead(LOOKAHEAD_ATHAND);
 			auto closure = ClosureLR1(kernelItem);
-			/*
-			cout << "closure:\n";
-			for (auto& i : closure) {
-				i.Print();
-				cout << '\n';
-			}
-			cout << '\n' << '\n';
-			*/
-			//对于闭包中的每一个Item
 			for (auto& item : closure) {
 				//对于当前Item的每一个lookAhead
 				for (auto lookAhead : item.GetLookAheadSet()) {
-					//如果当前lookAhead是自发生成
-					if (lookAhead == LOOKAHEAD_ATHAND) continue;
 					int followDot = item.FollowDot();
-					if (followDot == Item::BLANK_FOLLOW_DOT) continue;
 					int nextStatus = Goto(status, followDot);
-					//如果对于当前lookAhead已有归约操作，
+					//如果对于当前followDot已有归约操作，
 					if (nextStatus < 0) {
-						//就是使用当前表达式进行归约，不冲突
-						if (nextStatus == (-item.GetPItr()))
-							continue;
-						else {
-							cerr << "\n\nGrammer is not LALR!\n";
-							cerr << "Status " << status << ": \n";
-							for (auto& i : collection[status]) {
-								i.Print();
-								cerr << "\n";
-							}
-							cerr << "Exist reduction: Production: ";
-							(*grammer)[-(nextStatus + 1)].Print();
-							cerr << "\n";
-							item.Print();
-							exit(1);
-						}
-					}
-					ItemSet& gotoStatus = collection[nextStatus];
+						cerr << "Shift Reduction Conflication\n";
+						cerr << "Item:\n";
+						item.Print();
+						cerr << "\nShift Symbol : " << grammer->grammerSymbolNum2Str[followDot] << "\n";
 
+						cerr << "\nOrigin Reduce Production:\n";
+						(*grammer)[-(nextStatus + 1)].Print();
+						cerr << "\n";
+
+						cerr << "\nCurrent Status: Status " << status << "\n";
+						PrintStatus(status);
+						cerr << "\n";
+						exit(1);
+					}
+
+					ItemSet& gotoStatus = collection[nextStatus];
 					for (auto& i : gotoStatus) {
 						//向对应kernel Item添加lookAhead
 						if (i.IsDerived(item)) {
 							i.AddLookAhead(lookAhead);
 							//如果当前dot已经到了最后位置,添加reduce操作
-							if (i.FollowDot() == Item::BLANK_FOLLOW_DOT)
-								parserTable[nextStatus][lookAhead] = (-i.GetPItr());
+							if (i.FollowDot() == Item::BLANK_FOLLOW_DOT && lookAhead != LOOKAHEAD_ATHAND) {
+								if (parserTable[nextStatus][lookAhead] == NON_ENTRY)
+									parserTable[nextStatus][lookAhead] = (-i.GetPItr());
+								else if (parserTable[nextStatus][lookAhead] >= 0) {
+									cerr << "\nGammer is not LALR!\n";
+									cerr << "Shift Reduction Conflication\n";
+									cerr << "InputSymbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
+
+									cerr << "\nCurrent Status: Status " << nextStatus << "\n";
+									PrintStatus(nextStatus);
+									cerr << "\n";
+
+									cerr << "\nOrigin Goto Status: Status " << parserTable[nextStatus][lookAhead] << '\n';
+									PrintStatus(parserTable[nextStatus][lookAhead]);
+									cerr << "\n";
+
+									cerr << "\nCurrect Reduce Production: \t";
+									(*grammer)[i.GetPItr() - 1].Print();
+									cerr << "\n";
+
+									exit(1);
+
+								}
+								else {
+									if (parserTable[nextStatus][lookAhead] == (-i.GetPItr())) continue;
+									cerr << "\nGammer is not LALR!\n";
+									cerr << "Reduction Reduction Conflication\n";
+									cerr << "InputSymbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
+
+									cerr << "\nCurrent Status: Status " << nextStatus << "\n";
+									PrintStatus(nextStatus);
+									cerr << "\n";
+
+									cerr << "\nOrigin Reduce Production: \t";
+									(*grammer)[-(parserTable[nextStatus][lookAhead]+1)].Print();
+									cerr << "\n";
+
+									cerr << "\nCurrect Reduce Production: \t";
+									(*grammer)[i.GetPItr() - 1].Print();
+									cerr << "\n";
+
+									exit(1);
+								}
+							}
+							if (lookAhead == LOOKAHEAD_ATHAND)
+								porpagateTable[i].insert(status);
 						}
 					}
 				}
@@ -266,6 +295,14 @@ void Collection::IntiLookAhead() {
 	//cout << "\n\n\n";
 }
 
+void Collection::RemoveAtHead() {
+	for (auto& itemSet : collection) {
+		for (auto& i : itemSet)
+			if (i.FindLookAhead(LOOKAHEAD_ATHAND))
+				i.RemoveLookAhead(LOOKAHEAD_ATHAND);
+	}
+}
+
 void Collection::LookAheadPorpagate() {
 	int status = 0;
 	//遍历所有kernel Item
@@ -274,9 +311,14 @@ void Collection::LookAheadPorpagate() {
 			//如果当前Item本身存在lookAhead
 			if (from.GetLookAheadSet().size()) {
 				if (!fromTo.count(from)) continue;
-				//将当前Item的lookAhead传播到所有
-				for (auto to : fromTo[from])
+				//将当前Item的lookAhead传播到含有LOOKAHEAD_ATHEAD的item
+				for (auto to : fromTo[from]) {
+					if (!to.itemPtr->FindLookAhead(LOOKAHEAD_ATHAND) || \
+						!porpagateTable[*to.itemPtr].count(status))
+						continue;
+					to.itemPtr->RemoveLookAhead(LOOKAHEAD_ATHAND);
 					for (int lookAhead : from.GetLookAheadSet()) {
+						if (lookAhead == LOOKAHEAD_ATHAND) continue;
 						to.itemPtr->AddLookAhead(lookAhead);
 						//如果当前dot已经到了最后位置,添加reduce操作
 						if (to.itemPtr->FollowDot() == Item::BLANK_FOLLOW_DOT)
@@ -289,24 +331,60 @@ void Collection::LookAheadPorpagate() {
 									cerr << "Shift Reduction Conflication\n";
 									cerr << "Item:\n";
 									to.itemPtr->Print();
-									cerr << "Shift Symbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
+									cerr << "\nShift Symbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
+
+									cerr << "\n";
+									cerr << "\nFrom Status: Status " << to.status << "\n";
+									PrintStatus(status);
+									cerr << "\n";
+
+
+									cerr << "\nCurrent Status: Status " << to.status << "\n";
+									PrintStatus(to.status);
+									cerr << "\n";
+
+									cerr << "\nOrigin Goto Status: Status " << parserTable[to.status][lookAhead] << '\n';
+									PrintStatus(parserTable[to.status][lookAhead]);
+									cerr << "\n";
+
+									cerr << "\nCurrect Reduce Production: \t";
+									(*grammer)[to.itemPtr->GetPItr() - 1].Print();
+									cerr << "\n";
 								}
 								else {
 									cerr << "Reduction Reduction Conflication\n";
-									cerr << "\nReduce Production:\n";
 									cerr << "Item:\n";
 									to.itemPtr->Print();
+									cerr << "\nInput Symbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
+
+									cerr << "\n";
+									cerr << "\nFrom Status: Status " << to.status << "\n";
+									PrintStatus(status);
+									cerr << "\n";
+
+									cerr << "\n";
+									cerr << "\nCurrent Status: Status " << to.status << "\n";
+									PrintStatus(to.status);
+
+									cerr << "\n";
+									cerr << "\nOrigin Reduce Production: \t";
 									(*grammer)[-(parserTable[to.status][lookAhead] + 1)].Print();
 									cerr << '\n';
+
+									cerr << "\nCurrect Reduce Production: \t";
+									(*grammer)[to.itemPtr->GetPItr() - 1].Print();
+									cerr << "\n";
 								}
 								cerr << '\n';
 								exit(1);
 							}
 					}
+				}
 			}
 		}
 		++status;
 	}
+	RemoveAtHead();
 }
 
 
@@ -336,6 +414,30 @@ Collection::Collection() {
 	IntiLookAhead();
 	//构建LALR分析表
 	LookAheadPorpagate();
+}
+
+void Collection::PrintStatus(int status) {
+#ifdef DEBUG
+	ASSERT(status < collection.size(), "Incorrect Status");
+#endif // DEBUG
+	for (auto& i : collection[status]) {
+		i.Print();
+		cout << '\n';
+	}
+	auto line = parserTable[status];
+	cout << "Goto: \t";
+	for (int j = 0; j < grammerSymbolCnt; j++) {
+		if (line[j] != NON_ENTRY && line[j] >= 0)
+			cout << Grammer::grammerSymbolNum2Str[j] \
+			<< " " << line[j] << " \t";
+	}
+	cout << "\n";
+	cout << "Reduce: \t";
+	for (int j = 0; j < grammerSymbolCnt; j++) {
+		if (line[j] != NON_ENTRY && line[j] < 0)
+			cout << Grammer::grammerSymbolNum2Str[j] \
+			<< " " << line[j] << " \t";
+	}	
 }
 
 void Collection::Print() {

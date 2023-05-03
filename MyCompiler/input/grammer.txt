@@ -1,19 +1,138 @@
-Statement' -> Statement
-Statement -> ExprStatement
+//生成_NON的非终结符只能放在产生式末尾
 
-ExprStatement -> Expr ;
+Program' -> Program
+Program -> FunctionList Program
+Program -> DefinationStatementList Program
+Program -> _NON
+
+DefinationStatementList -> DefinationStatement SubDefinationStatementList
+SubDefinationStatementList -> _NON
+FunctionList -> Function SubFunctionList
+SubFunctionList -> _NON
+
+//语句定义
+Statement -> ExprStatement
+Statement -> IfStatement
+Statement -> WhileStatement
+Statement -> DefinationStatement
+Statement -> _NON ;
+
+//表达式定义
+ExprStatement -> ExprList ;
+ExprList -> Expr SubExprList
+SubExprList -> , SubExprList
+SubExprList -> _NON
+Expr -> ComputedExpr
+Expr -> CallExpr
+
 //计算表达式
-Expr -> AddtiveExpr 
-Expr -> AssignExpr 
-AssignExpr -> id = AddtiveExpr 
+ComputedExpr -> AssignExpr 
+ComputedExpr -> LogicOrExpr
+//赋值表达式
+AssignExpr -> id =  ComputedExpr
+AssignExpr -> id += ComputedExpr
+AssignExpr -> id -= ComputedExpr
+AssignExpr -> id *= ComputedExpr
+AssignExpr -> id /= ComputedExpr
+
+LogicOrExpr -> LogicAndExpr SubLogicOrExpr
+SubLogicOrExpr -> || LogicAndExpr SubLogicOrExpr
+SubLogicOrExpr -> _NON
+
+LogicAndExpr -> EqualExpr SubLogicAndExpr
+SubLogicAndExpr -> && EqualExpr SubLogicAndExpr
+SubLogicAndExpr -> _NON
+
+EqualExpr -> CompareExpr SubEqualExpr
+SubEqualExpr -> == CompareExpr SubEqualExpr
+SubEqualExpr -> != CompareExpr SubEqualExpr
+SubEqualExpr -> _NON
+//比较表达式定义
+CompareExpr -> AddtiveExpr SubCompareExpr
+SubCompareExpr -> > AddtiveExpr SubCompareExpr
+SubCompareExpr -> < AddtiveExpr SubCompareExpr
+SubCompareExpr -> >= AddtiveExpr SubCompareExpr
+SubCompareExpr -> <= AddtiveExpr SubCompareExpr
+SubCompareExpr -> _NON
+//加法表达式
 AddtiveExpr -> MultiplicativeExpr SubAddtiveExpr 
 SubAddtiveExpr -> + MultiplicativeExpr SubAddtiveExpr
 SubAddtiveExpr -> - MultiplicativeExpr SubAddtiveExpr
 SubAddtiveExpr -> _NON
-MultiplicativeExpr -> PrimaryExpr SubMultiplicativeExpr 
-SubMultiplicativeExpr  -> / PrimaryExpr SubMultiplicativeExpr 
-SubMultiplicativeExpr  -> * PrimaryExpr SubMultiplicativeExpr 
+//乘法表达式
+MultiplicativeExpr -> LogicExpr SubMultiplicativeExpr 
+SubMultiplicativeExpr  -> / LogicExpr SubMultiplicativeExpr 
+SubMultiplicativeExpr  -> * LogicExpr SubMultiplicativeExpr 
+SubMultiplicativeExpr  -> % LogicExpr SubMultiplicativeExpr 
 SubMultiplicativeExpr  -> _NON
+//逻辑表达式
+LogicExpr -> ++ id 
+LogicExpr -> -- id
+LogicExpr -> id ++
+LogicExpr -> id --
+LogicExpr -> ! id 
+LogicExpr -> * id 
+LogicExpr -> & id
+LogicExpr -> PrimaryExpr
+//基本表达式
 PrimaryExpr -> id
 PrimaryExpr -> digit
 PrimaryExpr -> ( Expr )
+
+//类型定义
+Type -> BasicType
+BasicType -> ValueType
+BasicType -> PointerType
+ValueType -> int
+ValueType -> float
+ValueType -> double
+PointerType -> ValueType StarList
+StarList -> * StartList
+StartList -> _NON
+
+//变量定义以及初始化
+DefinationStatement -> Defination ;
+Defination -> Declation SubDefination
+Defination -> Intilization SubDefination
+SubDefination -> , IntilizationList SubDefination 
+SubDefination -> , DeclationList SubDefination
+SubDefination -> _NON
+
+DeclationList -> id SubDeclationList
+SubDeclationList -> , id SubDeclationList
+SubDeclationList -> _NON
+IntilizationList -> AssignExpr SubIntilizationList
+SubIntilizationList -> , AssignExpr SubIntilizationList
+SubIntilizationList -> _NON
+
+Declation -> DirectDeclation
+Declation -> ArrayDeclation
+DirectDeclation -> Type id
+ArrayDeclation -> DirectDeclation AarryPostfixList
+AarryPostfixList -> [ digit ] SubAarryPostfixList
+SubAarryPostfixList -> _NON
+Intilization -> DirectDeclation = ComputedExpr
+
+//if语句定义
+IfStatement -> if ( Expr ) SubIfStatement
+SubIfStatement -> else if ( Expr ) CompoundStatement SubIfStatement
+SubIfStatement -> else if ( Expr ) Statement SubIfStatement
+SubIfStatement -> else CompoundStatement
+SubIfStatement -> else Statement
+SubIfStatement -> Statement
+SubIfStatement -> CompoundStatement
+
+//while语句定义
+WhileStatement -> while ( Expr ) CompoundStatement
+
+//函数定义
+Function -> void id ( ParameterList ) CompoundStatement
+Function -> DirectDeclation ( ParameterList ) CompoundStatement
+ParameterList -> GeneralParameterList DefaultParameterList
+GeneralParameterList -> DirectDeclation GeneralParameterList
+GeneralParameterList -> _NON
+DefaultParameterList -> DirectDeclation = digit DefaultParameterList
+DefaultParameterList -> _NON
+CompoundStatement -> { StatementList }
+StatementList -> Statement StatementList
+StatementList -> _NON

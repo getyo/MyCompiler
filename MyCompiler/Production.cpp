@@ -125,6 +125,10 @@ bool Item::FindLookAhead(int c) const {
 	return lookAhead.count(c);
 }
 
+void Item::RemoveLookAhead(int c) {
+	lookAhead.erase(c);
+}
+
 Item& Item::operator=(const Item& item) {
 	this->head = item.head;
 	this->body = item.body;

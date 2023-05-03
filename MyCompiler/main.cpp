@@ -11,11 +11,12 @@ int main() {
 
 	Lexeme* lex = Lexeme::LexemeFactory();
 	lex->InitLex();
+	Parser* parser = Parser::ParserFactory();
+
 	lex->SetInput(cin);
 	auto tokenStream = lex->Analyse();
 	lex->PrintError();
 
-	Parser* parser = Parser::ParserFactory();
 	parser->SetInput(tokenStream);
 	bool syntalPass = parser->Analyse();
 	if (!syntalPass) parser->PrintError();
