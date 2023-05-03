@@ -10,8 +10,9 @@
 	#ifdef _PARSER
 		//#define _GRAMMER_PRINT
 		//#define _LR0_PRINT
-		#define _COLLECTION_PRINT
-		#define _REDUCE_OPERATION_PRINT
+		//#define _COLLECTION_PRINT
+		#define _PARSER_ACTION_PRINT
+		//#define _PARSER_STACK_PRINT
 	#endif // _PARSER
 
 

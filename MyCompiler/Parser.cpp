@@ -32,6 +32,11 @@ void Parser::PopToken(int cnt) {
 }
 
 int Parser::Reduce(int productionIndex) {
+
+#ifdef _PARSER_ACTION_PRINT
+	int preStatus = curStatus;
+#endif // _PARSER_ACTION_PRINT
+
 	Production &p = (*grammer)[productionIndex];
 	auto body = p.GetBody();
 	int topTokenKind;
@@ -45,13 +50,43 @@ int Parser::Reduce(int productionIndex) {
 			return -1;
 	}
 	curStatus = statusStack.top();
+
+#ifdef _PARSER_ACTION_PRINT
+	cout << "\nInput Token : " << grammer->grammerSymbolNum2Str[curInputToken] << "\n";
+	cout << "ACTION : reduce\n";
+	cout << "\nCurStatus Status : Status " << preStatus << "\n";
+	collectionPtr->PrintStatus(preStatus);
+	cout << "\n";
+	cout << "Reduce Prouduction :";
+	grammer->operator[](-(action + 1)).Print();
+	cout << "\n\nReturn Status : Status " << curStatus << "\n";
+	collectionPtr->PrintStatus(curStatus);
+	cout << "\n\n";
+#endif // _PARSER_ACTION_PRINT
+
 	return p.GetHead();
 }
 
 void Parser::shift(int symbol){
+
+#ifdef _PARSER_ACTION_PRINT
+	int preStatus = curStatus;
+#endif // _PARSER_ACTION_PRINT
+
 	symbolStack.push(symbol);
 	curStatus = collectionPtr->Goto(curStatus, symbol);
 	statusStack.push(curStatus);
+
+#ifdef _PARSER_ACTION_PRINT
+	cout << "\nInput Token : " << grammer->grammerSymbolNum2Str[curInputToken] << "\n";
+	cout << "ACTION : shift\n";
+	cout << "\nCurStatus Status : Status " << preStatus << "\n";
+	collectionPtr->PrintStatus(preStatus);
+	cout << "\n";
+	cout << "\nGoto : Status " << curStatus << "\n";
+	collectionPtr->PrintStatus(curStatus);
+	cout << "\n\n";
+#endif // _PARSER_ACTION_PRINT
 }
 
 bool Parser::RedressNon() {
@@ -66,12 +101,6 @@ bool Parser::RedressNon() {
 	else if(action < 0) {
 		//注意 在PraserTable中-1代表使用Production0进行归约
 		curInputToken = Reduce(-(action + 1));
-
-#ifdef _REDUCE_OPERATION_PRINT
-		(*grammer)[-(action + 1)].Print();
-		cout << "\n";
-#endif // _REDUCE_OPERATION_PRINT
-
 		shift(curInputToken);
 		curInputToken = (*tokenStream)[tokenIndex].kind;
 		return true;
@@ -92,6 +121,16 @@ bool Parser::Analyse() {
 			if (action == Collection::ACCESS) return true;
 			if (redressNon) goto Continue;
 			errorInfo.push_back(makeErrorInfo((*tokenStream)[tokenIndex]));
+
+#ifdef _PARSER_STACK_PRINT
+			while (!statusStack.empty()) {
+				auto i = statusStack.top();
+				collectionPtr->PrintStatus(i);
+				cout << "\n\n";
+				statusStack.pop();
+			}
+#endif // _PARSER_STACK_PRINT
+
 			return false;
 		}
 		//shift操作
@@ -104,11 +143,6 @@ bool Parser::Analyse() {
 		else {
 			//注意 在PraserTable中-1代表使用Production0进行归约
 			curInputToken = Reduce(-(action + 1));
-
-#ifdef _REDUCE_OPERATION_PRINT
-			(*grammer)[-(action + 1)].Print();
-			cout << "\n";
-#endif
 			if (action == Collection::ACCESS) return true;
 			shift(curInputToken);
 			curInputToken = (*tokenStream)[tokenIndex].kind;

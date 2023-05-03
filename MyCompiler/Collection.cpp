@@ -210,15 +210,75 @@ void Collection::IntiLookAhead() {
 				for (auto lookAhead : item.GetLookAheadSet()) {
 					int followDot = item.FollowDot();
 					int nextStatus = Goto(status, followDot);
-					ItemSet& gotoStatus = collection[nextStatus];
+					//如果对于当前followDot已有归约操作，
+					if (nextStatus < 0) {
+						cerr << "Shift Reduction Conflication\n";
+						cerr << "Item:\n";
+						item.Print();
+						cerr << "\nShift Symbol : " << grammer->grammerSymbolNum2Str[followDot] << "\n";
 
+						cerr << "\nOrigin Reduce Production:\n";
+						(*grammer)[-(nextStatus + 1)].Print();
+						cerr << "\n";
+
+						cerr << "\nCurrent Status: Status " << status << "\n";
+						PrintStatus(status);
+						cerr << "\n";
+						exit(1);
+					}
+
+					ItemSet& gotoStatus = collection[nextStatus];
 					for (auto& i : gotoStatus) {
 						//向对应kernel Item添加lookAhead
 						if (i.IsDerived(item)) {
 							i.AddLookAhead(lookAhead);
 							//如果当前dot已经到了最后位置,添加reduce操作
-							if (i.FollowDot() == Item::BLANK_FOLLOW_DOT)
-								parserTable[nextStatus][lookAhead] = (-i.GetPItr());
+							if (i.FollowDot() == Item::BLANK_FOLLOW_DOT && lookAhead != LOOKAHEAD_ATHAND) {
+								if (parserTable[nextStatus][lookAhead] == NON_ENTRY)
+									parserTable[nextStatus][lookAhead] = (-i.GetPItr());
+								else if (parserTable[nextStatus][lookAhead] >= 0) {
+									cerr << "\nGammer is not LALR!\n";
+									cerr << "Shift Reduction Conflication\n";
+									cerr << "InputSymbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
+
+									cerr << "\nCurrent Status: Status " << nextStatus << "\n";
+									PrintStatus(nextStatus);
+									cerr << "\n";
+
+									cerr << "\nOrigin Goto Status: Status " << parserTable[nextStatus][lookAhead] << '\n';
+									PrintStatus(parserTable[nextStatus][lookAhead]);
+									cerr << "\n";
+
+									cerr << "\nCurrect Reduce Production: \t";
+									(*grammer)[i.GetPItr() - 1].Print();
+									cerr << "\n";
+
+									exit(1);
+
+								}
+								else {
+									if (parserTable[nextStatus][lookAhead] == (-i.GetPItr())) continue;
+									cerr << "\nGammer is not LALR!\n";
+									cerr << "Reduction Reduction Conflication\n";
+									cerr << "InputSymbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
+
+									cerr << "\nCurrent Status: Status " << nextStatus << "\n";
+									PrintStatus(nextStatus);
+									cerr << "\n";
+
+									cerr << "\nOrigin Reduce Production: \t";
+									(*grammer)[-(parserTable[nextStatus][lookAhead]+1)].Print();
+									cerr << "\n";
+
+									cerr << "\nCurrect Reduce Production: \t";
+									(*grammer)[i.GetPItr() - 1].Print();
+									cerr << "\n";
+
+									exit(1);
+								}
+							}
+							if (lookAhead == LOOKAHEAD_ATHAND)
+								porpagateTable[i].insert(status);
 						}
 					}
 				}
@@ -253,7 +313,8 @@ void Collection::LookAheadPorpagate() {
 				if (!fromTo.count(from)) continue;
 				//将当前Item的lookAhead传播到含有LOOKAHEAD_ATHEAD的item
 				for (auto to : fromTo[from]) {
-					if (!to.itemPtr->FindLookAhead(LOOKAHEAD_ATHAND))
+					if (!to.itemPtr->FindLookAhead(LOOKAHEAD_ATHAND) || \
+						!porpagateTable[*to.itemPtr].count(status))
 						continue;
 					to.itemPtr->RemoveLookAhead(LOOKAHEAD_ATHAND);
 					for (int lookAhead : from.GetLookAheadSet()) {
@@ -286,7 +347,7 @@ void Collection::LookAheadPorpagate() {
 									PrintStatus(parserTable[to.status][lookAhead]);
 									cerr << "\n";
 
-									cerr << "\nCurrect Reduce Production:\n";
+									cerr << "\nCurrect Reduce Production: \t";
 									(*grammer)[to.itemPtr->GetPItr() - 1].Print();
 									cerr << "\n";
 								}
@@ -306,11 +367,11 @@ void Collection::LookAheadPorpagate() {
 									PrintStatus(to.status);
 
 									cerr << "\n";
-									cerr << "\nOrigin Reduce Production:\n";
+									cerr << "\nOrigin Reduce Production: \t";
 									(*grammer)[-(parserTable[to.status][lookAhead] + 1)].Print();
 									cerr << '\n';
 
-									cerr << "\nCurrect Reduce Production:\n";
+									cerr << "\nCurrect Reduce Production: \t";
 									(*grammer)[to.itemPtr->GetPItr() - 1].Print();
 									cerr << "\n";
 								}

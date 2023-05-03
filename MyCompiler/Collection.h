@@ -24,6 +24,8 @@ private:
 		int status;
 		Pair(Item * itemPtr,int status):itemPtr(itemPtr),status(status){}
 	};
+	//保存key是被哪些状态传播lookAhead的
+	unordered_map<Item, set<int>, ItemHash, ItemEqual> porpagateTable;
 	//保存从某个Item能到其他那些Item
 	unordered_map<Item, vector<Pair>, ItemHash, ItemEqual> fromTo;
 

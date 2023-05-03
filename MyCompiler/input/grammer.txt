@@ -1,36 +1,58 @@
+//生成_NON的非终结符只能放在产生式末尾
+
 Program' -> Program
-Program -> SubProgeam Progeam 
-SubProgeam -> DefinationStementList FunctionList
-Progeam -> _NON
-DefinationStementList -> DefinationStement DefinationStementList
-DefinationStementList -> _NON
-FunctionList -> Function FunctionList
-FunctionList -> _NON
+Program -> FunctionList Program
+Program -> DefinationStatementList Program
+Program -> _NON
+
+DefinationStatementList -> DefinationStatement SubDefinationStatementList
+SubDefinationStatementList -> _NON
+FunctionList -> Function SubFunctionList
+SubFunctionList -> _NON
 
 //语句定义
 Statement -> ExprStatement
 Statement -> IfStatement
 Statement -> WhileStatement
-Statement -> DefinationStement
+Statement -> DefinationStatement
+Statement -> _NON ;
 
 //表达式定义
-ExprStatement -> Expr ;
+ExprStatement -> ExprList ;
+ExprList -> Expr SubExprList
+SubExprList -> , SubExprList
+SubExprList -> _NON
 Expr -> ComputedExpr
 Expr -> CallExpr
 
 //计算表达式
 ComputedExpr -> AssignExpr 
-ComputedExpr -> CompareExpr
+ComputedExpr -> LogicOrExpr
 //赋值表达式
 AssignExpr -> id =  ComputedExpr
+AssignExpr -> id += ComputedExpr
+AssignExpr -> id -= ComputedExpr
+AssignExpr -> id *= ComputedExpr
+AssignExpr -> id /= ComputedExpr
+
+LogicOrExpr -> LogicAndExpr SubLogicOrExpr
+SubLogicOrExpr -> || LogicAndExpr SubLogicOrExpr
+SubLogicOrExpr -> _NON
+
+LogicAndExpr -> EqualExpr SubLogicAndExpr
+SubLogicAndExpr -> && EqualExpr SubLogicAndExpr
+SubLogicAndExpr -> _NON
+
+EqualExpr -> CompareExpr SubEqualExpr
+SubEqualExpr -> == CompareExpr SubEqualExpr
+SubEqualExpr -> != CompareExpr SubEqualExpr
+SubEqualExpr -> _NON
 //比较表达式定义
 CompareExpr -> AddtiveExpr SubCompareExpr
-SubCompareExpr -> > AddtiveExpr
-SubCompareExpr -> < AddtiveExpr
-SubCompareExpr -> >= AddtiveExpr
-SubCompareExpr -> <= AddtiveExpr
-SubCompareExpr -> == AddtiveExpr
-SubCompareExpr -> != AddtiveExpr
+SubCompareExpr -> > AddtiveExpr SubCompareExpr
+SubCompareExpr -> < AddtiveExpr SubCompareExpr
+SubCompareExpr -> >= AddtiveExpr SubCompareExpr
+SubCompareExpr -> <= AddtiveExpr SubCompareExpr
 SubCompareExpr -> _NON
 //加法表达式
 AddtiveExpr -> MultiplicativeExpr SubAddtiveExpr 
@@ -41,10 +63,13 @@ SubAddtiveExpr -> _NON
 MultiplicativeExpr -> LogicExpr SubMultiplicativeExpr 
 SubMultiplicativeExpr  -> / LogicExpr SubMultiplicativeExpr 
 SubMultiplicativeExpr  -> * LogicExpr SubMultiplicativeExpr 
+SubMultiplicativeExpr  -> % LogicExpr SubMultiplicativeExpr 
 SubMultiplicativeExpr  -> _NON
 //逻辑表达式
-LogicExpr -> + + id 
-LogicExpr -> - - id
+LogicExpr -> ++ id 
+LogicExpr -> -- id
+LogicExpr -> id ++
+LogicExpr -> id --
 LogicExpr -> ! id 
 LogicExpr -> * id 
 LogicExpr -> & id
@@ -66,9 +91,20 @@ StarList -> * StartList
 StartList -> _NON
 
 //变量定义以及初始化
-DefinationStement -> Defination ;
-Defination -> Declation
-Defination -> Intilization
+DefinationStatement -> Defination ;
+Defination -> Declation SubDefination
+Defination -> Intilization SubDefination
+SubDefination -> , IntilizationList SubDefination 
+SubDefination -> , DeclationList SubDefination
+SubDefination -> _NON
+
+DeclationList -> id SubDeclationList
+SubDeclationList -> , id SubDeclationList
+SubDeclationList -> _NON
+IntilizationList -> AssignExpr SubIntilizationList
+SubIntilizationList -> , AssignExpr SubIntilizationList
+SubIntilizationList -> _NON
+
 Declation -> DirectDeclation
 Declation -> ArrayDeclation
 DirectDeclation -> Type id
@@ -83,14 +119,15 @@ SubIfStatement -> else if ( Expr ) CompoundStatement SubIfStatement
 SubIfStatement -> else if ( Expr ) Statement SubIfStatement
 SubIfStatement -> else CompoundStatement
 SubIfStatement -> else Statement
+SubIfStatement -> Statement
+SubIfStatement -> CompoundStatement
 
 //while语句定义
 WhileStatement -> while ( Expr ) CompoundStatement
 
 //函数定义
-Function -> ReturnType id ( ParameterList ) CompoundStatement
-ReturnType -> void
-ReturnType -> Type
+Function -> void id ( ParameterList ) CompoundStatement
+Function -> DirectDeclation ( ParameterList ) CompoundStatement
 ParameterList -> GeneralParameterList DefaultParameterList
 GeneralParameterList -> DirectDeclation GeneralParameterList
 GeneralParameterList -> _NON
