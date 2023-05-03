@@ -1,19 +1,101 @@
-Statement' -> Statement
-Statement -> ExprStatement
+Program' -> Program
+Program -> SubProgeam Progeam 
+SubProgeam -> DefinationStementList FunctionList
+Progeam -> _NON
+DefinationStementList -> DefinationStement DefinationStementList
+DefinationStementList -> _NON
+FunctionList -> Function FunctionList
+FunctionList -> _NON
 
+//语句定义
+Statement -> ExprStatement
+Statement -> IfStatement
+Statement -> WhileStatement
+Statement -> DefinationStement
+
+//表达式定义
 ExprStatement -> Expr ;
+Expr -> ComputedExpr
+Expr -> CallExpr
+
 //计算表达式
-Expr -> AddtiveExpr 
-Expr -> AssignExpr 
-AssignExpr -> id = AddtiveExpr 
+ComputedExpr -> AssignExpr 
+ComputedExpr -> CompareExpr
+//赋值表达式
+AssignExpr -> id =  ComputedExpr
+//比较表达式定义
+CompareExpr -> AddtiveExpr SubCompareExpr
+SubCompareExpr -> > AddtiveExpr
+SubCompareExpr -> < AddtiveExpr
+SubCompareExpr -> >= AddtiveExpr
+SubCompareExpr -> <= AddtiveExpr
+SubCompareExpr -> == AddtiveExpr
+SubCompareExpr -> != AddtiveExpr
+SubCompareExpr -> _NON
+//加法表达式
 AddtiveExpr -> MultiplicativeExpr SubAddtiveExpr 
 SubAddtiveExpr -> + MultiplicativeExpr SubAddtiveExpr
 SubAddtiveExpr -> - MultiplicativeExpr SubAddtiveExpr
 SubAddtiveExpr -> _NON
-MultiplicativeExpr -> PrimaryExpr SubMultiplicativeExpr 
-SubMultiplicativeExpr  -> / PrimaryExpr SubMultiplicativeExpr 
-SubMultiplicativeExpr  -> * PrimaryExpr SubMultiplicativeExpr 
+//乘法表达式
+MultiplicativeExpr -> LogicExpr SubMultiplicativeExpr 
+SubMultiplicativeExpr  -> / LogicExpr SubMultiplicativeExpr 
+SubMultiplicativeExpr  -> * LogicExpr SubMultiplicativeExpr 
 SubMultiplicativeExpr  -> _NON
+//逻辑表达式
+LogicExpr -> + + id 
+LogicExpr -> - - id
+LogicExpr -> ! id 
+LogicExpr -> * id 
+LogicExpr -> & id
+LogicExpr -> PrimaryExpr
+//基本表达式
 PrimaryExpr -> id
 PrimaryExpr -> digit
 PrimaryExpr -> ( Expr )
+
+//类型定义
+Type -> BasicType
+BasicType -> ValueType
+BasicType -> PointerType
+ValueType -> int
+ValueType -> float
+ValueType -> double
+PointerType -> ValueType StarList
+StarList -> * StartList
+StartList -> _NON
+
+//变量定义以及初始化
+DefinationStement -> Defination ;
+Defination -> Declation
+Defination -> Intilization
+Declation -> DirectDeclation
+Declation -> ArrayDeclation
+DirectDeclation -> Type id
+ArrayDeclation -> DirectDeclation AarryPostfixList
+AarryPostfixList -> [ digit ] SubAarryPostfixList
+SubAarryPostfixList -> _NON
+Intilization -> DirectDeclation = ComputedExpr
+
+//if语句定义
+IfStatement -> if ( Expr ) SubIfStatement
+SubIfStatement -> else if ( Expr ) CompoundStatement SubIfStatement
+SubIfStatement -> else if ( Expr ) Statement SubIfStatement
+SubIfStatement -> else CompoundStatement
+SubIfStatement -> else Statement
+
+//while语句定义
+WhileStatement -> while ( Expr ) CompoundStatement
+
+//函数定义
+Function -> ReturnType id ( ParameterList ) CompoundStatement
+ReturnType -> void
+ReturnType -> Type
+ParameterList -> GeneralParameterList DefaultParameterList
+GeneralParameterList -> DirectDeclation GeneralParameterList
+GeneralParameterList -> _NON
+DefaultParameterList -> DirectDeclation = digit DefaultParameterList
+DefaultParameterList -> _NON
+CompoundStatement -> { StatementList }
+StatementList -> Statement StatementList
+StatementList -> _NON

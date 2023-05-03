@@ -8,10 +8,10 @@
 #ifdef DEBUG
 #define _PARSER
 	#ifdef _PARSER
-		#define _GRAMMER_PRINT
+		//#define _GRAMMER_PRINT
 		//#define _LR0_PRINT
-		#define _REDUCE_OPERATION_PRINT
 		#define _COLLECTION_PRINT
+		#define _REDUCE_OPERATION_PRINT
 	#endif // _PARSER
 
 

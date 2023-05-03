@@ -45,6 +45,7 @@ public:
 	Item(Production& p,int pItr,initializer_list<int> l);
 	Item(Production& p,int pItr,int dotPos,initializer_list<int> l);
 	bool FindLookAhead(int c) const;
+	void RemoveLookAhead(int c);
 	void AddLookAhead(int c);
 	int AddDotPos();
 	set<int> GetLookAheadSet() const;

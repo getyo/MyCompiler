@@ -109,6 +109,26 @@ string Lexeme::MakeErrorInfo(string symbol, int row, int col) const{
 	return s;
 }
 
+void Lexeme::GetInput() {
+	string line;
+	if (istream* in = dynamic_cast<istream*>(input)) {
+		while (in->good()) {
+			getline(*in, line);
+			sourceCode.push_back(line);
+		}
+	}
+	else if (ifstream* in = dynamic_cast<ifstream*>(input)) {
+		while (in->good()) {
+			getline(*in, line);
+			sourceCode.push_back(line);
+		}
+	}
+	else {
+		cerr << "Incorrect regInputStream;\n";
+		exit(1);
+	}
+}
+
 int curPos;
 
 vector<Token> Lexeme::Analyse() {
@@ -117,10 +137,11 @@ vector<Token> Lexeme::Analyse() {
 		string line;
 		int row = 0;
 		bool errorFlag = false;
-		while (in->good()) {
+		GetInput();
+		while (row < sourceCode.size()) {
+			line = sourceCode[row];
 			++row;
 			curPos = 0;
-			getline(*in, line);
 			if (line.empty()) break;
 			while (curPos < line.size()) {
 				int prePos = curPos;
