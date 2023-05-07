@@ -22,7 +22,7 @@ private:
 	struct Pair {
 		Item* itemPtr;
 		int status;
-		Pair(Item * itemPtr,int status):itemPtr(itemPtr),status(status){}
+		Pair(Item* itemPtr, int status) :itemPtr(itemPtr), status(status) {}
 	};
 	//保存key是被哪些状态传播lookAhead的
 	unordered_map<Item, set<int>, ItemHash, ItemEqual> porpagateTable;
@@ -34,16 +34,16 @@ private:
 	bool VectorFind(vector<Pair>& vec, Item& item);
 	int HasItemSet(ItemSet& itemSet);
 	bool HasItem(ItemSet& itemSet, Item& item);
+	bool HasItem(vector<Item>& itemSet, Item& item);
 
-	set<int> FirstTerminalAfterDot(Item );
+	set<int> FirstTerminalAfterDot(Item);
 	vector<Item> ClosureLR1(Item& item);
-	void AddFromTo(Item& from, int status);
 	void IntiLookAhead();
 	void RemoveAtHead();
 	void LookAheadPorpagate();
 
 
-	void ClosureLR0(ItemSet &);
+	void ClosureLR0(ItemSet&);
 	int InputSymbol(ItemSet& itemSet, int symbolID);
 	void RemoveNonKernel();
 	void InsertItemSet();
@@ -65,4 +65,3 @@ public:
 	void Print();
 	void PrintStatus(int status);
 };
-

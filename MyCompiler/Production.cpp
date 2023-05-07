@@ -81,9 +81,9 @@ bool Production::operator==(const Production& p) const {
 
 int Item::FollowDot()const {
 #ifdef DEBUG
-	ASSERT(dotPos <= body.size(), "dotPos out of range");
+	ASSERT(!(dotPos > body.size()), "dotPos out of range");
 #endif // DEBUG
-	if (dotPos >= body.size()) return BLANK_FOLLOW_DOT;
+	if (dotPos == body.size()) return BLANK_FOLLOW_DOT;
 	return this->body[dotPos];
 }
 
@@ -150,6 +150,21 @@ bool Item::operator!=(const Item& item) const {
 	return !(*this == item);
 }
 
+bool Item::operator<(const Item& item) const {
+	if (pItr > item.pItr) return false;
+	else if (pItr < item.pItr) return true;
+	if (dotPos > item.dotPos) return false;
+	else if (dotPos < item.dotPos) return true;
+	if (lookAhead.size() > item.lookAhead.size()) return false;
+	else if (lookAhead.size() < item.lookAhead.size()) return true;
+	auto it1 = lookAhead.begin();
+	auto it2 = item.lookAhead.begin();
+	for (; it1 != lookAhead.end(); ++it1, ++it2)
+		if (*it1 > *it2) return false;
+		else if (*it1 < *it2) return true;
+	return false;
+}
+
 bool Item::operator()(const Item& item) const {
 	return this->operator==(item);
 }
@@ -203,3 +218,10 @@ void Item::Print() const {
 	}
 }
 
+bool ItemLess(const Item& lhs, const Item& rhs) {
+	if (lhs.pItr < rhs.pItr)return true;
+	else if (lhs.pItr > rhs.pItr) return false;
+	if (lhs.dotPos < rhs.dotPos) return true;
+	else if (lhs.dotPos > rhs.dotPos) return false;
+	return false;
+}
