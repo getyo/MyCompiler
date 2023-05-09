@@ -96,12 +96,10 @@ public:
 	static void InitContrustTree(SyntalTreePtr tree);
 
 	SyntalTree() {}
-	SyntalTree(string& reg);
+	SyntalTree(string& reg);	
 	inline SyntalNodePtr GetRoot() const{ return root; }
 	inline int GetMaxPos() const{ return maxPos; }
 	inline int GetID() const{ return id; }
 	inline string* GetStr() const{ return reg; }
-
-
 	static SyntalTreePtr ConstructSyntalTree(string& reg);
 };

@@ -392,6 +392,10 @@ Collection::Collection() {
 	IntiLookAhead();
 	//构建LALR分析表
 	LookAheadPorpagate();
+#ifdef _COLLECTION_PRINT
+	PrintAndOutputToLog(std::bind(&Collection::Print, this));
+#endif // _COLLECTION_PRINT
+
 }
 
 void Collection::PrintStatus(int status) {

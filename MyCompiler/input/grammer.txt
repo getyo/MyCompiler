@@ -1,6 +1,10 @@
-//在产生式体中的action两个整数为一组，其中第一个整数代表所需信息所在符号栈内偏移（以上一个语法符号为栈顶元素）
+//在产生式末尾的action两个整数为一组，其中第一个整数代表所需信息所在符号栈内偏移（以上一个语法符号为栈顶元素）
 //第二个整数代表所需信息种类：
-//0，操作信息，1，数值（常量值），2，类型说明 ，100 所生成中间代码起始指针 , 101 所生成中间代码结束指针 前闭后开
+//0，操作信息(op)，
+//1，数值（常量值)(value)，
+//2，类型说明 (type)，
+//100 所生成中间代码起始指针(codeStart), 
+//101 所生成中间代码结束指针(codeEnd)前闭后开
 //生成的中间代码全部以字符串形式存在于某一容器中，这里只保存其下标
 //如果该信息对于所要求符号来说不存在，则在attribute中将相应位置的值设为-1
 //当获取完两个整数所指信息后，会将该信息入栈，注意，第一个整数只计算语法符号栈内偏移，不计算其他造成的栈内偏移
@@ -8,7 +12,6 @@
 //SymbolTableAddType(SymtablePtr,Type)
 
 
-Program' -> Program
 Program -> Program SubProgram
 SubProgram -> FunctionList _NON
 SubProgram -> DefinationStatementList _NON
@@ -35,14 +38,14 @@ Expr -> ComputedExpr
 Expr -> CallExpr
 
 //计算表达式
-ComputedExpr -> AssignExpr 
-ComputedExpr -> LogicOrExpr
+ComputedExpr -> AssignExpr
+ComputedExpr -> LogicOrExpr 
 //赋值表达式
-AssignExpr -> id =  ComputedExpr
-AssignExpr -> id += ComputedExpr
-AssignExpr -> id -= ComputedExpr
-AssignExpr -> id *= ComputedExpr
-AssignExpr -> id /= ComputedExpr
+AssignExpr -> id =  ComputedExpr 
+AssignExpr -> id += ComputedExpr 
+AssignExpr -> id -= ComputedExpr 
+AssignExpr -> id *= ComputedExpr 
+AssignExpr -> id /= ComputedExpr 
 
 LogicOrExpr -> LogicOrExpr || LogicAndExpr
 LogicOrExpr -> LogicAndExpr
@@ -95,10 +98,8 @@ StartList -> *
 
 //变量定义以及初始化
 DefinationStatement -> Defination ;
-Defination -> Defination , Declation
-Defination -> Defination , Intilization
-Defination -> Declation
-Defination -> Intilization
+Defination -> DeclationList
+Defination -> IntilizationList
 
 DeclationList -> DeclationList , id
 DeclationList -> Declation
@@ -120,7 +121,7 @@ SubIfStatement -> else Statement
 SubIfStatement -> _NON
 
 //while语句定义
-WhileStatement -> while ( Expr ) CompoundStatement
+WhileStatement -> while ( Expr ) Statement
 
 //函数定义
 Function -> void id ( ParameterList ) CompoundStatement
