@@ -1,4 +1,5 @@
 #include "Debug.h"
+std::ofstream logOut("log.txt");
 
 void PrintStackTrace()
 {
@@ -37,4 +38,14 @@ void PrintStackTrace()
     }
 
     printf("%s", szStackInfo); // 输出到控制台，也可以打印到日志文件中
+}
+
+
+void PrintAndOutputToLog(std::function<void()> print) {
+    auto oldbuf = std::cout.rdbuf(logOut.rdbuf());
+    print();
+    std::cout << "\n\n";
+    std::cout.rdbuf(oldbuf);
+    print();
+    std::cout << "\n\n";
 }

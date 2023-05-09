@@ -1,70 +1,76 @@
-//生成_NON的非终结符只能放在产生式末尾
+//在产生式末尾的action两个整数为一组，其中第一个整数代表所需信息所在符号栈内偏移（以上一个语法符号为栈顶元素）
+//第二个整数代表所需信息种类：
+//0，操作信息(op)，
+//1，数值（常量值)(value)，
+//2，类型说明 (type)，
+//100 所生成中间代码起始指针(codeStart), 
+//101 所生成中间代码结束指针(codeEnd)前闭后开
+//生成的中间代码全部以字符串形式存在于某一容器中，这里只保存其下标
+//如果该信息对于所要求符号来说不存在，则在attribute中将相应位置的值设为-1
+//当获取完两个整数所指信息后，会将该信息入栈，注意，第一个整数只计算语法符号栈内偏移，不计算其他造成的栈内偏移
+//大括号中的字母串是辅助函数，后面所跟的所有符号都以一对的形式解释为输入参数，辅助函数列表如下：
+//SymbolTableAddType(SymtablePtr,Type)
 
-Program' -> Program
-Program -> FunctionList Program
-Program -> DefinationStatementList Program
+
+Program -> Program SubProgram
+SubProgram -> FunctionList _NON
+SubProgram -> DefinationStatementList _NON
 Program -> _NON
 
-DefinationStatementList -> DefinationStatement SubDefinationStatementList
-SubDefinationStatementList -> _NON
-FunctionList -> Function SubFunctionList
-SubFunctionList -> _NON
+DefinationStatementList -> DefinationStatementList DefinationStatement
+DefinationStatementList -> DefinationStatement
+FunctionList -> FunctionList Function
+FunctionList -> Function
 
 //语句定义
 Statement -> ExprStatement
 Statement -> IfStatement
 Statement -> WhileStatement
 Statement -> DefinationStatement
+Statement -> CompoundStatement
 Statement -> _NON ;
 
 //表达式定义
 ExprStatement -> ExprList ;
-ExprList -> Expr SubExprList
-SubExprList -> , SubExprList
-SubExprList -> _NON
+ExprList -> ExprList , Expr
+ExprList -> Expr
 Expr -> ComputedExpr
 Expr -> CallExpr
 
 //计算表达式
-ComputedExpr -> AssignExpr 
-ComputedExpr -> LogicOrExpr
+ComputedExpr -> AssignExpr
+ComputedExpr -> LogicOrExpr 
 //赋值表达式
-AssignExpr -> id =  ComputedExpr
-AssignExpr -> id += ComputedExpr
-AssignExpr -> id -= ComputedExpr
-AssignExpr -> id *= ComputedExpr
-AssignExpr -> id /= ComputedExpr
+AssignExpr -> id =  ComputedExpr 
+AssignExpr -> id += ComputedExpr 
+AssignExpr -> id -= ComputedExpr 
+AssignExpr -> id *= ComputedExpr 
+AssignExpr -> id /= ComputedExpr 
 
-LogicOrExpr -> LogicAndExpr SubLogicOrExpr
-SubLogicOrExpr -> || LogicAndExpr SubLogicOrExpr
-SubLogicOrExpr -> _NON
+LogicOrExpr -> LogicOrExpr || LogicAndExpr
+LogicOrExpr -> LogicAndExpr
 
-LogicAndExpr -> EqualExpr SubLogicAndExpr
-SubLogicAndExpr -> && EqualExpr SubLogicAndExpr
-SubLogicAndExpr -> _NON
+LogicAndExpr -> LogicAndExpr && EqualExpr 
+LogicAndExpr -> EqualExpr
 
-EqualExpr -> CompareExpr SubEqualExpr
-SubEqualExpr -> == CompareExpr SubEqualExpr
-SubEqualExpr -> != CompareExpr SubEqualExpr
-SubEqualExpr -> _NON
+EqualExpr -> EqualExpr == CompareExpr
+EqualExpr -> EqualExpr != CompareExpr
+EqualExpr -> CompareExpr
 //比较表达式定义
-CompareExpr -> AddtiveExpr SubCompareExpr
-SubCompareExpr -> > AddtiveExpr SubCompareExpr
-SubCompareExpr -> < AddtiveExpr SubCompareExpr
-SubCompareExpr -> >= AddtiveExpr SubCompareExpr
-SubCompareExpr -> <= AddtiveExpr SubCompareExpr
-SubCompareExpr -> _NON
+CompareExpr -> CompareExpr > AddtiveExpr
+CompareExpr -> CompareExpr < AddtiveExpr
+CompareExpr -> CompareExpr >= AddtiveExpr
+CompareExpr -> CompareExpr <= AddtiveExpr
+CompareExpr -> AddtiveExpr
 //加法表达式
-AddtiveExpr -> MultiplicativeExpr SubAddtiveExpr 
-SubAddtiveExpr -> + MultiplicativeExpr SubAddtiveExpr
-SubAddtiveExpr -> - MultiplicativeExpr SubAddtiveExpr
-SubAddtiveExpr -> _NON
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr
+AddtiveExpr -> MultiplicativeExpr
 //乘法表达式
-MultiplicativeExpr -> LogicExpr SubMultiplicativeExpr 
-SubMultiplicativeExpr  -> / LogicExpr SubMultiplicativeExpr 
-SubMultiplicativeExpr  -> * LogicExpr SubMultiplicativeExpr 
-SubMultiplicativeExpr  -> % LogicExpr SubMultiplicativeExpr 
-SubMultiplicativeExpr  -> _NON
+MultiplicativeExpr -> MultiplicativeExpr / LogicExpr
+MultiplicativeExpr -> MultiplicativeExpr * LogicExpr
+MultiplicativeExpr -> MultiplicativeExpr % LogicExpr
+MultiplicativeExpr -> LogicExpr
 //逻辑表达式
 LogicExpr -> ++ id 
 LogicExpr -> -- id
@@ -87,43 +93,35 @@ ValueType -> int
 ValueType -> float
 ValueType -> double
 PointerType -> ValueType StarList
-StarList -> * StartList
-StartList -> _NON
+StarList -> StartList *
+StartList -> *
 
 //变量定义以及初始化
 DefinationStatement -> Defination ;
-Defination -> Declation SubDefination
-Defination -> Intilization SubDefination
-SubDefination -> , IntilizationList SubDefination 
-SubDefination -> , DeclationList SubDefination
-SubDefination -> _NON
+Defination -> DeclationList
+Defination -> IntilizationList
 
-DeclationList -> id SubDeclationList
-SubDeclationList -> , id SubDeclationList
-SubDeclationList -> _NON
-IntilizationList -> AssignExpr SubIntilizationList
-SubIntilizationList -> , AssignExpr SubIntilizationList
-SubIntilizationList -> _NON
+DeclationList -> DeclationList , id
+DeclationList -> Declation
+IntilizationList -> IntilizationList , id = ComputedExpr
+IntilizationList -> Intilization
 
 Declation -> DirectDeclation
 Declation -> ArrayDeclation
 DirectDeclation -> Type id
 ArrayDeclation -> DirectDeclation AarryPostfixList
-AarryPostfixList -> [ digit ] SubAarryPostfixList
-SubAarryPostfixList -> _NON
+AarryPostfixList -> AarryPostfixList [ digit ]
+AarryPostfixList -> [ digit ]
 Intilization -> DirectDeclation = ComputedExpr
 
 //if语句定义
-IfStatement -> if ( Expr ) SubIfStatement
-SubIfStatement -> else if ( Expr ) CompoundStatement SubIfStatement
-SubIfStatement -> else if ( Expr ) Statement SubIfStatement
-SubIfStatement -> else CompoundStatement
+IfStatement -> if ( Expr ) Statement SubIfStatement
+//SubIfStatement -> else IfStatement
 SubIfStatement -> else Statement
-SubIfStatement -> Statement
-SubIfStatement -> CompoundStatement
+SubIfStatement -> _NON
 
 //while语句定义
-WhileStatement -> while ( Expr ) CompoundStatement
+WhileStatement -> while ( Expr ) Statement
 
 //函数定义
 Function -> void id ( ParameterList ) CompoundStatement

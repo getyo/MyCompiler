@@ -28,6 +28,7 @@ public:
 
 
 class Item :public Production{
+	friend bool ItemLess(const Item& lhs, const Item& rhs);
 	friend struct ItemEqual;
 	friend struct ItemHash;
 private:
@@ -53,6 +54,7 @@ public:
 	int MaxDotPos() const;
 	int FollowDot() const;
 	Item& operator =(const Item&) ;
+	bool operator<(const Item&) const;
 	bool operator()(const Item&) const;
 	bool operator==(const Item&) const;
 	bool operator!=(const Item&) const;
@@ -64,12 +66,21 @@ public:
 	~Item() {}
 };
 
+bool ItemLess(const Item& lhs, const Item& rhs);
+
 struct ItemEqual
 {
 	bool operator()(const Item& lhs, const Item& rhs)const {
 		if (!Item::ProductionEqual(lhs, rhs))return false;
 		if (lhs.dotPos != rhs.dotPos) return false;
 		return true;
+	}
+};
+
+struct ItemEqualWithLookAhead
+{
+	bool operator()(const Item& lhs, const Item& rhs)const {
+		return lhs == rhs;
 	}
 };
 

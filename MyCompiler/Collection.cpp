@@ -58,14 +58,20 @@ bool Collection::HasItem(ItemSet& itemSet, Item& item) {
 }
 
 void Collection::ClosureLR0(ItemSet& itemSet) {
+	int curUnterminal;
+	unordered_set<int> unterminalSet;
 	for (auto item = itemSet.begin(); item != itemSet.end(); item++) {
+		curUnterminal = item->FollowDot();
 		for (int j = 0; j < grammer->ProductionCnt(); j++) {
 			Production& p = (*grammer)[j];
-			if (p.GetHead() == item->FollowDot()) {
+			if (p.GetHead() == curUnterminal) {
 				Item temp(p, j, 0, {});
-				if (!HasItem(itemSet, temp)) itemSet.push_back(temp);
+				if (!HasItem(itemSet, temp) && \
+					 !unterminalSet.count(curUnterminal)) 
+					itemSet.push_back(temp);
 			}
 		}
+		unterminalSet.insert(curUnterminal);
 	}
 }
 
@@ -105,6 +111,7 @@ set<int> Collection::FirstTerminalAfterDot(Item item) {
 		s.insert(symbol);
 	else if (grammer->IsUnterminal(symbol)) {
 		stack<int> unterminalStack;
+		unordered_set<int> unterminalSet;
 		unterminalStack.push(symbol);
 		while (!unterminalStack.empty()) {
 			symbol = unterminalStack.top();
@@ -115,22 +122,29 @@ set<int> Collection::FirstTerminalAfterDot(Item item) {
 				if (p.GetHead() == symbol) {
 					if (grammer->IsTerminal(body[0]))
 						s.insert(body[0]);
-					else if (grammer->IsUnterminal(body[0]))
+					else if (grammer->IsUnterminal(body[0]) && !unterminalSet.count(body[0]))
 						unterminalStack.push(body[0]);
 				}
 			}
+			unterminalSet.insert(symbol);
 		}
 	}
 	return s;
 }
 
-vector<Item> Collection::ClosureLR1(Item& item) {
+bool Collection::HasItem(vector<Item>& itemSet, Item& item) {
+	for (auto& i : itemSet)
+		if (i == item) return true;
+	return false;
+}
+
+vector <Item> Collection::ClosureLR1(Item& item) {
 	vector<Item> itemVec;
 	Item temp = item;
 	temp.AddLookAhead(LOOKAHEAD_ATHAND);
 	itemVec.push_back(temp);
 
-	for (int i = 0; i < itemVec.size(); i++) {
+	for (auto i = 0; i <itemVec.size(); i++) {
 		Item item = itemVec[i];
 		int followDot = item.FollowDot();
 		if (followDot == Item::BLANK_FOLLOW_DOT) continue;
@@ -141,7 +155,7 @@ vector<Item> Collection::ClosureLR1(Item& item) {
 				Item temp(p, i);
 				auto s = FirstTerminalAfterDot(item);
 				for (auto& i : s) temp.AddLookAhead(i);
-				itemVec.push_back(temp);
+				if(!HasItem(itemVec,temp))itemVec.push_back(temp);
 			}
 		}
 	}
@@ -154,54 +168,17 @@ int Collection::Goto(int curStatus, int symbol) {
 
 bool Collection::VectorFind(vector<Pair>& vec, Item& item) {
 	for (auto i : vec)
-		if (Item::ProductionEqual(item,*i.itemPtr) && \
+		if (Item::ProductionEqual(item, *i.itemPtr) && \
 			item.GetDotPos() == i.itemPtr->GetDotPos()) return true;
 	return false;
-}
-void Collection::AddFromTo(Item& from, int status) {
-	queue<int> headQueue;
-	unordered_set<Item, ItemHash, ItemEqual> closure;
-	int followDot = from.FollowDot();
-	if (grammer->IsUnterminal(followDot)) headQueue.push(followDot);
-	if (followDot >= 0)closure.insert(Item(from, from.GetDotPos()));
-	else return;
-	//对from求LR0闭包
-	int head,bodyStart;
-	while (!headQueue.empty()) {
-		head = headQueue.front();
-		headQueue.pop();
-		for (int i = 0; i < grammer->ProductionCnt(); i++) {
-			auto p = (*grammer)[i];
-			if (p.GetHead() == head) {
-				closure.insert(Item(p, i));
-				if (grammer->IsUnterminal(p[1]))
-					headQueue.push(p[1]);
-			}
-		}
-	}
-	int s = 0;
-	//根据闭包寻找kernelItem
-	for (auto& i : closure) {
-		s = 0;
-		for (auto& itemSet : collection) {
-			for (auto& kernelItem : itemSet) {
-				if (Item::ProductionEqual(kernelItem, i) && kernelItem.IsDerived(i)) {
-					if (!VectorFind(fromTo[from], kernelItem))
-						fromTo[from].push_back(Pair(&kernelItem, s));
-				}
-			}
-			++s;
-		}
-	}
 }
 
 void Collection::IntiLookAhead() {
 	int status = 0;
 	vector<ItemSet> tempCollection = collection;
-	
+
 	for (auto& itemSet : tempCollection) {
 		for (auto& kernelItem : itemSet) {
-			AddFromTo(kernelItem, status);
 			if (kernelItem.FollowDot() == Item::BLANK_FOLLOW_DOT) continue;
 			kernelItem.AddLookAhead(LOOKAHEAD_ATHAND);
 			auto closure = ClosureLR1(kernelItem);
@@ -267,7 +244,7 @@ void Collection::IntiLookAhead() {
 									cerr << "\n";
 
 									cerr << "\nOrigin Reduce Production: \t";
-									(*grammer)[-(parserTable[nextStatus][lookAhead]+1)].Print();
+									(*grammer)[-(parserTable[nextStatus][lookAhead] + 1)].Print();
 									cerr << "\n";
 
 									cerr << "\nCurrect Reduce Production: \t";
@@ -277,8 +254,10 @@ void Collection::IntiLookAhead() {
 									exit(1);
 								}
 							}
-							if (lookAhead == LOOKAHEAD_ATHAND)
+							if (lookAhead == LOOKAHEAD_ATHAND) {
+								fromTo[kernelItem].push_back(Pair(&i, nextStatus));
 								porpagateTable[i].insert(status);
+							}
 						}
 					}
 				}
@@ -290,7 +269,6 @@ void Collection::IntiLookAhead() {
 	//向起始符号所在的item添加$
 	int end = grammer->grammerSymbolStr2Num["$"];
 	collection[0].begin()->AddLookAhead(end);
-	parserTable[0][end] = ACCESS;
 	//Print();
 	//cout << "\n\n\n";
 }
@@ -334,7 +312,7 @@ void Collection::LookAheadPorpagate() {
 									cerr << "\nShift Symbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
 
 									cerr << "\n";
-									cerr << "\nFrom Status: Status " << to.status << "\n";
+									cerr << "\nFrom Status: Status " << status << "\n";
 									PrintStatus(status);
 									cerr << "\n";
 
@@ -414,6 +392,10 @@ Collection::Collection() {
 	IntiLookAhead();
 	//构建LALR分析表
 	LookAheadPorpagate();
+#ifdef _COLLECTION_PRINT
+	PrintAndOutputToLog(std::bind(&Collection::Print, this));
+#endif // _COLLECTION_PRINT
+
 }
 
 void Collection::PrintStatus(int status) {
@@ -437,7 +419,7 @@ void Collection::PrintStatus(int status) {
 		if (line[j] != NON_ENTRY && line[j] < 0)
 			cout << Grammer::grammerSymbolNum2Str[j] \
 			<< " " << line[j] << " \t";
-	}	
+	}
 }
 
 void Collection::Print() {

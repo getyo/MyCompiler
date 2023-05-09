@@ -7,6 +7,7 @@ SymbolTable symbolTable;
 FileManager* fileManager;
 
 int main() {
+
 	fileManager = FileManager::FileManagerFactory();
 
 	Lexeme* lex = Lexeme::LexemeFactory();

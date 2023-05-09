@@ -8,9 +8,6 @@ Parser::Parser() {
 	collectionPtr = Collection::CollectionFactory();
 	grammer = collectionPtr->GetGrammer();
 	nonInt = grammer->grammerSymbolStr2Num["_NON"];
-#ifdef _COLLECTION_PRINT
-	collectionPtr->Print();
-#endif
 }
 
 void Parser::SetInput(vector <Token>& tokenStream) {
