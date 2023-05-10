@@ -2,6 +2,7 @@
 #include <fstream>
 #include "FileManager.h"
 #include "Token.h"
+#include "Type.h"
 
 Lexeme* Lexeme::lexemePtr = nullptr;
 extern FileManager* fileManager;
@@ -152,6 +153,14 @@ vector<Token> Lexeme::Analyse() {
 				token.symbolTableIndex = symbolTable.Size();
 				string lexeme = line.substr(prePos, curPos - prePos);
 				symbolTable.Push(TokenAttribute(lexeme, row, prePos + 1, -1));
+
+				if (token.kind == tokenKindStr2Num["digit"])
+					symbolTable[token.symbolTableIndex].val = stoi(lexeme);
+				else if (token.kind == tokenKindStr2Num["int"])
+					symbolTable[token.symbolTableIndex].typeID = INT_ID;
+				else if(token.kind == tokenKindStr2Num["float"])
+					symbolTable[token.symbolTableIndex].typeID = FLOAT_ID;
+
 				tokenVec.push_back(token);
 				if (errorFlag) errorFlag = false;
 			}

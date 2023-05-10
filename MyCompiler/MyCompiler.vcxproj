@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AuxiliaryFunction.h" />
     <ClInclude Include="Collection.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="FileManager.h" />
@@ -155,8 +156,10 @@
     <ClInclude Include="Production.h" />
     <ClInclude Include="SyntaxTree.h" />
     <ClInclude Include="Token.h" />
+    <ClInclude Include="Type.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AuxiliaryFunction.cpp" />
     <ClCompile Include="Collection.cpp" />
     <ClCompile Include="Debug.cpp" />
     <ClCompile Include="FileManager.cpp" />

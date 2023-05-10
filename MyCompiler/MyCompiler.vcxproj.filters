@@ -19,6 +19,9 @@
     <Filter Include="源文件\syntax">
       <UniqueIdentifier>{ce00c422-0d25-4110-a900-07a6295eb9d8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\semanticAndIntermediateCode">
+      <UniqueIdentifier>{894e96ce-2542-427f-8212-62e9affaf4bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lex.h">
@@ -49,6 +52,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Parser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AuxiliaryFunction.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Type.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -85,6 +94,9 @@
     </ClCompile>
     <ClCompile Include="Parser.cpp">
       <Filter>源文件\syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="AuxiliaryFunction.cpp">
+      <Filter>源文件\semanticAndIntermediateCode</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

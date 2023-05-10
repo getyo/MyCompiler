@@ -8,9 +8,18 @@ int Grammer::END_OF_GRAMMER;
 string curSymbol;
 string curLine;
 int curLineIt;
+int row;
+int Grammer::maxTerminal;
+int Grammer::maxUnterminal;
+int Grammer::startSymbol;
+vector <Production> Grammer::productions;
+vector<int> Grammer::funParaCnt;
+unordered_map<string, int> Grammer::funStr2Int;
+vector<string> Grammer::funInt2Str;
 Grammer* Grammer::grammerPtr = nullptr;
 vector<string> Grammer::grammerSymbolNum2Str;
 unordered_map<string, int> Grammer::grammerSymbolStr2Num;
+unordered_map <int, array<string, 8>> Grammer::attrMap;
 
 size_t Grammer::ProductionCnt() {
 	return productions.size();
@@ -58,6 +67,159 @@ string Grammer::NextSymbol() {
 	end = curLineIt;
 	return curLine.substr(begin,end - begin);
 }
+static string RowAndCol() {
+	string s = " row : " + to_string(row) + " column : " + to_string(curLineIt + 1) + " ";
+	return s;
+}
+static bool IsDigit(char c) {
+	if (c >= '0' && c <= '9') return true;
+	else return false;
+}
+
+void Grammer::ReadAttrMap() {
+	string smbStr = NextSymbol();
+	if (!Grammer::grammerSymbolStr2Num.count(smbStr)) {
+		cerr << "Grammer : Unrecognized Unterminal : " << smbStr << " \t" << RowAndCol();
+		abort();
+	}
+	int smbID = Grammer::GetSymbolID(smbStr);
+	string temp = NextSymbol();
+	if (temp != ":") {
+		cerr << "Grammer : Incorrect Input : " << " \t" << RowAndCol();
+		abort();
+	}
+	string attrIndex, attrStr;
+	attrIndex = NextSymbol();
+	attrStr = NextSymbol();
+	while (true) {
+		if (!IsDigit(attrIndex[0])) {
+			cerr << "Grammer : Incorrect Input : should Input digit" << " \t" << RowAndCol();
+		}
+		attrMap[smbID][stoi(attrIndex)] = attrStr;
+		attrIndex = NextSymbol();
+		if (attrIndex.empty()) return;
+		attrStr = NextSymbol();
+	}
+	
+}
+
+void Grammer::ReadAction(Production &p) {
+	p.actions.push_back(make_shared<Action>());
+	auto action = p.actions[p.actions.size() - 1];
+	string s;
+	while (true) {
+		s = NextSymbol();
+		if (s == "##") break;
+		//处理函数调用
+		if (funStr2Int.count(s)) { 
+			action->requested.push_back(Action::FUN);
+			action->requested.push_back(Grammer::GetFunID(s));
+				++curLineIt;
+			if (curLine[curLineIt] != '(') {
+				cerr << "\nGrammer: " + RowAndCol() + " Incorrect Input: Auxiliary Function should have ()\n";
+				abort();
+			}
+			++curLineIt;
+			while (true) {
+				if (curLine[curLineIt] == ')') break;
+				switch (curLine[curLineIt])
+				{
+				case ' ': {++curLineIt; break; }
+				case ',': {++curLineIt; break; }
+				case '$': {
+					action->requested.push_back(Action::PUSH_ALL);
+					++curLineIt;
+					action->requested.push_back(curLine[curLineIt] - '0');
+					++curLineIt;
+					break;
+				}
+				default: {
+					if (!IsDigit(curLine[curLineIt])) {
+						cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should input digit\n";
+						abort();
+					}
+					action->requested.push_back(curLine[curLineIt] - '0');
+					++curLineIt;
+					if (curLine[curLineIt] != '.') {
+						cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should follow dot after digit\n";
+						abort();
+					}
+					else ++curLineIt;
+					if (!IsDigit(curLine[curLineIt])) {
+						cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should input digit\n";
+						abort();
+					}
+					action->requested.push_back(curLine[curLineIt] - '0');
+					++curLineIt;
+				}
+					   break;
+				}
+			}
+		}
+		else if (s.size() == 1) {
+			switch (s[0])
+			{
+			case '+': {action->requested.push_back(Action::ADD); break; }
+			case '-': {action->requested.push_back(Action::MINUS); break; }
+			case '*': {action->requested.push_back(Action::MULT); break; }
+			case '/': {action->requested.push_back(Action::DIV); break; }
+			case '%': {action->requested.push_back(Action::REM); break; }
+			case '=': {action->requested.push_back(Action::ASSIGN); break; }
+			case ';': { p.actions.push_back(make_shared<Action>());
+						action = p.actions[p.actions.size() - 1];	
+						break;
+			}
+			default:
+				break;
+			}
+		}
+		//处理符号.属性
+		else {
+			if (!IsDigit(s[0])) {
+				cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should input digit\n";
+				abort();
+			}
+			action->requested.push_back(s[0] - '0');
+			if (s[1] != '.') {
+				cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should follow dot after digit\n";
+				abort();
+			}
+			if (!IsDigit(s[2])) {
+				cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should input digit\n";
+				abort();
+			}
+			action->requested.push_back(s[2] - '0');
+		}
+	}
+}
+
+void Grammer::ReadFunction(ifstream& in) {
+	getline(in, curLine);
+	string funName,temp,paraCnt;
+	int funID = 0;
+	while (curLine != "END$") {
+		if ((curLine[0] == '/' && curLine[1] == '/') || curLine.size() == 0) {
+			getline(in, curLine);
+			curLineIt = 0;
+			++row;
+			continue;
+		}
+		funName = NextSymbol();
+		funStr2Int.insert({ funName,funID });
+		funInt2Str.push_back(funName);
+		++funID;
+		temp = NextSymbol();
+		if (temp != ":") {
+			cerr << "\nGrammer: " + RowAndCol() + " Incorrect Input: Auxiliary Function should have parameter count\n";
+			abort();
+		}
+		paraCnt = NextSymbol();
+		funParaCnt.push_back(stoi(paraCnt));
+		getline(in, curLine);
+		curLineIt = 0;
+		++row;
+	}
+}
 
 Grammer::Grammer() {
 	ifstream in(path);
@@ -75,13 +237,26 @@ Grammer::Grammer() {
 	startSymbol = maxTerminal + 1;
 	//存贮当前行的Production
 	vector <int> p;
+	row = 0;
+	ReadFunction(in);
 	while (in.good()) {
 		getline(in, curLine);
+		++row;
 		curLineIt = 0;
 		if (!curLine.size() || (curLine[0] == '/' && curLine[1] == '/')) continue;
 		while (curLineIt < curLine.size()) {
 			grammerSymbol = NextSymbol();
 			if (grammerSymbol == "->" || grammerSymbol == "") continue;
+			else if (grammerSymbol == "##") {
+				productions.push_back(Production(p));
+				p.clear();
+				ReadAction(productions[productions.size()-1]);
+				goto LineEnd;
+			}
+			else if (grammerSymbol == "$$") {
+				ReadAttrMap();
+				goto LineEnd;
+			}
 			//如果没有语法符号的话
 			if (!grammerSymbolStr2Num.count(grammerSymbol)) {
 				grammerSymbolStr2Num.insert({ grammerSymbol,grammerSymbolNum2Str.size() });
@@ -91,6 +266,8 @@ Grammer::Grammer() {
 		}
 		productions.push_back(Production(p));
 		p.clear();
+	LineEnd:
+		continue;
 	}
 	maxUnterminal = grammerSymbolNum2Str.size()-1;
 }
@@ -122,7 +299,7 @@ void Grammer::Print() {
 	for (auto& p : productions) {
 		cout << i++ << " : ";
 		p.Print();
-		cout << '\n';
+		cout << "\n\n";
 	}
 	cout << "Unterminal: ";
 	for (int i = maxTerminal + 1; i <= maxUnterminal; i++)

@@ -13,7 +13,7 @@ void TokenAttribute::Print() {
 		<< "	col: " << col << "	typeID:	" << typeID;
 }
 
-TokenAttribute SymbolTable::operator[](int i) {
+TokenAttribute& SymbolTable::operator[](int i) {
 	return table[i];
 }
 

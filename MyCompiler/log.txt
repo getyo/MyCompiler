@@ -1,0 +1,118 @@
+Status0:
+ExprStatement -> Expr ;  	dotPos: 0 	lookAhead: $ 
+Goto: 	( 1 	digit 2 	id 3 	Expr 4 	AddtiveExpr 5 	MultiplicativeExpr 6 	PrimaryExpr 7 	
+Reduce: 	
+
+Status1:
+PrimaryExpr -> ( Expr )  	dotPos: 1 	lookAhead: + - * / % ) ; 
+Goto: 	( 1 	digit 2 	id 3 	Expr 8 	AddtiveExpr 5 	MultiplicativeExpr 6 	PrimaryExpr 7 	
+Reduce: 	
+
+Status2:
+PrimaryExpr -> digit  	dotPos: 1 	lookAhead: + - * / % ) ; 
+Goto: 	
+Reduce: 	+ -11 	- -11 	* -11 	/ -11 	% -11 	) -11 	; -11 	
+
+Status3:
+PrimaryExpr -> id  	dotPos: 1 	lookAhead: + - * / % ) ; 
+Goto: 	
+Reduce: 	+ -10 	- -10 	* -10 	/ -10 	% -10 	) -10 	; -10 	
+
+Status4:
+ExprStatement -> Expr ;  	dotPos: 1 	lookAhead: $ 
+Goto: 	; 9 	
+Reduce: 	
+
+Status5:
+Expr -> AddtiveExpr  	dotPos: 1 	lookAhead: ) ; 
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 1 	lookAhead: + - ) ; 
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 1 	lookAhead: + - ) ; 
+Goto: 	+ 10 	- 11 	
+Reduce: 	) -2 	; -2 	
+
+Status6:
+AddtiveExpr -> MultiplicativeExpr  	dotPos: 1 	lookAhead: + - ) ; 
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ) ; 
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ) ; 
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ) ; 
+Goto: 	* 12 	/ 13 	% 14 	
+Reduce: 	+ -5 	- -5 	) -5 	; -5 	
+
+Status7:
+MultiplicativeExpr -> PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ) ; 
+Goto: 	
+Reduce: 	+ -9 	- -9 	* -9 	/ -9 	% -9 	) -9 	; -9 	
+
+Status8:
+PrimaryExpr -> ( Expr )  	dotPos: 2 	lookAhead: + - * / % ) ; 
+Goto: 	) 15 	
+Reduce: 	
+
+Status9:
+ExprStatement -> Expr ;  	dotPos: 2 	lookAhead: $ 
+Goto: 	
+Reduce: 	$ -1 	
+
+Status10:
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 2 	lookAhead: + - ) ; 
+Goto: 	( 1 	digit 2 	id 3 	MultiplicativeExpr 16 	PrimaryExpr 7 	
+Reduce: 	
+
+Status11:
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 2 	lookAhead: + - ) ; 
+Goto: 	( 1 	digit 2 	id 3 	MultiplicativeExpr 17 	PrimaryExpr 7 	
+Reduce: 	
+
+Status12:
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ) ; 
+Goto: 	( 1 	digit 2 	id 3 	PrimaryExpr 18 	
+Reduce: 	
+
+Status13:
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ) ; 
+Goto: 	( 1 	digit 2 	id 3 	PrimaryExpr 19 	
+Reduce: 	
+
+Status14:
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ) ; 
+Goto: 	( 1 	digit 2 	id 3 	PrimaryExpr 20 	
+Reduce: 	
+
+Status15:
+PrimaryExpr -> ( Expr )  	dotPos: 3 	lookAhead: + - * / % ) ; 
+Goto: 	
+Reduce: 	+ -12 	- -12 	* -12 	/ -12 	% -12 	) -12 	; -12 	
+
+Status16:
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 3 	lookAhead: + - ) ; 
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ) ; 
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ) ; 
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ) ; 
+Goto: 	* 12 	/ 13 	% 14 	
+Reduce: 	+ -3 	- -3 	) -3 	; -3 	
+
+Status17:
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 3 	lookAhead: + - ) ; 
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ) ; 
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ) ; 
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ) ; 
+Goto: 	* 12 	/ 13 	% 14 	
+Reduce: 	+ -4 	- -4 	) -4 	; -4 	
+
+Status18:
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % ) ; 
+Goto: 	
+Reduce: 	+ -7 	- -7 	* -7 	/ -7 	% -7 	) -7 	; -7 	
+
+Status19:
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % ) ; 
+Goto: 	
+Reduce: 	+ -6 	- -6 	* -6 	/ -6 	% -6 	) -6 	; -6 	
+
+Status20:
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % ) ; 
+Goto: 	
+Reduce: 	+ -8 	- -8 	* -8 	/ -8 	% -8 	) -8 	; -8 	
+
+
+

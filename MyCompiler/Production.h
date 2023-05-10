@@ -2,13 +2,17 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <memory>
 using namespace std;
-
+#define SYMBOL_ATTR_CNT 8
+class Action;
 class Production {
 protected:
 	int head;
 	vector<int> body;
 public:
+
+	vector<shared_ptr<Action>> actions;
 	Production() {}
 	Production(initializer_list<int> l);
 	Production(int head,vector<int>& body);
@@ -19,11 +23,20 @@ public:
 	vector<int> GetBody() const;
 	int& operator[](int index);
 	virtual string Info() const;
+	string AttrStr(int symbolID, int attrIndex) const;
 	virtual void Print() const;
 	Production& operator=(const Production&);
 	bool operator()(const Production&) const;
 	bool operator==(const Production&) const;
 	virtual ~Production() {}
+};
+
+struct Action {
+	vector<int> funPtrlist;
+	vector <int> requested;
+	//遇到PUSH_ALL说明要把之后跟的数字（设为n），产生式中的第n个语法符号ID以及其属性指针当作参数
+	static const int PUSH_ALL,ADD,MINUS,MULT,DIV,ASSIGN,FUN,REM;
+	void Print();
 };
 
 

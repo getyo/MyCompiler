@@ -7,7 +7,7 @@ extern SymbolTable symbolTable;
 Parser::Parser() {
 	collectionPtr = Collection::CollectionFactory();
 	grammer = collectionPtr->GetGrammer();
-	nonInt = grammer->grammerSymbolStr2Num["_NON"];
+	nonInt = Grammer::GetSymbolID("_NON");
 }
 
 void Parser::SetInput(vector <Token>& tokenStream) {
@@ -38,7 +38,7 @@ int Parser::Reduce(int productionIndex) {
 	auto body = p.GetBody();
 	int topTokenKind;
 	for (int i = body.size() - 1; i >= 0; i--) {
-		topTokenKind = symbolStack.top();
+		topTokenKind = symbolStack.top().symbol;
 		if (topTokenKind == body[i]) {
 			PopToken(1);
 			statusStack.pop();
@@ -49,7 +49,7 @@ int Parser::Reduce(int productionIndex) {
 	curStatus = statusStack.top();
 
 #ifdef _PARSER_ACTION_PRINT
-	cout << "\nInput Token : " << grammer->grammerSymbolNum2Str[curInputToken] << "\n";
+	cout << "\nInput Token : " << Grammer::GetSymbolStr(curInputToken) << "\n";
 	cout << "ACTION : reduce\n";
 	cout << "\nCurStatus Status : Status " << preStatus << "\n";
 	collectionPtr->PrintStatus(preStatus);
@@ -70,12 +70,12 @@ void Parser::shift(int symbol){
 	int preStatus = curStatus;
 #endif // _PARSER_ACTION_PRINT
 
-	symbolStack.push(symbol);
+	symbolStack.push(SymbolWithAttr(symbol));
 	curStatus = collectionPtr->Goto(curStatus, symbol);
 	statusStack.push(curStatus);
 
 #ifdef _PARSER_ACTION_PRINT
-	cout << "\nInput Token : " << grammer->grammerSymbolNum2Str[curInputToken] << "\n";
+	cout << "\nInput Token : " << Grammer::GetSymbolStr(curInputToken) << "\n";
 	cout << "ACTION : shift\n";
 	cout << "\nCurStatus Status : Status " << preStatus << "\n";
 	collectionPtr->PrintStatus(preStatus);
@@ -106,12 +106,16 @@ bool Parser::RedressNon() {
 }
 
 bool Parser::Analyse() {
+	if (tokenStream == nullptr) {
+		cerr << "Parser: hasn't Input stream\n";
+		abort();
+	}
 	bool success = true;
 	curStatus = 0;
 	statusStack.push(curStatus);
 	curInputToken = (*tokenStream)[tokenIndex].kind;
 	action = collectionPtr->Goto(curStatus, curInputToken);
-	
+	int* attrPtr;
 	while(tokenIndex < tokenStream->size()){
 		if (action == Collection::NON_ENTRY) {
 			bool redressNon = RedressNon();
@@ -140,6 +144,11 @@ bool Parser::Analyse() {
 		else {
 			//注意 在PraserTable中-1代表使用Production0进行归约
 			curInputToken = Reduce(-(action + 1));
+			if (curInputToken == -1) {
+				//出现这个错误说明状态图就不对,或者符号栈和状态栈工作异常
+				cerr << "Parser : Reduce Error";
+				abort();
+			}
 			if (action == Collection::ACCESS) return true;
 			shift(curInputToken);
 			curInputToken = (*tokenStream)[tokenIndex].kind;

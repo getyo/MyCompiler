@@ -5,15 +5,25 @@
 #include "Collection.h"
 
 int Item::BLANK_FOLLOW_DOT = -100000000;
+const int Action::ADD = -1;
+const int Action::MINUS = -2;
+const int Action::MULT = -3;
+const int Action::DIV = -4;
+const int Action::FUN = -5;
+const int Action::ASSIGN = -6;
+const int Action::REM = -7;
+const int Action::PUSH_ALL = -8;
 
 Production::Production(const Production&& p) {
 	this->head = p.head;
 	this->body = p.body;
+	this->actions = p.actions;
 }
 
 Production::Production(const Production& p) {
 	head = p.head;
 	body = p.body;
+	this->actions = p.actions;
 }
 
 Production::Production(vector<int>& p) {
@@ -54,16 +64,95 @@ string Production::Info() const {
 	return s;
 }
 
+string Production::AttrStr(int smbID,int attrIndex) const {
+	if (Grammer::IsTerminal(smbID)) {
+		switch (attrIndex)
+		{
+		case 0: {return "lexeme"; }
+		case 1: {return "val"; }
+		case 2: {return "row"; }
+		case 3: {return "column"; }
+		case 4: {return "typeID"; }
+		default:
+			break;
+		}
+	}
+	else if (Grammer::IsUnterminal(smbID)) {
+		return Grammer::GetAttrStr(smbID, attrIndex);
+	}
+}
 void Production::Print() const {
-	cout << Grammer::grammerSymbolNum2Str[head] \
+	cout << Grammer::GetSymbolStr(head) \
 		<< ' ' << "-> ";
 	for (auto& i : body)
-		cout << Grammer::grammerSymbolNum2Str[i] << " ";
+		cout << Grammer::GetSymbolStr(i)<< " ";
+	if (!actions.size())
+		return;
+	cout << "\n{ ";
+	int a;
+	for (auto& action : actions) {
+		for (int i = 0; i < action->requested.size(); ++i) {
+			a = action->requested[i];
+			switch (a)
+			{
+			case Action::ADD: { cout << "+ "; break; }
+			case Action::ASSIGN: { cout << "= "; break; }
+			case Action::DIV: { cout << "/ "; break; }
+			case Action::MINUS: { cout << "- "; break; }
+			case Action::MULT: { cout << "* "; break; }
+			case Action::REM: { cout << "% "; break; }
+			case Action::PUSH_ALL: { cout << "$" << \
+				Grammer::GetSymbolStr(action->requested[++i]) << " ";
+				break;
+			}
+			case Action::FUN: {
+				int funID = action->requested[++i];
+				cout << Grammer::GetFunName(funID) << "(";
+				
+				int symbolIndex, attrIndex;
+				for (int pCnt = 0; pCnt < Grammer::GetFunParaCnt(funID); ++pCnt) {
+					symbolIndex = action->requested[++i];
+					attrIndex = action->requested[++i];
+
+					if (symbolIndex == Action::PUSH_ALL) {
+						cout << "$" << \
+						Grammer::GetSymbolStr(body[attrIndex]);
+						break;
+					}
+
+					if (symbolIndex == 0)
+						cout << Grammer::GetSymbolStr(head) + '.' + \
+						AttrStr(head,attrIndex);
+					else 
+						cout << Grammer::GetSymbolStr(body[symbolIndex - 1]) + '.'+ \
+						AttrStr(body[symbolIndex-1],attrIndex);
+					
+					if (pCnt < (Grammer::GetFunParaCnt(funID) - 1))
+						cout << ",";
+				}
+				cout << ")";
+				break; }
+			default: {
+				int symbolIndex = action->requested[i++];
+				int attrIndex = action->requested[i];
+				if (symbolIndex == 0) cout << Grammer::GetSymbolStr(head) + '.' + \
+					AttrStr(head, attrIndex);
+				else cout << Grammer::GetSymbolStr(body[symbolIndex - 1]) + '.' + \
+					AttrStr(body[symbolIndex - 1], attrIndex);
+				cout << " ";
+				break;
+			}
+			}
+		}
+		cout << "; \t";
+	}
+	cout << "}";
 }
 
 Production& Production::operator=(const Production& p) {
 	this->head = p.head;
 	this->body = p.body;
+	this->actions = p.actions;
 	return *this;
 }
 
@@ -212,7 +301,7 @@ void Item::Print() const {
 	cout << " \tdotPos: " << dotPos << " \tlookAhead: ";
 	for (auto& terminal : lookAhead) {
 		if (terminal != Collection::LOOKAHEAD_ATHAND)
-			cout << Grammer::grammerSymbolNum2Str[terminal] << " ";
+			cout << Grammer::GetSymbolStr(terminal) << " ";
 		else
 			cout << '#' << " ";
 	}
