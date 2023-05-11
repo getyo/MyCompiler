@@ -18,9 +18,10 @@ struct Token
 
 struct TokenAttribute {
 	string lexeme;
+	int val = -1;
 	int row;
 	int col;
-	Ty_TypeID typeID;
+	Ty_TypeID typeID = -1;
 	TokenAttribute(string& lexeme,int row,int col,Ty_TypeID typeID):\
 		lexeme(lexeme), row(row), col(col), typeID(typeID) {}
 	void Print();
@@ -30,7 +31,7 @@ class SymbolTable{
 private:
 	vector<TokenAttribute> table;
 public:
-	TokenAttribute operator[](int i);
+	TokenAttribute& operator[](int i);
 	void Push(TokenAttribute ta);
 	size_t Size();
 };

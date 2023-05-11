@@ -21,4 +21,5 @@ int main() {
 	parser->SetInput(tokenStream);
 	bool syntalPass = parser->Analyse();
 	if (!syntalPass) parser->PrintError();
+	
 }

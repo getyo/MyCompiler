@@ -12,11 +12,11 @@ extern std::ofstream logOut;
 #ifdef DEBUG
 #define _PARSER
 	#ifdef _PARSER
-		//#define _GRAMMER_PRINT
+		#define _GRAMMER_PRINT
 		//#define _LR0_PRINT
 		//#define _INIT_LOOKAHEAD_PRINT
 		//#define _COLLECTION_PRINT
-		//#define _PARSER_ACTION_PRINT
+		#define _PARSER_ACTION_PRINT
 		//#define _PARSER_STACK_PRINT
 	#endif // _PARSER
 

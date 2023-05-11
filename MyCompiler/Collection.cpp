@@ -107,9 +107,9 @@ set<int> Collection::FirstTerminalAfterDot(Item item) {
 		for (auto& t : item.GetLookAheadSet())
 			s.insert(t);
 	}
-	else if (grammer->IsTerminal(symbol))
+	else if (Grammer::IsTerminal(symbol))
 		s.insert(symbol);
-	else if (grammer->IsUnterminal(symbol)) {
+	else if (Grammer::IsUnterminal(symbol)) {
 		stack<int> unterminalStack;
 		unordered_set<int> unterminalSet;
 		unterminalStack.push(symbol);
@@ -120,9 +120,9 @@ set<int> Collection::FirstTerminalAfterDot(Item item) {
 				auto p = grammer->operator[](i);
 				auto body = p.GetBody();
 				if (p.GetHead() == symbol) {
-					if (grammer->IsTerminal(body[0]))
+					if (Grammer::IsTerminal(body[0]))
 						s.insert(body[0]);
-					else if (grammer->IsUnterminal(body[0]) && !unterminalSet.count(body[0]))
+					else if (Grammer::IsUnterminal(body[0]) && !unterminalSet.count(body[0]))
 						unterminalStack.push(body[0]);
 				}
 			}
@@ -148,7 +148,7 @@ vector <Item> Collection::ClosureLR1(Item& item) {
 		Item item = itemVec[i];
 		int followDot = item.FollowDot();
 		if (followDot == Item::BLANK_FOLLOW_DOT) continue;
-		if (grammer->IsTerminal(followDot)) continue;
+		if (Grammer::IsTerminal(followDot)) continue;
 		for (int i = 0; i < grammer->ProductionCnt(); i++) {
 			Production p = grammer->operator[](i);
 			if (followDot == p.GetHead()) {
@@ -192,7 +192,7 @@ void Collection::IntiLookAhead() {
 						cerr << "Shift Reduction Conflication\n";
 						cerr << "Item:\n";
 						item.Print();
-						cerr << "\nShift Symbol : " << grammer->grammerSymbolNum2Str[followDot] << "\n";
+						cerr << "\nShift Symbol : " << Grammer::GetSymbolStr(followDot) << "\n";
 
 						cerr << "\nOrigin Reduce Production:\n";
 						(*grammer)[-(nextStatus + 1)].Print();
@@ -216,7 +216,7 @@ void Collection::IntiLookAhead() {
 								else if (parserTable[nextStatus][lookAhead] >= 0) {
 									cerr << "\nGammer is not LALR!\n";
 									cerr << "Shift Reduction Conflication\n";
-									cerr << "InputSymbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
+									cerr << "InputSymbol : " << Grammer::GetSymbolStr(lookAhead) << "\n";
 
 									cerr << "\nCurrent Status: Status " << nextStatus << "\n";
 									PrintStatus(nextStatus);
@@ -237,7 +237,7 @@ void Collection::IntiLookAhead() {
 									if (parserTable[nextStatus][lookAhead] == (-i.GetPItr())) continue;
 									cerr << "\nGammer is not LALR!\n";
 									cerr << "Reduction Reduction Conflication\n";
-									cerr << "InputSymbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
+									cerr << "InputSymbol : " << Grammer::GetSymbolStr(lookAhead) << "\n";
 
 									cerr << "\nCurrent Status: Status " << nextStatus << "\n";
 									PrintStatus(nextStatus);
@@ -267,7 +267,7 @@ void Collection::IntiLookAhead() {
 		++status;
 	}
 	//向起始符号所在的item添加$
-	int end = grammer->grammerSymbolStr2Num["$"];
+	int end = Grammer::GetSymbolID("$");
 	collection[0].begin()->AddLookAhead(end);
 	//Print();
 	//cout << "\n\n\n";
@@ -309,7 +309,7 @@ void Collection::LookAheadPorpagate() {
 									cerr << "Shift Reduction Conflication\n";
 									cerr << "Item:\n";
 									to.itemPtr->Print();
-									cerr << "\nShift Symbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
+									cerr << "\nShift Symbol : " << Grammer::GetSymbolStr(lookAhead) << "\n";
 
 									cerr << "\n";
 									cerr << "\nFrom Status: Status " << status << "\n";
@@ -333,7 +333,7 @@ void Collection::LookAheadPorpagate() {
 									cerr << "Reduction Reduction Conflication\n";
 									cerr << "Item:\n";
 									to.itemPtr->Print();
-									cerr << "\nInput Symbol : " << grammer->grammerSymbolNum2Str[lookAhead] << "\n";
+									cerr << "\nInput Symbol : " << Grammer::GetSymbolStr(lookAhead) << "\n";
 
 									cerr << "\n";
 									cerr << "\nFrom Status: Status " << to.status << "\n";
@@ -410,14 +410,14 @@ void Collection::PrintStatus(int status) {
 	cout << "Goto: \t";
 	for (int j = 0; j < grammerSymbolCnt; j++) {
 		if (line[j] != NON_ENTRY && line[j] >= 0)
-			cout << Grammer::grammerSymbolNum2Str[j] \
+			cout << Grammer::GetSymbolStr(j) \
 			<< " " << line[j] << " \t";
 	}
 	cout << "\n";
 	cout << "Reduce: \t";
 	for (int j = 0; j < grammerSymbolCnt; j++) {
 		if (line[j] != NON_ENTRY && line[j] < 0)
-			cout << Grammer::grammerSymbolNum2Str[j] \
+			cout << Grammer::GetSymbolStr(j) \
 			<< " " << line[j] << " \t";
 	}
 }
@@ -434,14 +434,14 @@ void Collection::Print() {
 		cout << "Goto: \t";
 		for (int j = 0; j < grammerSymbolCnt; j++) {
 			if (line[j] != NON_ENTRY && line[j] >= 0)
-				cout << Grammer::grammerSymbolNum2Str[j] \
+				cout << Grammer::GetSymbolStr(j) \
 				<< " " << parserTable[i][j] << " \t";
 		}
 		cout << "\n";
 		cout << "Reduce: \t";
 		for (int j = 0; j < grammerSymbolCnt; j++) {
 			if (line[j] != NON_ENTRY && line[j] < 0)
-				cout << Grammer::grammerSymbolNum2Str[j] \
+				cout << Grammer::GetSymbolStr(j) \
 				<< " " << parserTable[i][j] << " \t";
 		}
 		cout << "\n\n";
