@@ -16,7 +16,7 @@ extern std::ofstream logOut;
 		//#define _LR0_PRINT
 		//#define _INIT_LOOKAHEAD_PRINT
 		//#define _COLLECTION_PRINT
-		//#define _PARSER_ACTION_PRINT
+		#define _PARSER_ACTION_PRINT
 		//#define _PARSER_STACK_PRINT
 	#endif // _PARSER
 

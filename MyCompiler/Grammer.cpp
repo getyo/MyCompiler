@@ -44,8 +44,8 @@ bool Grammer::IsUnterminal(int val) {
 
 bool Grammer::IsUnterminal(string name) {
 	if (Lexeme::tokenKindStr2Num.count(name) == 1)
-		return true;
-	else return false;
+		return false;
+	else return true;
 }
 
 bool Grammer::IsTerminal(int val) {
@@ -194,6 +194,7 @@ void Grammer::ReadAction(Production &p) {
 }
 
 void Grammer::ReadFunction(ifstream& in) {
+	++row;
 	getline(in, curLine);
 	string funName,temp,paraCnt;
 	int funID = 0;

@@ -5,13 +5,20 @@
 #include <vector>
 #include <memory>
 #include <array>
+#include "Debug.h"
 using namespace std;
 
 struct SymbolWithAttr
 {
 	int symbol;
+	int symTableIndex;
 	shared_ptr<array<int,8>> attr;
 	SymbolWithAttr(){}
+	SymbolWithAttr(Token t) {
+		symbol = t.kind;
+		symTableIndex = t.symbolTableIndex;
+		attr = nullptr;
+	}
 	SymbolWithAttr(int symbol) {
 		this->symbol = symbol;
 		if (Grammer::IsTerminal(symbol))
@@ -22,15 +29,18 @@ struct SymbolWithAttr
 	SymbolWithAttr(const SymbolWithAttr&& sw) {
 		symbol = sw.symbol;
 		attr = sw.attr;
+		symTableIndex = sw.symTableIndex;
 	}
 	SymbolWithAttr& operator=(const SymbolWithAttr& sw) {
 		symbol = sw.symbol;
 		attr = sw.attr;
+		symTableIndex = sw.symTableIndex;
 		return *this;
 	}
-	SymbolWithAttr(const SymbolWithAttr& sw) {
+	SymbolWithAttr (const SymbolWithAttr& sw) {
 		symbol = sw.symbol;
 		attr = sw.attr;
+		symTableIndex = sw.symTableIndex;
 	}
 };
 
@@ -61,12 +71,16 @@ public:
 			return true;
 		}
 	}
-	SymbolWithAttr top() {
+	SymbolWithAttr& top() {
 		return array[topIndex];
 	}
-	SymbolWithAttr get(int index) {
-		if (index >= 0) return array[index];
-		else return array[topIndex - index];
+	SymbolWithAttr& get(int index) {
+		if (index > 0) {
+			cerr << "SymbolStack.get can't accpet a index which is bigger than 0\n";
+			PrintStackTrace();
+			abort();
+		}
+		else return array[topIndex + index];
 	}
 };
 
@@ -91,7 +105,10 @@ private:
 	~Parser() {}
 	void operator=(const Parser& p) {}
 	string makeErrorInfo(Token);
+	void* GetAttrPtr(int pItr, int smbIndex, int attrIndex);
+	SymbolWithAttr ExecuteAction(int pItr);
 	bool RedressNon();
+	void shift(SymbolWithAttr &swa);
 	void shift(int);
 	int Reduce(int productionIndex);
 	void PopToken(int cnt);

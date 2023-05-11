@@ -5,14 +5,6 @@
 #include "Collection.h"
 
 int Item::BLANK_FOLLOW_DOT = -100000000;
-const int Action::ADD = -1;
-const int Action::MINUS = -2;
-const int Action::MULT = -3;
-const int Action::DIV = -4;
-const int Action::FUN = -5;
-const int Action::ASSIGN = -6;
-const int Action::REM = -7;
-const int Action::PUSH_ALL = -8;
 
 Production::Production(const Production&& p) {
 	this->head = p.head;
