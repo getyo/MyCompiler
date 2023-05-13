@@ -156,6 +156,7 @@
     <ClInclude Include="Production.h" />
     <ClInclude Include="SyntaxTree.h" />
     <ClInclude Include="Token.h" />
+    <ClInclude Include="Triple.h" />
     <ClInclude Include="Type.h" />
   </ItemGroup>
   <ItemGroup>
@@ -171,6 +172,8 @@
     <ClCompile Include="Production.cpp" />
     <ClCompile Include="SyntaxTree.cpp" />
     <ClCompile Include="Token.cpp" />
+    <ClCompile Include="Triple.cpp" />
+    <ClCompile Include="Type.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

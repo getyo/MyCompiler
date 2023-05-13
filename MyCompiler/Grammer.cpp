@@ -3,6 +3,7 @@
 #include "Debug.h"
 #include "FileManager.h"
 #include "Lex.h"
+#include "Triple.h"
 
 int Grammer::END_OF_GRAMMER;
 string curSymbol;
@@ -72,7 +73,7 @@ static string RowAndCol() {
 	return s;
 }
 static bool IsDigit(char c) {
-	if (c >= '0' && c <= '9') return true;
+	if ((c >= '0' && c <= '9') || (c == '-')) return true;
 	else return false;
 }
 
@@ -112,25 +113,48 @@ void Grammer::ReadAction(Production &p) {
 		if (s == "##") break;
 		//处理函数调用
 		if (funStr2Int.count(s)) { 
+#ifdef DEBUG
+			int paraCnt = 0;
+#endif // DEBUG
 			action->requested.push_back(Action::FUN);
 			action->requested.push_back(Grammer::GetFunID(s));
-				++curLineIt;
+			++curLineIt;
 			if (curLine[curLineIt] != '(') {
 				cerr << "\nGrammer: " + RowAndCol() + " Incorrect Input: Auxiliary Function should have ()\n";
 				abort();
 			}
 			++curLineIt;
 			while (true) {
-				if (curLine[curLineIt] == ')') break;
+				if (curLine[curLineIt] == ')') { ++curLineIt;  break; };
 				switch (curLine[curLineIt])
 				{
 				case ' ': {++curLineIt; break; }
 				case ',': {++curLineIt; break; }
 				case '$': {
-					action->requested.push_back(Action::PUSH_ALL);
+					action->requested.push_back(Action::DIGIT);
 					++curLineIt;
-					action->requested.push_back(curLine[curLineIt] - '0');
+					string num = "";
+					while (IsDigit(curLine[curLineIt])) num += curLine[curLineIt++];
+					action->requested.push_back(stoi(num));
+#ifdef DEBUG
+					paraCnt += 1;
+#endif // DEBUG
+					break;
+				}
+				case '\'': {
+					action->requested.push_back(Action::OP);
+					string opStr = ""; 
 					++curLineIt;
+					while (curLine[curLineIt] != '\'') {
+						opStr += curLine[curLineIt];
+						++curLineIt;
+					}
+					int op = Generator::GetIcopInt(opStr);
+					action->requested.push_back(op);
+					++curLineIt;
+#ifdef DEBUG
+					paraCnt += 1;
+#endif // DEBUG
 					break;
 				}
 				default: {
@@ -151,10 +175,19 @@ void Grammer::ReadAction(Production &p) {
 					}
 					action->requested.push_back(curLine[curLineIt] - '0');
 					++curLineIt;
-				}
+#ifdef DEBUG
+					++paraCnt;
+#endif // DEBUG
 					   break;
 				}
+				}
 			}
+#ifdef DEBUG
+			int realCnt = Grammer::GetFunParaCnt(s);
+			ASSERT(paraCnt == realCnt,"Grammer: Function "\
+				+ s + " must have " + to_string(realCnt) + " parameters ");
+#endif // DEBUG
+
 		}
 		else if (s.size() == 1) {
 			switch (s[0])
@@ -174,6 +207,14 @@ void Grammer::ReadAction(Production &p) {
 			}
 		}
 		//处理符号.属性
+		else if (s[0] == '$') {
+			action->requested.push_back(Action::DIGIT);
+			int i = 1;
+			string num = "";
+			while (IsDigit(s[i])) num += s[i++];
+			action->requested.push_back(stoi(num));
+			continue;
+		}
 		else {
 			if (!IsDigit(s[0])) {
 				cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should input digit\n";

@@ -49,7 +49,7 @@ public:
 	DFA(SyntalTreePtr tree,Ty_FollowPos& followPos,Ty_TokenKind);
 	DFA(DFA&& src);
 	DFA(DFA& src);
-	Ty_TokenKind Recognize(string &word,int &ptr) const;
+	Ty_TokenKind Recognize(string &word,int &ptr,int &pre) const;
 	DFA& operator=(DFA &&);
 	inline int EdgeTo(int from, char symbol) const;
 	inline bool HasEdgeTo(int from, int to, char symbol) const;

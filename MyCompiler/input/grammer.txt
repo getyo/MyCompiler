@@ -3,7 +3,7 @@
 //2. num.num = fun(num.num,num.num)
 //其中num.num为一个元素，第一个数字代表所需语法符号在产生式中的位置，产生式头为0，依次类推。
 //第二个num代表该语法符号对于的属性值，每个终结符的属性值固定如下：
-//0：lexeme 1:val 2：row 3:col 5:typeID
+//0：lexeme 1:val 2：row 3:col 4:typeID
 //对应toekn的属性，注意val仅对digit有效（缺省-1），typeID仅对类型有效，如int等（缺省-1）
 //终结符属性值各有不同，所以这里不做规定，但每个终结符最多有8个属性值，每个属性值占4字节
 //但需要注意，每个终结符下标为7的属性值（最后一属性）一定是其生成的中间代码索引（缺省为-1）
@@ -15,86 +15,109 @@
 
 //辅助函数定义
 //下面的辅助函数使用并不进行参数检查，需要小心
-//为方便编写，规定$n代表产生式中第n项的symbolID和atteribut指针全部当作参数，实际为两个参数
 
-
-//para: $n
-//输出语法符号以及语法符号对应属性
-Print : 2
-
-//创建一个新的命名空间,并把当前命名空间压入命名栈中，设置为栈顶
+//0:创建一个新的命名空间,并把当前命名空间压入命名栈中，设置为栈顶
 NewEnv : 0
 
-//销毁命名空间，将命名栈顶置为上一个命名空间
+//1:销毁命名空间，将命名栈顶置为上一个命名空间
 PopEnv : 0
 
-//创建临时三元式的临时变量，会增加数据区的大小和当前Env的offset，
+//2:创建临时三元式的临时变量，会增加数据区的大小和当前Env的offset，
 //但Env的变量表中并不会含有该变量，返回临时变量的地址
 //typeID
 NewTemp : 1
 
-//将id的定义压入Env中，并且会检查是否重复定义
-//para: id.lexeme,typeID,width
-EnvPush : 3
+//3:将id的定义压入Env中，并且会检查是否重复定义
+//para: id.lexeme,typeID
+EnvPush : 2
 
-//根据lexeme从Env的符号表中查找，并返回其地址
+//4:根据lexeme从Env的符号表中查找，并返回其地址
 //id.lexemem
 EnvGetAddr : 1
 
-//根据lexeme从Env的符号表中查找，并返回其类型
+//5:根据lexeme从Env的符号表中查找，并返回其类型
 //id.lexemem
 EnvGetType : 1
 
-//根据lexeme从Env的符号表中查找，并返回其宽度
+//6:根据lexeme从Env的符号表中查找，并返回其宽度
 //id.lexemem
 EnvGetWidth : 1
 
+//7:中间代码生成,根据前三个参数生成中间代码，生成过程中会从codeStart
+//位置开始查找codeStore，如果有和要生成的中间代码一致的三元组，返回该三元组index
+//operation , triple 1 , triple 2
+Gen : 3
+
+//8:更新CodeStart变量，这里保存着当前Expr生成的中间代码的起始下标（一个expr很可能不止一条中间代码）
+UpdateCodeStart : 0
+
+//9:向CodeStore中加入id或者常量,根据addr是否为-1来判断加入的是id还是常量
+//addr , val
+InsertElem : 2
+
+//10:生成赋值运算符的中间代码
+//op ,EnvGetAddr(id.lexeme) , addr 
+GenAssign : 3
+
 END$
 
+//关于常数，如果要在属性计算中使用常数，需要使用$n的形式
+//所有非终结符默认6号属性为CodeStart, 7号为CodeEnd
+StatementList' -> StatementList
+StatementList -> StatementList Statement	## 0.6 = 1.6 ; 0.7 = 1.7 ##
+StatementList -> Statement					## 0.6 = 1.6 ; 0.7 = 1.7 ##
+Statement -> ExprStatement					## 0.6 = 1.6 ; 0.7 = 1.7 ##
+Statement -> DefinationStatement			
+
 //计算表达式
-ExprStatement -> Expr ;		## 0.0 = 1.0 ##
+ExprStatement -> Expr ;		## 0.0 = 1.0 ; 0.6 = 1.6 ; 0.7 = UpdateCodeStart () ##
 $$ ExprStatement : 0 val
-Expr -> AddtiveExpr			## 0.0 = 1.0 ; 0.1 = 1.1 ##
-$$ Expr : 0 val 1 typeID
+Expr -> AssignExpr			## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = 1.6 ##
+$$ Expr : 0 addr 1 typeID
+
+//赋值表达式
+AssignExpr -> id =  AssignExpr		## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ; 0.6 = GenAssign ('=',0.0,3.6) ##
+AssignExpr -> id += AssignExpr		## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ; 0.6 = GenAssign ('+=',0.0,3.6) ##
+AssignExpr -> id -= AssignExpr		## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ; 0.6 = GenAssign ('-=',0.0,3.6) ##
+AssignExpr -> id *= AssignExpr		## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ; 0.6 = GenAssign ('*=',0.0,3.6) ##
+AssignExpr -> id /= AssignExpr		## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ; 0.6 = GenAssign ('/=',0.0,3.6) ##
+AssignExpr -> AddtiveExpr			## 0.6 = 1.6 ##
+$$ AssignExpr : 0 addr 1 typeID
 
 //加法表达式
-AddtiveExpr -> AddtiveExpr + MultiplicativeExpr		## 0.0 = 1.0 + 3.0 ; 0.1 = 1.1 ##
-AddtiveExpr -> AddtiveExpr - MultiplicativeExpr		## 0.0 = 1.1 - 3.1 ; 0.1 = 1.1 ##
-AddtiveExpr -> MultiplicativeExpr						## 0.0 = 1.0 ; 0.1 = 1.1 ##
-$$ AddtiveExpr : 0 val 1 typeID
-$$ MultiplicativeExpr : 0 val 1 typeID 
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr		## 0.6 = Gen ('+',1.6,3.6) ; ##
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr		## 0.6 = Gen ('-',1.6,3.6) ; ##
+AddtiveExpr -> MultiplicativeExpr						## 0.6 = 1.6 ##
+$$ AddtiveExpr : 0 addr 1 typeID
+$$ MultiplicativeExpr : 0 addr 1 typeID 
 //乘法表达式
-MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr		## 0.0 = 1.0 * 3.0 ; 0.1 = 1.1 ##
-MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr		## 0.0 = 1.0 / 3.0 ; 0.1 = 1.1 ##
-MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr		## 0.0 = 1.0 % 3.0 ; 0.1 = 1.1 ##
-MultiplicativeExpr -> PrimaryExpr							## 0.0 = 1.0 ; 0.1 = 1.1 ##
-$$ PrimaryExpr : 0 val 1 typeID
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr		## 0.6 = Gen ('/',1.6,3.6) ; ##
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr		## 0.6 = Gen ('*',1.6,3.6) ; ##
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr		## 0.6 = Gen ('*',1.6,3.6) ; ##
+MultiplicativeExpr -> PrimaryExpr							## 0.6 = 1.6 ##
+$$ PrimaryExpr : 0 addr 1 typeID 2 val
+
+//addr = -1,代表当前primaryexpr是常量
 //基本表达式
-//terminal: 0：lexeme 1:val 2：row 3:col 5:typeID
-PrimaryExpr -> id				## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ##	
-PrimaryExpr -> digit			## 0.0 = 1.1 ##
-PrimaryExpr -> ( Expr )			## 0.0 = 1.0 ; 0.1 = 1.1 ##
+//terminal: 0 lexeme	1 val	2 row	3 col	5 typeID
+PrimaryExpr -> id				## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ; 0.6 = InsertElem (0.0,1.1) ##	
+PrimaryExpr -> digit			## 0.0 = $-1 ; 0.1 = $0 ; 0.2 = 1.1 ; 0.6 = InsertElem (0.0,0.2) ##
+
 
 //类型定义
-Type -> BasicType
-BasicType -> ValueType
-ValueType -> int
-ValueType -> float
+Type -> BasicType			## 0.0 = 1.0 ##
+BasicType -> ValueType		## 0.0 = 1.0 ##
+ValueType -> int			## 0.0 = 1.4 ##
+ValueType -> float			## 0.0 = 1.4 ##
+$$ Type : 0 typeID
+$$ BasicType : 0 typeID
+$$ ValueType : 0 typeID
 
 //变量定义以及初始化
 DefinationStatement -> Defination ;
-Defination -> DeclationList
-Defination -> IntilizationList
+Defination -> Declation
+$$ Declation : 0 typeID
 
-DeclationList -> DeclationList , id
-DeclationList -> Declation
-IntilizationList -> IntilizationList , id = ComputedExpr
-IntilizationList -> Intilization
-
-Declation -> DirectDeclation
-Declation -> ArrayDeclation
-DirectDeclation -> Type id
-ArrayDeclation -> DirectDeclation AarryPostfixList
-AarryPostfixList -> AarryPostfixList [ digit ]
-AarryPostfixList -> [ digit ]
-Intilization -> DirectDeclation = ComputedExpr
+Declation -> DirectDeclation							## 0.0 = 1.0 ##
+DirectDeclation -> Type id								## 0.0 = 1.0 ; EnvPush (2.0,1.0) ##
+$$ DirectDeclation : 0 typeID

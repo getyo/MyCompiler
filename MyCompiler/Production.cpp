@@ -3,6 +3,7 @@
 #include <string>
 #include "Grammer.h"
 #include "Collection.h"
+#include "Triple.h"
 
 int Item::BLANK_FOLLOW_DOT = -100000000;
 
@@ -73,6 +74,7 @@ string Production::AttrStr(int smbID,int attrIndex) const {
 		return Grammer::GetAttrStr(smbID, attrIndex);
 	}
 }
+
 void Production::Print() const {
 	cout << Grammer::GetSymbolStr(head) \
 		<< ' ' << "-> ";
@@ -93,9 +95,9 @@ void Production::Print() const {
 			case Action::MINUS: { cout << "- "; break; }
 			case Action::MULT: { cout << "* "; break; }
 			case Action::REM: { cout << "% "; break; }
-			case Action::PUSH_ALL: { cout << "$" << \
-				Grammer::GetSymbolStr(action->requested[++i]) << " ";
-				break;
+			case Action::DIGIT: { cout << "$" << action->requested[++i]<<' '; break; }
+			case Action::OP: {
+				cout << Generator::GetIcopStr(action->requested[++i]) << ' '; break;
 			}
 			case Action::FUN: {
 				int funID = action->requested[++i];
@@ -106,10 +108,13 @@ void Production::Print() const {
 					symbolIndex = action->requested[++i];
 					attrIndex = action->requested[++i];
 
-					if (symbolIndex == Action::PUSH_ALL) {
-						cout << "$" << \
-						Grammer::GetSymbolStr(body[attrIndex]);
-						break;
+					if (symbolIndex == Action::DIGIT) {
+						cout << "$" << attrIndex;
+						goto Continue;
+					}
+					else if(symbolIndex == Action::OP){
+						cout << Generator::GetIcopStr(attrIndex);
+						goto Continue;
 					}
 
 					if (symbolIndex == 0)
@@ -118,7 +123,7 @@ void Production::Print() const {
 					else 
 						cout << Grammer::GetSymbolStr(body[symbolIndex - 1]) + '.'+ \
 						AttrStr(body[symbolIndex-1],attrIndex);
-					
+					Continue:
 					if (pCnt < (Grammer::GetFunParaCnt(funID) - 1))
 						cout << ",";
 				}

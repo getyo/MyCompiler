@@ -19,7 +19,10 @@ extern std::ofstream logOut;
 		#define _PARSER_ACTION_PRINT
 		//#define _PARSER_STACK_PRINT
 	#endif // _PARSER
-
+#define _GEN
+	#ifdef _GEN
+		#define _ICP
+	#endif // _GEN
 
 #endif // DEBUG
 
