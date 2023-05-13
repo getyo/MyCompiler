@@ -1,6 +1,9 @@
 #pragma once
 #include "Type.h"
 #include "Triple.h"
+#include <iostream>
+#include "Parser.h"
+using namespace std;
 
 #define STATTR_2_STR(attrPtr) ( *((string*)attrPtr) )
 #define INTATTR_2_INT(attrPtr) ( *((int*)attrPtr) )
@@ -22,6 +25,13 @@
 		case 8:{retVal = (int)Generator::Update(); break;}\
 		case 9:{retVal = (int)Generator::InsertElem( INT_ATTR(0) , INT_ATTR(1) ); break;}\
 		case 10:{retVal = (int)Generator::GenAssign( INT_CONST(0) , INT_ATTR(1) ,INT_ATTR(2) ); break;}\
+		case 11:{retVal = (int)Type::CreateArrayType( INT_ATTR(0) , INT_ATTR(1) ,INT_ATTR(2) ,INT_ATTR(3)); break;}\
+		case 12:{retVal = (int)Environmemt::curEnv->GetArrayType( ST_ATTR(0) )->elemWidth; break;}\
+		case 13:{retVal = (int)Environmemt::curEnv->GetArrayType( ST_ATTR(0) )->GetDimSize( INT_CONST(1) );\
+				if(retVal == -1){ cout << "Error : " << ST_ATTR(0) << " doesn't have " << (INT_CONST(1) + 1)\
+								 << " dimension \t" << Parser::RowAndCol();exit(1);}\
+				 break;}\
+		case 14:{retVal = (int)Environmemt::curEnv->GetArrayType( ST_ATTR(0) )->elemID; break;}\
 		default:{\
 			cerr << "Parser: illegal function ID"; break;\
 		}\

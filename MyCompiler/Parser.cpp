@@ -59,16 +59,29 @@ void* Parser::GetAttrPtr(int pItr, int smbIndex, int attrIndex) {
 }
 
 void ComputedOp(stack<void*>& oprandStack,vector<int*>&unused,int op) {
-	int oprand1 = *(int*)oprandStack.top();
+	int oprand1,oprand2;
+	if ((int)oprandStack.top() == Action::DIGIT) {
+		oprandStack.pop();
+		oprand1 = (int)oprandStack.top();
+	}
+	else oprand1 = *(int*)oprandStack.top();
 	oprandStack.pop();
-	int oprand2 = *(int*)oprandStack.top();
+
+	if ((int)oprandStack.top() == Action::DIGIT) {
+		oprandStack.pop();
+		oprand2 = (int)oprandStack.top();
+	}
+	else oprand2 = *(int*)oprandStack.top();
 	oprandStack.pop();
+
 	int* res = new int();
 	switch (op)
 	{
-	case Action::ADD: {*res = oprand1 + oprand2; break; }
+	case Action::ADD: {
+		*res = oprand1 + oprand2; break; }
 	case Action::MINUS: {*res = oprand1 - oprand2; break; }
-	case Action::MULT: {*res = oprand1 * oprand2; break; }
+	case Action::MULT: {
+		*res = oprand1 * oprand2; break; }
 	case Action::DIV: {*res = oprand1 / oprand2; break; }
 	case Action::REM: {*res = oprand1 % oprand2; break; }
 	default:
@@ -134,7 +147,6 @@ SymbolWithAttr Parser::ExecuteAction(int pItr) {
 						if (curParaIndex >= Grammer::GetFunParaCnt(curfunID)) {
 							postfix.push_back(curfunID);
 							isFunPara = false;
-							break;
 						}
 					}
 				}
@@ -150,7 +162,6 @@ SymbolWithAttr Parser::ExecuteAction(int pItr) {
 						if (curParaIndex >= Grammer::GetFunParaCnt(curfunID)) {
 							postfix.push_back(curfunID);
 							isFunPara = false;
-							break;
 						}
 					}
 				}
@@ -220,16 +231,16 @@ SymbolWithAttr Parser::ExecuteAction(int pItr) {
 				ComputedOp(oprandStack, unused, Action::ADD);
 				break; }
 			case Action::MINUS: {
-				ComputedOp(oprandStack, unused, Action::ADD);
+				ComputedOp(oprandStack, unused, Action::MINUS);
 				break; }
 			case Action::MULT: {
-				ComputedOp(oprandStack, unused, Action::ADD);
+				ComputedOp(oprandStack, unused, Action::MULT);
 				break; }
 			case Action::DIV: {
-				ComputedOp(oprandStack, unused, Action::ADD);
+				ComputedOp(oprandStack, unused, Action::DIV);
 				break; }
 			case Action::REM: {
-				ComputedOp(oprandStack, unused, Action::ADD);
+				ComputedOp(oprandStack, unused, Action::REM);
 				break; }
 			case Action::ASSIGN:{
 				int oprand;
@@ -273,7 +284,7 @@ void Parser::PopToken(int cnt) {
 
 int Parser::Reduce(int productionIndex) {
 
-#ifdef _PARSER_ACTION_PRINT
+#ifdef _PARSER_REDUCE_PRINT
 	int preStatus = curStatus;
 #endif // _PARSER_ACTION_PRINT
 
@@ -295,7 +306,7 @@ int Parser::Reduce(int productionIndex) {
 	}
 	auto headSwa = ExecuteAction(productionIndex);
 
-#ifdef _PARSER_ACTION_PRINT
+#ifdef _PARSER_REDUCE_PRINT
 	cout << "\nInput Token : " << Grammer::GetSymbolStr(curInputToken) << "\n";
 	cout << "ACTION : reduce\n";
 	cout << "\nCurStatus Status : Status " << preStatus << "\n";
@@ -318,7 +329,7 @@ int Parser::Reduce(int productionIndex) {
 }
 
 void Parser::shift(SymbolWithAttr& swa) {
-#ifdef _PARSER_ACTION_PRINT
+#ifdef _PARSER_SHIFT_PRINT
 	int preStatus = curStatus;
 #endif // _PARSER_ACTION_PRINT
 
@@ -326,7 +337,7 @@ void Parser::shift(SymbolWithAttr& swa) {
 	curStatus = collectionPtr->Goto(curStatus, swa.symbol);
 	statusStack.push(curStatus);
 
-#ifdef _PARSER_ACTION_PRINT
+#ifdef _PARSER_SHIFT_PRINT
 	cout << "\nInput Token : " << Grammer::GetSymbolStr(swa.symbol) << "\n";
 	cout << "ACTION : shift\n";
 	cout << "\nCurStatus Status : Status " << preStatus << "\n";
@@ -340,7 +351,7 @@ void Parser::shift(SymbolWithAttr& swa) {
 
 void Parser::shift(int symbol){
 
-#ifdef _PARSER_ACTION_PRINT
+#ifdef _PARSER_SHIFT_PRINT
 	int preStatus = curStatus;
 #endif // _PARSER_ACTION_PRINT
 	if (Grammer::IsTerminal(symbol))
@@ -350,7 +361,7 @@ void Parser::shift(int symbol){
 	curStatus = collectionPtr->Goto(curStatus, symbol);
 	statusStack.push(curStatus);
 
-#ifdef _PARSER_ACTION_PRINT
+#ifdef _PARSER_SHIFT_PRINT
 	cout << "\nInput Token : " << Grammer::GetSymbolStr(curInputToken) << "\n";
 	cout << "ACTION : shift\n";
 	cout << "\nCurStatus Status : Status " << preStatus << "\n";
