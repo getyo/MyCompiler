@@ -25,6 +25,8 @@ struct SymbolWithAttr
 			attr = nullptr;
 		else if (Grammer::IsUnterminal(symbol))
 			attr = make_shared<array<int,8>>();
+		for (auto& i : *attr)
+			i = -1;
 	}
 	SymbolWithAttr(const SymbolWithAttr&& sw) {
 		symbol = sw.symbol;
@@ -86,6 +88,7 @@ public:
 
 class Parser {
 private:
+	static int row, col;
 	int nonInt;
 	//用于分析操作
 	int curStatus = 0;
@@ -105,8 +108,11 @@ private:
 	~Parser() {}
 	void operator=(const Parser& p) {}
 	string makeErrorInfo(Token);
+
+	void PrintAttr(int pItr, SymbolWithAttr& head);
 	void* GetAttrPtr(int pItr, int smbIndex, int attrIndex);
 	SymbolWithAttr ExecuteAction(int pItr);
+
 	bool RedressNon();
 	void shift(SymbolWithAttr &swa);
 	void shift(int);
@@ -115,6 +121,7 @@ private:
 
 	static Parser* parserPtr;
 public:
+	static string RowAndCol();
 	static Parser* ParserFactory();
 	void SetInput(vector <Token>& tokenStream);
 	bool Analyse();

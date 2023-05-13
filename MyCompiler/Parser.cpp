@@ -1,8 +1,14 @@
 #include "Parser.h"
 #include <stack>
 #include "Debug.h"
+#include "Type.h"
+#include "Triple.h"
+#include "AuxiliaryFunction.h"
 Parser* Parser::parserPtr = nullptr;
 extern SymbolTable symbolTable;
+int Parser::row;
+int Parser::col;
+extern Generator* genPtr;
 
 Parser::Parser() {
 	collectionPtr = Collection::CollectionFactory();
@@ -81,6 +87,9 @@ SymbolWithAttr Parser::ExecuteAction(int pItr) {
 	stack<void*>oprandStack;
 	SymbolWithAttr headSwa(p[0]);
 	int attrIndex;
+	bool isFunPara = false;
+	int curParaIndex = 0;
+	int curfunID;
 	for (auto &action : p.actions) {
 		//构建后缀表达式
 		for (int i = 0; i < action->requested.size(); ++i) {
@@ -89,7 +98,9 @@ SymbolWithAttr Parser::ExecuteAction(int pItr) {
 			if (elem < 0) {
 				//以下操作保证了运算优先级
 				//如果操作栈为空，将当前操作压入栈中
-				if (opStack.empty()) opStack.push(elem);
+				if (opStack.empty()) {
+					opStack.push(elem);
+				}
 				//否则，将当前操作与操作栈顶比较，如果当前操作优先级高，将当前操作压入栈中，
 				//代表先进行当前操作
 				//如果当前操作比之前的操作优先级相等或更低，将之前操作放入后缀表达式，
@@ -111,6 +122,47 @@ SymbolWithAttr Parser::ExecuteAction(int pItr) {
 						}
 					}
 				}
+				if (elem == Action::DIGIT) {
+					postfix.push_back(action->requested[++i]);
+#ifdef DEBUG
+					ASSERT(opStack.top() == Action::DIGIT, "Parser : opStack Error");
+#endif // DEBUG
+					opStack.pop();
+					postfix.push_back(Action::DIGIT);
+					if (isFunPara) {
+						++curParaIndex;
+						if (curParaIndex >= Grammer::GetFunParaCnt(curfunID)) {
+							postfix.push_back(curfunID);
+							isFunPara = false;
+							break;
+						}
+					}
+				}
+				else if (elem == Action::OP) {
+					postfix.push_back(action->requested[++i]);
+#ifdef DEBUG
+					ASSERT(opStack.top() == Action::OP, "Parser : opStack Error");
+#endif // DEBUG
+					opStack.pop();
+					postfix.push_back(Action::OP);
+					if (isFunPara) {
+						++curParaIndex;
+						if (curParaIndex >= Grammer::GetFunParaCnt(curfunID)) {
+							postfix.push_back(curfunID);
+							isFunPara = false;
+							break;
+						}
+					}
+				}
+				else if (elem == Action::FUN) {
+					isFunPara = true;
+					curParaIndex = 0;
+					curfunID = action->requested[++i];
+					if (!Grammer::GetFunParaCnt(curfunID)) {
+						postfix.push_back(curfunID);
+						isFunPara = false;
+					}
+				}
 			}
 			//处理符号.属性
 			else {
@@ -124,6 +176,13 @@ SymbolWithAttr Parser::ExecuteAction(int pItr) {
 #endif // DEBUG
 					postfix.push_back(attrPtr);
 				}
+				if (isFunPara) {
+					++curParaIndex;
+					if (curParaIndex >= Grammer::GetFunParaCnt(curfunID)) {
+						postfix.push_back(curfunID);
+						isFunPara = false;
+					}
+				}
 			}
 		}
 		while (!opStack.empty()) { postfix.push_back(opStack.top()); opStack.pop(); }
@@ -132,7 +191,31 @@ SymbolWithAttr Parser::ExecuteAction(int pItr) {
 		for (int i = 0; i < postfix.size(); ++i) {
 			switch (postfix[i])
 			{
-			case Action::FUN: {break; }
+			case Action::DIGIT: {
+				oprandStack.push((void*)Action::DIGIT);
+				break;
+			}
+			case Action::OP: {
+				oprandStack.push((void*)Action::OP);
+				break;
+			}
+			case Action::FUN: {
+				int funID = (int)oprandStack.top();
+				oprandStack.pop();
+				int paraCnt = Grammer::GetFunParaCnt(funID);
+				void* paraList[MAX_PARACNT];
+				for (int paraIndex = paraCnt-1; paraIndex >=0 ; --paraIndex) {
+					if ((int)oprandStack.top() == Action::DIGIT || (int)oprandStack.top() == Action::OP)
+						oprandStack.pop();
+					paraList[paraIndex] = oprandStack.top();
+					oprandStack.pop();
+				}
+				int res;
+				FUNCALL(funID, paraList, res);
+				oprandStack.push((void*)res);
+				oprandStack.push((void*)Action::DIGIT);
+				break; 
+			}
 			case Action::ADD: { 
 				ComputedOp(oprandStack, unused, Action::ADD);
 				break; }
@@ -149,10 +232,24 @@ SymbolWithAttr Parser::ExecuteAction(int pItr) {
 				ComputedOp(oprandStack, unused, Action::ADD);
 				break; }
 			case Action::ASSIGN:{
-				int* oprand = (int*)oprandStack.top();
-				oprandStack.pop();
-				int* res = (int*)oprandStack.top();
-				*res = *oprand;
+				int oprand;
+				if ((int)oprandStack.top() == Action::DIGIT || (int) oprandStack.top() == Action::OP) {
+					oprandStack.pop();
+					oprand = (int)oprandStack.top();
+					oprandStack.pop();
+					int* res = (int*)oprandStack.top();
+					oprandStack.pop();
+					*res = oprand;
+					oprandStack.push(res);
+				}
+				else {
+					int* oprand = (int*)oprandStack.top();
+					oprandStack.pop();
+					int* res = (int*)oprandStack.top();
+					oprandStack.pop();
+					*res = *oprand;
+					oprandStack.push(res);
+				}
 				break;
 			}
 			default: {
@@ -164,6 +261,7 @@ SymbolWithAttr Parser::ExecuteAction(int pItr) {
 		while (!oprandStack.empty())oprandStack.pop();
 		postfix.clear();
 	}
+	for (auto& i : unused) delete i;
 	return headSwa;
 }
 
@@ -196,9 +294,6 @@ int Parser::Reduce(int productionIndex) {
 			
 	}
 	auto headSwa = ExecuteAction(productionIndex);
-	PopToken(body.size());
-	curStatus = statusStack.top();
-	
 
 #ifdef _PARSER_ACTION_PRINT
 	cout << "\nInput Token : " << Grammer::GetSymbolStr(curInputToken) << "\n";
@@ -208,11 +303,15 @@ int Parser::Reduce(int productionIndex) {
 	cout << "\n";
 	cout << "Reduce Prouduction :";
 	grammer->operator[](-(action + 1)).Print();
+	cout << "\n";
+	PrintAttr(productionIndex, headSwa);
 	cout << "\n\nReturn Status : Status " << curStatus << "\n";
 	collectionPtr->PrintStatus(curStatus);
 	cout << "\n\n";
 #endif // _PARSER_ACTION_PRINT
 
+	PopToken(body.size());
+	curStatus = statusStack.top();
 	shift(headSwa);
 	curInputToken = (*tokenStream)[tokenIndex].kind;
 	return p.GetHead();
@@ -292,6 +391,8 @@ bool Parser::Analyse() {
 	statusStack.push(curStatus);
 	curInputToken = (*tokenStream)[tokenIndex].kind;
 	action = collectionPtr->Goto(curStatus, curInputToken);
+
+	Environmemt::curEnv = Environmemt::NewEnv();
 	while(tokenIndex < tokenStream->size()){
 		if (action == Collection::NON_ENTRY) {
 			bool redressNon = RedressNon();
@@ -315,6 +416,9 @@ bool Parser::Analyse() {
 		//shift操作
 		else if (action >= 0) {
 			shift(curInputToken);
+			int symTableIt = (*tokenStream)[tokenIndex].symbolTableIndex;
+			row = symbolTable[symTableIt].row;
+			col = symbolTable[symTableIt].col;
 			++tokenIndex;
 			curInputToken = (*tokenStream)[tokenIndex].kind;
 		}
@@ -328,6 +432,52 @@ Continue:
 	}
 }
 
+void Parser::PrintAttr(int pItr, SymbolWithAttr& head) {
+	int bodySize = grammer->operator[](pItr).GetBody().size();
+	string headStr = Grammer::GetSymbolStr(head.symbol);
+	cout << "HeadAttr:\n";
+	int attrVal;
+	for (int i = 0; i < 8; i++) {
+		if (head.attr->at(i) != -1)
+			cout << headStr + '.' + Grammer::GetAttrStr(head.symbol, i) + " : "\
+			+ to_string(head.attr->at(i)) + " \t";
+		else break;
+	}
+	cout << headStr + '.' + Grammer::GetAttrStr(head.symbol,6) + " : "\
+		+ to_string(head.attr->at(6)) + " \t";
+	cout << headStr + '.' + Grammer::GetAttrStr(head.symbol,7) + " : "\
+		+ to_string(head.attr->at(7)) + " \t";
+	cout << "\nBodyAttr:\n";
+
+	for (int i = bodySize-1; i >= 0; --i) {
+		auto& swa = symbolStack.get(-i);
+		if (Grammer::IsTerminal(swa.symbol)) {
+			auto symStr = Grammer::GetSymbolStr(swa.symbol);
+			cout << symStr + ".lexeme : " \
+				+ symbolTable[swa.symTableIndex].lexeme + " \t";
+			if (symbolTable[swa.symTableIndex].val != -1)
+				cout << symStr + ".val: " + to_string(symbolTable[swa.symTableIndex].val) + " \t";
+			if (symbolTable[swa.symTableIndex].typeID != -1)
+				cout << symStr + ".typeID: " + Type::GetTypeStr(symbolTable[swa.symTableIndex].typeID) + " \t";
+		}
+		else if (Grammer::IsUnterminal(swa.symbol)) {
+			auto symStr = Grammer::GetSymbolStr(swa.symbol);
+			for (int i = 0; i < 8; i++) {
+				if (swa.attr->at(i) != -1)
+					cout << symStr + '.' + Grammer::GetAttrStr(swa.symbol, i) + " : "\
+					+ to_string(swa.attr->at(i)) + " \t";
+				else break;
+			}
+			cout << headStr + '.' + Grammer::GetAttrStr(head.symbol, 6) + " : "\
+				+ to_string(swa.attr->at(6)) + " \t";
+			cout << headStr + '.' + Grammer::GetAttrStr(head.symbol, 7) + " : "\
+				+ to_string(swa.attr->at(7)) + " \t";
+		}
+
+	}
+
+}
+
 void Parser::PrintError() {
 	for (auto& s : errorInfo)
 		cout << s;
@@ -337,4 +487,8 @@ Parser* Parser::ParserFactory() {
 	if (parserPtr == nullptr)
 		parserPtr = new Parser();
 	return parserPtr;
+}
+
+string Parser::RowAndCol() {
+	return "row : " + to_string(row) + " column : " + to_string(col);
 }

@@ -34,12 +34,21 @@ public:
 	static int END_OF_GRAMMER;
 
 	static Grammer* GrammerFactory();
-	static string GetAttrStr(int symbolID, int attrIndex) { return attrMap.at(symbolID).at(attrIndex); }
+	static string GetAttrStr(int symbolID, int attrIndex) { 
+		if (attrIndex == 6) {
+			return "CodeStart";
+		}
+		if (attrIndex == 7) {
+			return "CodeEnd";
+		}
+		return attrMap.at(symbolID).at(attrIndex); 
+	}
 	static string GetSymbolStr(int symbolID) { return grammerSymbolNum2Str[symbolID]; }
 	static int GetSymbolID(string symbolName) { return grammerSymbolStr2Num.at(symbolName); }
 	static string GetFunName(int funID) { return funInt2Str[funID]; }
 	static int GetFunID(string funName) { return funStr2Int.at(funName); }
-	static int GetFunParaCnt(int funID) { return funParaCnt[funID]; }
+	static int GetFunParaCnt(int funID) { return funParaCnt.at(funID); }
+	static int GetFunParaCnt(string funName) { return funParaCnt[GetFunID(funName)]; }
 	static bool IsTerminal(string name);
 	static bool IsTerminal(int val);
 	static bool IsUnterminal(string name);

@@ -23,7 +23,7 @@ struct TokenAttribute {
 	int col;
 	Ty_TypeID typeID = -1;
 	TokenAttribute(string& lexeme,int row,int col,Ty_TypeID typeID):\
-		lexeme(lexeme), row(row), col(col), typeID(typeID) {}
+		lexeme(lexeme), row(row), col(col), typeID(typeID) { val = -1; }
 	void Print();
 };
 

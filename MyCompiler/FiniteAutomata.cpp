@@ -235,9 +235,10 @@ bool IsBlankOrPunctuation(char c) {
 	return false;
 }
 
-Ty_TokenKind DFA::Recognize(string &word,int &ptr)const {
+Ty_TokenKind DFA::Recognize(string &word,int &ptr,int &pre)const {
 	while (ptr < word.size() && (word[ptr] == ' ' || word[ptr] == '\t'))
 		++ptr;
+	pre = ptr;
 	int status = 0;
 	Ty_TokenKind lastMatchedToken = Token::FAILED;
 	int lastMatchedPos = ptr; 

@@ -145,8 +145,8 @@ vector<Token> Lexeme::Analyse() {
 		curPos = 0;
 		if (line.empty()) break;
 		while (curPos < line.size()) {
-			int prePos = curPos;
-			Ty_TokenKind tokenKind = unoptimizedDfa.Recognize(line, curPos);
+			int prePos;
+			Ty_TokenKind tokenKind = unoptimizedDfa.Recognize(line, curPos, prePos);
 			if (tokenKind != Token::FAILED) {
 				Token token;
 				token.kind = tokenKind;
@@ -157,9 +157,9 @@ vector<Token> Lexeme::Analyse() {
 				if (token.kind == tokenKindStr2Num["digit"])
 					symbolTable[token.symbolTableIndex].val = stoi(lexeme);
 				else if (token.kind == tokenKindStr2Num["int"])
-					symbolTable[token.symbolTableIndex].typeID = INT_ID;
+					symbolTable[token.symbolTableIndex].typeID = Type::GetTypeID("int");
 				else if(token.kind == tokenKindStr2Num["float"])
-					symbolTable[token.symbolTableIndex].typeID = FLOAT_ID;
+					symbolTable[token.symbolTableIndex].typeID = Type::GetTypeID("float");
 
 				tokenVec.push_back(token);
 				if (errorFlag) errorFlag = false;

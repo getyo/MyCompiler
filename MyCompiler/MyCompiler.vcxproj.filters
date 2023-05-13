@@ -60,6 +60,9 @@
     <ClInclude Include="Type.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Triple.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SyntaxTree.cpp">
@@ -96,6 +99,12 @@
       <Filter>源文件\syntax</Filter>
     </ClCompile>
     <ClCompile Include="AuxiliaryFunction.cpp">
+      <Filter>源文件\semanticAndIntermediateCode</Filter>
+    </ClCompile>
+    <ClCompile Include="Type.cpp">
+      <Filter>源文件\semanticAndIntermediateCode</Filter>
+    </ClCompile>
+    <ClCompile Include="Triple.cpp">
       <Filter>源文件\semanticAndIntermediateCode</Filter>
     </ClCompile>
   </ItemGroup>
