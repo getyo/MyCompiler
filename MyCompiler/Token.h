@@ -8,6 +8,8 @@ typedef unsigned int Ty_TokenKind;
 typedef int Ty_TypeID;
 class SymbolTable;
 
+#define ATTR_NON  -1052
+
 struct Token
 {
 	Ty_TokenKind kind;
@@ -18,12 +20,12 @@ struct Token
 
 struct TokenAttribute {
 	string lexeme;
-	int val = -1;
+	int val;
 	int row;
 	int col;
-	Ty_TypeID typeID = -1;
-	TokenAttribute(string& lexeme,int row,int col,Ty_TypeID typeID):\
-		lexeme(lexeme), row(row), col(col), typeID(typeID) { val = -1; }
+	Ty_TypeID typeID ;
+	TokenAttribute(string& lexeme,int row,int col):\
+		lexeme(lexeme), row(row), col(col) { val = ATTR_NON; typeID = ATTR_NON; }
 	void Print();
 };
 

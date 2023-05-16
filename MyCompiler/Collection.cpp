@@ -149,6 +149,8 @@ vector <Item> Collection::ClosureLR1(Item& item) {
 		int followDot = item.FollowDot();
 		if (followDot == Item::BLANK_FOLLOW_DOT) continue;
 		if (Grammer::IsTerminal(followDot)) continue;
+		if (item.GetPItr()-1 == 26)
+			cout << "";
 		for (int i = 0; i < grammer->ProductionCnt(); i++) {
 			Production p = grammer->operator[](i);
 			if (followDot == p.GetHead()) {
@@ -174,12 +176,17 @@ bool Collection::VectorFind(vector<Pair>& vec, Item& item) {
 }
 
 void Collection::IntiLookAhead() {
-	int status = 0;
+	int status = -1;
+	int itemIndex = -1;
 	vector<ItemSet> tempCollection = collection;
 
 	for (auto& itemSet : tempCollection) {
+		++status;
+		itemIndex = -1;
 		for (auto& kernelItem : itemSet) {
-			if (kernelItem.FollowDot() == Item::BLANK_FOLLOW_DOT) continue;
+			++itemIndex;
+			if (kernelItem.FollowDot() == Item::BLANK_FOLLOW_DOT)
+				continue;
 			kernelItem.AddLookAhead(LOOKAHEAD_ATHAND);
 			auto closure = ClosureLR1(kernelItem);
 			for (auto& item : closure) {
@@ -255,8 +262,7 @@ void Collection::IntiLookAhead() {
 								}
 							}
 							if (lookAhead == LOOKAHEAD_ATHAND) {
-								fromTo[kernelItem].push_back(Pair(&i, nextStatus));
-								porpagateTable[i].insert(status);
+								fromTo[ItemIndex( status,itemIndex)].push_back(Pair(&i, nextStatus));
 							}
 						}
 					}
@@ -264,7 +270,6 @@ void Collection::IntiLookAhead() {
 
 			}
 		}
-		++status;
 	}
 	//向起始符号所在的item添加$
 	int end = Grammer::GetSymbolID("$");
@@ -282,19 +287,24 @@ void Collection::RemoveAtHead() {
 }
 
 void Collection::LookAheadPorpagate() {
-	int status = 0;
+	int status = -1;
+	int index = -1;
+	ItemIndex ii;
 	//遍历所有kernel Item
 	for (auto& itemSet : collection) {
+		++status;
+		index = -1;
 		for (auto& from : itemSet) {
+			++index;
+			ii.status = status;
+			ii.index = index;
 			//如果当前Item本身存在lookAhead
 			if (from.GetLookAheadSet().size()) {
-				if (!fromTo.count(from)) continue;
+				if (!fromTo.count(ii)) continue;
 				//将当前Item的lookAhead传播到含有LOOKAHEAD_ATHEAD的item
-				for (auto to : fromTo[from]) {
-					if (!to.itemPtr->FindLookAhead(LOOKAHEAD_ATHAND) || \
-						!porpagateTable[*to.itemPtr].count(status))
+				for (auto to : fromTo[ii]) {
+					if (!to.itemPtr->FindLookAhead(LOOKAHEAD_ATHAND))
 						continue;
-					to.itemPtr->RemoveLookAhead(LOOKAHEAD_ATHAND);
 					for (int lookAhead : from.GetLookAheadSet()) {
 						if (lookAhead == LOOKAHEAD_ATHAND) continue;
 						to.itemPtr->AddLookAhead(lookAhead);
@@ -360,7 +370,6 @@ void Collection::LookAheadPorpagate() {
 				}
 			}
 		}
-		++status;
 	}
 	RemoveAtHead();
 }
@@ -382,11 +391,11 @@ Collection::Collection() {
 	ConstructLR0();
 	//Print();
 	//把非Kernel状态去除
-	RemoveNonKernel();
 #ifdef _LR0_PRINT
 	Print();
 	cout << "\n\n";
 #endif // _LR0_PRINT
+	RemoveNonKernel();
 
 	//初始化kernel Item的lookahead
 	IntiLookAhead();

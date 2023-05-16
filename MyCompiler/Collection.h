@@ -24,10 +24,27 @@ private:
 		int status;
 		Pair(Item* itemPtr, int status) :itemPtr(itemPtr), status(status) {}
 	};
-	//保存key是被哪些状态传播lookAhead的
-	unordered_map<Item, set<int>, ItemHash, ItemEqual> porpagateTable;
+	struct ItemIndex {
+		int status;
+		int index;
+		ItemIndex(){}
+		ItemIndex(int status, int index) :status(status), index(index) {}
+	};
+	struct ItemIndexEqual {
+		bool operator()(const ItemIndex& i1, const ItemIndex& i2)const {
+			if (i1.status != i2.status) return false;
+			if (i1.index != i2.index) return false;
+			return true;
+		}
+	};
+	struct ItemIndexHash {
+		int operator()(const ItemIndex &i)const {
+			return hash<int>()(i.status) && hash<int>()(i.index);
+		}
+	};
+
 	//保存从某个Item能到其他那些Item
-	unordered_map<Item, vector<Pair>, ItemHash, ItemEqual> fromTo;
+	unordered_map<ItemIndex, vector<Pair>, ItemIndexHash, ItemIndexEqual> fromTo;
 
 	//bool Reduciable(Item&);
 	//void GrammerSymbolIsNonAble();

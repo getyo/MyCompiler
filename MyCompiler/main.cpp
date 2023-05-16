@@ -4,6 +4,7 @@
 #include "Parser.h"
 #include "Triple.h"
 #include "Debug.h"
+#include "Type.h"
 
 SymbolTable symbolTable;
 FileManager* fileManager;
@@ -32,5 +33,10 @@ int main() {
 	cout << endl << '\n';
 	Generator::Print();
 #endif // _ICP
+#ifdef _ENVP
+	cout << endl; 
+	Environmemt::Print();
+#endif // _ENVP
+
 
 }

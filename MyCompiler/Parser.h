@@ -26,7 +26,7 @@ struct SymbolWithAttr
 		else if (Grammer::IsUnterminal(symbol))
 			attr = make_shared<array<int,8>>();
 		for (auto& i : *attr)
-			i = -1;
+			i = ATTR_NON;
 	}
 	SymbolWithAttr(const SymbolWithAttr&& sw) {
 		symbol = sw.symbol;

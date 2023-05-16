@@ -34,7 +34,6 @@ public:
 #define MAX_PARACNT 8
 
 struct Action {
-	vector<int> funPtrlist;
 	vector <int> requested;
 	//遇到PUSH_ALL说明要把之后跟的数字（设为n），产生式中的第n个语法符号ID以及其属性指针当作参数
 	//这里同时也表明了运算优先级，处于十位数相同的处于同一优先级，十位数越大优先级越低
@@ -98,24 +97,5 @@ struct ItemEqual
 		if (!Item::ProductionEqual(lhs, rhs))return false;
 		if (lhs.dotPos != rhs.dotPos) return false;
 		return true;
-	}
-};
-
-struct ItemEqualWithLookAhead
-{
-	bool operator()(const Item& lhs, const Item& rhs)const {
-		return lhs == rhs;
-	}
-};
-
-struct ItemHash
-{
-	int operator()(const Item& i)const {
-		int res = hash<int>()(i.head);
-		for (auto& d : i.body) {
-			res ^= hash<int>()(d);
-		}
-		res ^= i.dotPos;
-		return res;
 	}
 };
