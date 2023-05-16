@@ -449,7 +449,7 @@ void Parser::PrintAttr(int pItr, SymbolWithAttr& head) {
 	cout << "HeadAttr:\n";
 	int attrVal;
 	for (int i = 0; i < 8; i++) {
-		if (head.attr->at(i) != -1)
+		if (head.attr->at(i) != ATTR_NON)
 			cout << headStr + '.' + Grammer::GetAttrStr(head.symbol, i) + " : "\
 			+ to_string(head.attr->at(i)) + " \t";
 		else break;
@@ -466,22 +466,22 @@ void Parser::PrintAttr(int pItr, SymbolWithAttr& head) {
 			auto symStr = Grammer::GetSymbolStr(swa.symbol);
 			cout << symStr + ".lexeme : " \
 				+ symbolTable[swa.symTableIndex].lexeme + " \t";
-			if (symbolTable[swa.symTableIndex].val != -1)
+			if (symbolTable[swa.symTableIndex].val != ATTR_NON)
 				cout << symStr + ".val: " + to_string(symbolTable[swa.symTableIndex].val) + " \t";
-			if (symbolTable[swa.symTableIndex].typeID != -1)
+			if (symbolTable[swa.symTableIndex].typeID != ATTR_NON)
 				cout << symStr + ".typeID: " + Type::GetTypeStr(symbolTable[swa.symTableIndex].typeID) + " \t";
 		}
 		else if (Grammer::IsUnterminal(swa.symbol)) {
 			auto symStr = Grammer::GetSymbolStr(swa.symbol);
 			for (int i = 0; i < 8; i++) {
-				if (swa.attr->at(i) != -1)
+				if (swa.attr->at(i) != ATTR_NON)
 					cout << symStr + '.' + Grammer::GetAttrStr(swa.symbol, i) + " : "\
 					+ to_string(swa.attr->at(i)) + " \t";
 				else break;
 			}
-			cout << headStr + '.' + Grammer::GetAttrStr(head.symbol, 6) + " : "\
+			cout << symStr + '.' + Grammer::GetAttrStr(swa.symbol, 6) + " : "\
 				+ to_string(swa.attr->at(6)) + " \t";
-			cout << headStr + '.' + Grammer::GetAttrStr(head.symbol, 7) + " : "\
+			cout << symStr + '.' + Grammer::GetAttrStr(swa.symbol, 7) + " : "\
 				+ to_string(swa.attr->at(7)) + " \t";
 		}
 

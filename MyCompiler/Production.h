@@ -99,22 +99,3 @@ struct ItemEqual
 		return true;
 	}
 };
-
-struct ItemEqualWithLookAhead
-{
-	bool operator()(const Item& lhs, const Item& rhs)const {
-		return lhs == rhs;
-	}
-};
-
-struct ItemHash
-{
-	int operator()(const Item& i)const {
-		int res = hash<int>()(i.head);
-		for (auto& d : i.body) {
-			res ^= hash<int>()(d);
-		}
-		res ^= i.dotPos;
-		return res;
-	}
-};

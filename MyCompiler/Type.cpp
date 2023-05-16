@@ -3,6 +3,7 @@
 #include <iostream>
 using namespace std;
 
+
 int Type::maxDefaultTpyeID = 1;
 unordered_set<int> Type::arrayTypeSet;
 vector<string> Type::typeID2Str = {
@@ -16,6 +17,7 @@ vector<WidthOrPtr> Type::typeWidth = {
 };
 
 int Type::GetTypeWidth(int typeID) {
+	int a[10];
 	if (arrayTypeSet.count(typeID)) {
 		auto typePtr = (ArrayType*)typeWidth.at(typeID).typeDef;
 		return typePtr->totalSize;
@@ -50,7 +52,7 @@ int Type::CreateArrayType(int typeID, int dim1Size,int dim2Size,int dim3Size) {
 
 
 Environmemt* Environmemt::curEnv = nullptr;
-size_t Environmemt::dataFieldSize = 0;
+size_t Environmemt::dataFieldSize = DATA_START;
 
 static size_t EnvID = 0;
 
@@ -60,12 +62,12 @@ size_t Environmemt::getID() {
 
 Environmemt::Environmemt(Environmemt * pre){
 	if (pre == nullptr) {
-		base = 0;
+		base = dataFieldSize;
 		offset = 0;
 		this->pre = nullptr;
 		return;
 	}
-	this->base = pre->offset;
+	this->base = dataFieldSize;
 	offset = 0;
 	this->pre = pre;
 }
@@ -94,7 +96,7 @@ bool Environmemt::EnvPush(string lexeme, int typeID) {
 		exit(1);
 		return false;
 	}
-	symTable.insert({ lexeme,Variable(typeID,lexeme,offset) });
+	symTable.insert({ lexeme,Variable(typeID,lexeme,offset + base) });
 	offset += symTable[lexeme].t.width;
 }
 
@@ -121,14 +123,38 @@ void Environmemt::Print() {
 	Environmemt* te = curEnv;
 	while (te != nullptr) {
 		cout << "Env" << te->envID << ": \n";
-		cout << " \tlexeme \ttype \taddr \twidth\n";
+		cout << " \tlexeme \ttype \taddr \t\twidth\n";
 		for (auto& i : te->symTable) {
 			cout << " \t" << i.first << " \t" << Type::GetTypeStr(i.second.t.typeID) << \
-			" \t" << i.second.addr << " \t" << i.second.t.width << "\n";
+			" \t" <<  hex << "0x" << i.second.addr << dec << " \t" << i.second.t.width << "\n";
 		}
 		te = curEnv->pre;
 	}
 }
+
+ArrayType::ArrayType(int elemID, int rowSize1, int rowSize2, int rowSize3) :\
+elemID(elemID), rowSize1(rowSize1), rowSize2(rowSize2), rowSize3(rowSize3) {
+	elemWidth = Type::GetTypeWidth(elemID);
+	totalSize = rowSize1 * elemWidth;
+	dim = 1;
+	if (rowSize2 != ATTR_NON) {
+		if (rowSize2 <= 0) {
+			cout << "Error : The size of array must be positive value \t" << Parser::RowAndCol();
+			exit(1);
+		}
+		totalSize *= rowSize2;
+		dim += 1;
+	}
+	if (rowSize3 > 0) {
+		if (rowSize2 <= 0) {
+			cout << "Error : The size of array must be positive value \t" << Parser::RowAndCol();
+			exit(1);
+		}
+		totalSize *= rowSize3;
+		dim += 1;
+	}
+}
+
 
 int ArrayType::GetDimSize(int dim) {
 	switch (dim)

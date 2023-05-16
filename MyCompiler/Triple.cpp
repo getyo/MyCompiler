@@ -2,17 +2,18 @@
 #include "Production.h"
 #include <iostream>
 #include "Debug.h"
+#include "Type.h"
 #define NULLADDR -1
 Generator* Generator::genPtr = nullptr;
 CodeStore* Generator::csPtr = nullptr;
 int Generator::codeStart = 0;
 vector <string> Generator::icopInt2Str = {
-	"+","-","*","/","%","=","id","digit","+=","-=","*=","/="
+	"+","-","*","/","%","=","id","digit","+=","-=","*=","/=","LD"
 };
 unordered_map<string, int> Generator::icopStr2Int = {
 	{"+",0},{"-",1},{"*",2},{"/",3},{"%",4},\
 	{"=", 5}, { "id",6 }, { "digit",7 }, {"+=",8},\
-	{"-=", 9}, { "*=",10 }, {"/=",11}
+{"-=", 9}, { "*=",10 }, { "/=",11 }, { "LD",12 }
 };
 
 Generator::Generator(CodeStore &cs) {
@@ -52,25 +53,22 @@ int Generator::InsertElem(int addr, int val) {
 	else temp = new Triple(ICOP_ID, addr);
 	int index = InsertTriple(*temp);
 	delete temp;
-	Print();
 	return index;
 }
 
 int Generator::Gen(int icop,  int code1,int code2) {
 	int valNum1 = code1, valNum2 = code2;
 #ifdef DEBUG
-	ASSERT(valNum1 != -1 && valNum2 != -1, "Code : tirple miss");
+	ASSERT(valNum1 != -1, "Code : tirple miss");
 #endif // DEBUG
 	Triple temp(icop, valNum1, valNum2);
 	int index = InsertTriple(temp);
-	Print();
 	return index;
 }
 
 int Generator::GenAssign(int op, int desAddr, int srcCode) {
 	Triple temp(op, desAddr, srcCode);
 	int index = InsertTriple(temp);
-	Print();
 	return index;
 }
 
@@ -78,10 +76,22 @@ string Generator::GetIcopStr(int icop) {
 	return icopInt2Str.at(icop);
 }
 
+static bool IsAssign(Triple& t) {
+	if (t.icop == Generator::GetIcopInt("=")) return true;
+	else if (t.icop >= Generator::GetIcopInt("+=") && \
+		t.icop <= Generator::GetIcopInt("\="))
+		return true;
+	return false;
+}
+
+
+
 void Generator::Print() {
 	auto& cs = *csPtr;
 	int i = 0;
 	for (auto& t : cs) {
-		cout << i++ << " : " <<GetIcopStr(t.icop) + " \t" + to_string(t.valNum1) + " \t" + to_string(t.valNum2) + " \n";
+		cout << i++ << " : " << GetIcopStr(t.icop) + " \t";
+		cout << t.valNum1 << "\t" << t.valNum2;
+		cout << "\n";
 	}
 }

@@ -152,7 +152,7 @@ vector<Token> Lexeme::Analyse() {
 				token.kind = tokenKind;
 				token.symbolTableIndex = symbolTable.Size();
 				string lexeme = line.substr(prePos, curPos - prePos);
-				symbolTable.Push(TokenAttribute(lexeme, row, prePos + 1, -1));
+				symbolTable.Push(TokenAttribute(lexeme, row, prePos + 1));
 
 				if (token.kind == tokenKindStr2Num["digit"])
 					symbolTable[token.symbolTableIndex].val = stoi(lexeme);
@@ -180,7 +180,7 @@ vector<Token> Lexeme::Analyse() {
 	end.kind = tokenKindStr2Num["$"];
 	end.symbolTableIndex = symbolTable.Size();
 	string endlexeme = "$";
-	symbolTable.Push(TokenAttribute(endlexeme, row + 1, 1, -1));
+	symbolTable.Push(TokenAttribute(endlexeme, row + 1, 1));
 	tokenVec.push_back(end);
 	return tokenVec;
 }

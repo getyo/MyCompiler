@@ -62,6 +62,8 @@ struct Variable {
 		name(name), addr(addr) {};
 };
 
+#define DATA_START 0
+
 class Environmemt {
 private:
 	static size_t dataFieldSize;
@@ -96,19 +98,6 @@ struct ArrayType {
 	int rowSize3;
 	int totalSize;
 	ArrayType(){}
-	ArrayType(int elemID, int rowSize1, int rowSize2 = -1, int rowSize3 = -1) :\
-		elemID(elemID), rowSize1(rowSize1), rowSize2(rowSize2), rowSize3(rowSize3) {
-		elemWidth = Type::GetTypeWidth(elemID);
-		totalSize = rowSize1 * elemWidth;
-		dim = 1;
-		if (rowSize2 > 0) {
-			totalSize *= rowSize2;
-			dim += 1;
-		}
-		if (rowSize3 > 0) {
-			totalSize *= rowSize3;
-			dim += 1;
-		}
-	}
+	ArrayType(int elemID, int rowSize1, int rowSize2, int rowSize3);
 	int GetDimSize(int dim);
 };
