@@ -78,12 +78,18 @@ static bool IsDigit(char c) {
 }
 
 void Grammer::ReadAttrMap() {
+	bool isInh = false;
 	string smbStr = NextSymbol();
+	if (smbStr == "-") {
+		smbStr = NextSymbol();
+		isInh = true;
+	}
 	if (!Grammer::grammerSymbolStr2Num.count(smbStr)) {
 		cerr << "Grammer : Unrecognized Unterminal : " << smbStr << " \t" << RowAndCol();
 		abort();
 	}
 	int smbID = Grammer::GetSymbolID(smbStr);
+	if (isInh) smbID = -smbID;
 	string temp = NextSymbol();
 	if (temp != ":") {
 		cerr << "Grammer : Incorrect Input : " << " \t" << RowAndCol();
@@ -104,13 +110,14 @@ void Grammer::ReadAttrMap() {
 	
 }
 
-void Grammer::ReadAction(Production &p) {
-	p.actions.push_back(make_shared<Action>());
-	auto action = p.actions[p.actions.size() - 1];
+void Grammer::ReadAction(Production &p,ActionList &actionList) {
+	actionList.push_back(make_shared<Action>());
+	auto action = actionList[actionList.size() - 1];
 	string s;
 	while (true) {
 		s = NextSymbol();
-		if (s == "##") break;
+		if (s == "##") 
+			break;
 		//处理函数调用
 		if (funStr2Int.count(s)) { 
 #ifdef DEBUG
@@ -162,19 +169,23 @@ void Grammer::ReadAction(Production &p) {
 						cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should input digit\n";
 						abort();
 					}
-					action->requested.push_back(curLine[curLineIt] - '0');
-					++curLineIt;
+					string d = "";
+					while (IsDigit(curLine[curLineIt])) d += curLine[curLineIt++];
+					action->requested.push_back( stoi(d) );
+
 					if (curLine[curLineIt] != '.') {
 						cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should follow dot after digit\n";
 						abort();
 					}
 					else ++curLineIt;
+
 					if (!IsDigit(curLine[curLineIt])) {
 						cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should input digit\n";
 						abort();
 					}
-					action->requested.push_back(curLine[curLineIt] - '0');
-					++curLineIt;
+					d = "";
+					while (IsDigit(curLine[curLineIt])) d += curLine[curLineIt++];
+					action->requested.push_back( stoi(d) );
 #ifdef DEBUG
 					++paraCnt;
 #endif // DEBUG
@@ -198,15 +209,14 @@ void Grammer::ReadAction(Production &p) {
 			case '/': {action->requested.push_back(Action::DIV); break; }
 			case '%': {action->requested.push_back(Action::REM); break; }
 			case '=': {action->requested.push_back(Action::ASSIGN); break; }
-			case ';': { p.actions.push_back(make_shared<Action>());
-						action = p.actions[p.actions.size() - 1];	
+			case ';': { actionList.push_back(make_shared<Action>());
+						action = actionList[actionList.size() - 1];	
 						break;
 			}
 			default:
 				break;
 			}
 		}
-		//处理符号.属性
 		else if (s[0] == '$') {
 			action->requested.push_back(Action::DIGIT);
 			int i = 1;
@@ -215,21 +225,30 @@ void Grammer::ReadAction(Production &p) {
 			action->requested.push_back(stoi(num));
 			continue;
 		}
+		//处理符号.属性
 		else {
 			if (!IsDigit(s[0])) {
 				cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should input digit\n";
 				abort();
 			}
-			action->requested.push_back(s[0] - '0');
-			if (s[1] != '.') {
+			int i = 0;
+			string d = "";
+			while (IsDigit(s[i])) d += s[i++];
+				action->requested.push_back(stoi(d));
+
+			if (s[i] != '.') {
 				cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should follow dot after digit\n";
 				abort();
 			}
-			if (!IsDigit(s[2])) {
+			else ++i;
+				
+			if (!IsDigit(s[i])) {
 				cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should input digit\n";
 				abort();
 			}
-			action->requested.push_back(s[2] - '0');
+			d = "";
+			while (IsDigit(s[i])) d += s[i++];
+			action->requested.push_back(stoi(d));
 		}
 	}
 }
@@ -278,22 +297,22 @@ Grammer::Grammer() {
 	maxTerminal = grammerSymbolNum2Str.size()-1;
 	startSymbol = maxTerminal + 1;
 	//存贮当前行的Production
-	vector <int> p;
 	row = 0;
 	ReadFunction(in);
 	while (in.good()) {
 		getline(in, curLine);
 		++row;
 		curLineIt = 0;
+		int dotPos = -1;
 		if (!curLine.size() || (curLine[0] == '/' && curLine[1] == '/')) continue;
+		Production* p = new Production();
 		while (curLineIt < curLine.size()) {
 			grammerSymbol = NextSymbol();
 			if (grammerSymbol == "->" || grammerSymbol == "") continue;
 			else if (grammerSymbol == "##") {
-				productions.push_back(Production(p));
-				p.clear();
-				ReadAction(productions[productions.size()-1]);
-				goto LineEnd;
+				p->actionLists.insert({ dotPos,ActionList() });
+				ReadAction(*p,p->actionLists[dotPos]);
+				continue;
 			}
 			else if (grammerSymbol == "$$") {
 				ReadAttrMap();
@@ -304,10 +323,11 @@ Grammer::Grammer() {
 				grammerSymbolStr2Num.insert({ grammerSymbol,grammerSymbolNum2Str.size() });
 				grammerSymbolNum2Str.push_back(grammerSymbol);
 			}
-			p.push_back(grammerSymbolStr2Num[grammerSymbol]);
+			p->PushBack(grammerSymbolStr2Num[grammerSymbol]);
+			++dotPos;
 		}
-		productions.push_back(Production(p));
-		p.clear();
+		productions.push_back(*p);
+		p = new Production();
 	LineEnd:
 		continue;
 	}

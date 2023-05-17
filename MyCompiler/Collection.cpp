@@ -34,8 +34,9 @@ int Collection::HasItemSet(ItemSet& itemSet) {
 }
 
 //如果能到达状态，返回状态号，否则返回-1
-int Collection::InputSymbol(ItemSet& itemSet, int symbolID) {
+int Collection::InputSymbol(int statusNum, int symbolID) {
 	ItemSet tempStatus;
+	auto itemSet = collection[statusNum];
 	for (auto& i : itemSet) {
 		if (i.FollowDot() == symbolID) {
 			tempStatus.push_back(Item(i, i.GetDotPos() + 1));
@@ -44,10 +45,12 @@ int Collection::InputSymbol(ItemSet& itemSet, int symbolID) {
 	if (tempStatus.size() == 0) return -1;
 	ClosureLR0(tempStatus);
 	int gotoStatus = HasItemSet(tempStatus);
-	if (gotoStatus != -1) return gotoStatus;
-	InsertItemSet();
-	*(--collection.end()) = tempStatus;
-	return collection.size() - 1;
+	if (gotoStatus == -1) {
+		InsertItemSet();
+		*(--collection.end()) = tempStatus;
+		gotoStatus = collection.size()-1;
+	}
+	return gotoStatus;
 }
 
 bool Collection::HasItem(ItemSet& itemSet, Item& item) {
@@ -80,7 +83,7 @@ void Collection::ConstructLR0() {
 		ClosureLR0(collection[i]);
 
 		for (int j = 0; j < grammer->GrammerSymbolCnt(); j++) {
-			int gotoStatus = InputSymbol(collection[i], j);
+			int gotoStatus = InputSymbol(i, j);
 			if (gotoStatus != -1) parserTable[i][j] = gotoStatus;
 		}
 	}
@@ -384,6 +387,7 @@ Collection::Collection() {
 
 	grammerSymbolCnt = grammer->GrammerSymbolCnt();
 
+	collection.reserve(3000);
 	InsertItemSet();
 	collection[0].push_back(Item((*grammer)[0], 0, {}));
 

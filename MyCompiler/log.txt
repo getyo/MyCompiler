@@ -1,6 +1,6 @@
 Status0:
 StatementList' -> StatementList  	dotPos: 0 	lookAhead: $ 
-Goto: 	int 1 	float 2 	digit 3 	id 4 	StatementList 5 	Statement 6 	ExprStatement 7 	DefinationStatement 8 	Type 9 	BasicType 10 	ValueType 11 	Defination 12 	DeclationList 13 	Expr 14 	Declation 15 	Intialization 16 	DirectDeclation 17 	PostfixDeclation 18 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+Goto: 	int 1 	float 2 	digit 3 	id 4 	StatementList 5 	Statement 6 	ExprStatement 7 	DefinationStatement 8 	Type 9 	BasicType 10 	ValueType 11 	Defination 12 	DeclationList 13 	Expr 14 	Declation 15 	Intialization 16 	DirectDeclation 17 	PostfixDeclation 18 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	
 Reduce: 	
 
 Status1:
@@ -16,21 +16,19 @@ Reduce: 	id -9
 Status3:
 PrimaryExpr -> digit  	dotPos: 1 	lookAhead: + - * / % , ; 
 Goto: 	
-Reduce: 	+ -44 	- -44 	* -44 	/ -44 	% -44 	, -44 	; -44 	
+Reduce: 	+ -40 	- -40 	* -40 	/ -40 	% -40 	, -40 	; -40 	
 
 Status4:
 LeftValue -> id  	dotPos: 1 	lookAhead: = += -= *= /= 
-ArrayElemDim1 -> id [ digit ]  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
+ArrayElem -> id Index  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
 PrimaryExpr -> id  	dotPos: 1 	lookAhead: + - * / % , ; 
-Goto: 	[ 28 	
-Reduce: 	+ -43 	- -43 	* -43 	/ -43 	= -52 	% -43 	+= -52 	-= -52 	*= -52 	/= -52 	, -43 	; -43 	
+Goto: 	[ 25 	Index 26 	
+Reduce: 	+ -39 	- -39 	* -39 	/ -39 	= -45 	% -39 	+= -45 	-= -45 	*= -45 	/= -45 	, -39 	; -39 	
 
 Status5:
 StatementList' -> StatementList  	dotPos: 1 	lookAhead: $ 
 StatementList -> StatementList Statement  	dotPos: 1 	lookAhead: $ int float digit id 
-Goto: 	int 1 	float 2 	digit 3 	id 4 	Statement 29 	ExprStatement 7 	DefinationStatement 8 	Type 9 	BasicType 10 	ValueType 11 	Defination 12 	DeclationList 13 	Expr 14 	Declation 15 	Intialization 16 	DirectDeclation 17 	PostfixDeclation 18 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+Goto: 	int 1 	float 2 	digit 3 	id 4 	Statement 27 	ExprStatement 7 	DefinationStatement 8 	Type 9 	BasicType 10 	ValueType 11 	Defination 12 	DeclationList 13 	Expr 14 	Declation 15 	Intialization 16 	DirectDeclation 17 	PostfixDeclation 18 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	
 Reduce: 	$ -1 	
 
 Status6:
@@ -52,7 +50,7 @@ Status9:
 Intialization -> Type id = Expr  	dotPos: 1 	lookAhead: , ; 
 DirectDeclation -> Type id  	dotPos: 1 	lookAhead: , ; 
 PostfixDeclation -> Type id Postfix  	dotPos: 1 	lookAhead: , ; 
-Goto: 	id 30 	
+Goto: 	id 28 	
 Reduce: 	
 
 Status10:
@@ -67,7 +65,7 @@ Reduce: 	id -7
 
 Status12:
 DefinationStatement -> Defination ;  	dotPos: 1 	lookAhead: $ int float digit id 
-Goto: 	; 31 	
+Goto: 	; 29 	
 Reduce: 	
 
 Status13:
@@ -75,12 +73,12 @@ Defination -> DeclationList  	dotPos: 1 	lookAhead: ;
 DeclationList -> DeclationList , id  	dotPos: 1 	lookAhead: , ; 
 DeclationList -> DeclationList , id Postfix  	dotPos: 1 	lookAhead: , ; 
 DeclationList -> DeclationList , id = Expr  	dotPos: 1 	lookAhead: , ; 
-Goto: 	, 32 	
+Goto: 	, 30 	
 Reduce: 	; -11 	
 
 Status14:
 ExprStatement -> Expr ;  	dotPos: 1 	lookAhead: $ int float digit id 
-Goto: 	; 33 	
+Goto: 	; 31 	
 Reduce: 	
 
 Status15:
@@ -106,7 +104,7 @@ Reduce: 	, -18 	; -18
 Status19:
 Expr -> AssignExpr  	dotPos: 1 	lookAhead: , ; 
 Goto: 	
-Reduce: 	, -29 	; -29 	
+Reduce: 	, -25 	; -25 	
 
 Status20:
 AssignExpr -> LeftValue = AssignExpr  	dotPos: 1 	lookAhead: , ; 
@@ -114,350 +112,254 @@ AssignExpr -> LeftValue += AssignExpr  	dotPos: 1 	lookAhead: , ;
 AssignExpr -> LeftValue -= AssignExpr  	dotPos: 1 	lookAhead: , ; 
 AssignExpr -> LeftValue *= AssignExpr  	dotPos: 1 	lookAhead: , ; 
 AssignExpr -> LeftValue /= AssignExpr  	dotPos: 1 	lookAhead: , ; 
-Goto: 	= 34 	+= 35 	-= 36 	*= 37 	/= 38 	
+Goto: 	= 32 	+= 33 	-= 34 	*= 35 	/= 36 	
 Reduce: 	
 
 Status21:
 AssignExpr -> AddtiveExpr  	dotPos: 1 	lookAhead: , ; 
 AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 1 	lookAhead: + - , ; 
 AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 1 	lookAhead: + - , ; 
-Goto: 	+ 39 	- 40 	
-Reduce: 	, -35 	; -35 	
+Goto: 	+ 37 	- 38 	
+Reduce: 	, -31 	; -31 	
 
 Status22:
 AddtiveExpr -> MultiplicativeExpr  	dotPos: 1 	lookAhead: + - , ; 
 MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % , ; 
 MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % , ; 
 MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % , ; 
-Goto: 	* 41 	/ 42 	% 43 	
-Reduce: 	+ -38 	- -38 	, -38 	; -38 	
+Goto: 	* 39 	/ 40 	% 41 	
+Reduce: 	+ -34 	- -34 	, -34 	; -34 	
 
 Status23:
 MultiplicativeExpr -> PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % , ; 
 Goto: 	
-Reduce: 	+ -42 	- -42 	* -42 	/ -42 	% -42 	, -42 	; -42 	
+Reduce: 	+ -38 	- -38 	* -38 	/ -38 	% -38 	, -38 	; -38 	
 
 Status24:
 LeftValue -> ArrayElem  	dotPos: 1 	lookAhead: = += -= *= /= 
 PrimaryExpr -> ArrayElem  	dotPos: 1 	lookAhead: + - * / % , ; 
 Goto: 	
-Reduce: 	+ -45 	- -45 	* -45 	/ -45 	= -53 	% -45 	+= -53 	-= -53 	*= -53 	/= -53 	, -45 	; -45 	
+Reduce: 	+ -41 	- -41 	* -41 	/ -41 	= -46 	% -41 	+= -46 	-= -46 	*= -46 	/= -46 	, -41 	; -41 	
 
 Status25:
-ArrayElem -> ArrayElemDim1  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
-Goto: 	
-Reduce: 	+ -46 	- -46 	* -46 	/ -46 	= -46 	% -46 	+= -46 	-= -46 	*= -46 	/= -46 	, -46 	; -46 	
-
-Status26:
-ArrayElem -> ArrayElemDim2  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
-Goto: 	
-Reduce: 	+ -47 	- -47 	* -47 	/ -47 	= -47 	% -47 	+= -47 	-= -47 	*= -47 	/= -47 	, -47 	; -47 	
-
-Status27:
-ArrayElem -> ArrayElemDim3  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
-Goto: 	
-Reduce: 	+ -48 	- -48 	* -48 	/ -48 	= -48 	% -48 	+= -48 	-= -48 	*= -48 	/= -48 	, -48 	; -48 	
-
-Status28:
-ArrayElemDim1 -> id [ digit ]  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	digit 44 	
+Index -> [ digit ] Index  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= ; 
+Index -> [ digit ]  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= ; 
+Goto: 	digit 42 	
 Reduce: 	
 
-Status29:
+Status26:
+ArrayElem -> id Index  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= ; 
+Goto: 	
+Reduce: 	+ -42 	- -42 	* -42 	/ -42 	= -42 	% -42 	+= -42 	-= -42 	*= -42 	/= -42 	; -42 	
+
+Status27:
 StatementList -> StatementList Statement  	dotPos: 2 	lookAhead: $ int float digit id 
 Goto: 	
 Reduce: 	$ -2 	int -2 	float -2 	digit -2 	id -2 	
 
-Status30:
+Status28:
 Intialization -> Type id = Expr  	dotPos: 2 	lookAhead: , ; 
 DirectDeclation -> Type id  	dotPos: 2 	lookAhead: , ; 
 PostfixDeclation -> Type id Postfix  	dotPos: 2 	lookAhead: , ; 
-Goto: 	= 45 	[ 46 	Postfix 47 	Postfix1 48 	Postfix2 49 	Postfix3 50 	
+Goto: 	= 43 	[ 44 	Postfix 45 	
 Reduce: 	, -19 	; -19 	
 
-Status31:
+Status29:
 DefinationStatement -> Defination ;  	dotPos: 2 	lookAhead: $ int float digit id 
 Goto: 	
 Reduce: 	$ -10 	int -10 	float -10 	digit -10 	id -10 	
 
-Status32:
+Status30:
 DeclationList -> DeclationList , id  	dotPos: 2 	lookAhead: , ; 
 DeclationList -> DeclationList , id Postfix  	dotPos: 2 	lookAhead: , ; 
 DeclationList -> DeclationList , id = Expr  	dotPos: 2 	lookAhead: , ; 
-Goto: 	id 51 	
+Goto: 	id 46 	
+Reduce: 	
+
+Status31:
+ExprStatement -> Expr ;  	dotPos: 2 	lookAhead: $ int float digit id 
+Goto: 	
+Reduce: 	$ -24 	int -24 	float -24 	digit -24 	id -24 	
+
+Status32:
+AssignExpr -> LeftValue = AssignExpr  	dotPos: 2 	lookAhead: ; 
+Goto: 	digit 3 	id 4 	AssignExpr 47 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	
 Reduce: 	
 
 Status33:
-ExprStatement -> Expr ;  	dotPos: 2 	lookAhead: $ int float digit id 
-Goto: 	
-Reduce: 	$ -28 	int -28 	float -28 	digit -28 	id -28 	
+AssignExpr -> LeftValue += AssignExpr  	dotPos: 2 	lookAhead: ; 
+Goto: 	digit 3 	id 4 	AssignExpr 48 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	
+Reduce: 	
 
 Status34:
-AssignExpr -> LeftValue = AssignExpr  	dotPos: 2 	lookAhead: ; 
-Goto: 	digit 3 	id 4 	AssignExpr 52 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+AssignExpr -> LeftValue -= AssignExpr  	dotPos: 2 	lookAhead: ; 
+Goto: 	digit 3 	id 4 	AssignExpr 49 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	
 Reduce: 	
 
 Status35:
-AssignExpr -> LeftValue += AssignExpr  	dotPos: 2 	lookAhead: ; 
-Goto: 	digit 3 	id 4 	AssignExpr 53 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+AssignExpr -> LeftValue *= AssignExpr  	dotPos: 2 	lookAhead: ; 
+Goto: 	digit 3 	id 4 	AssignExpr 50 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	
 Reduce: 	
 
 Status36:
-AssignExpr -> LeftValue -= AssignExpr  	dotPos: 2 	lookAhead: ; 
-Goto: 	digit 3 	id 4 	AssignExpr 54 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+AssignExpr -> LeftValue /= AssignExpr  	dotPos: 2 	lookAhead: ; 
+Goto: 	digit 3 	id 4 	AssignExpr 51 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	
 Reduce: 	
 
 Status37:
-AssignExpr -> LeftValue *= AssignExpr  	dotPos: 2 	lookAhead: ; 
-Goto: 	digit 3 	id 4 	AssignExpr 55 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 2 	lookAhead: + - ; 
+Goto: 	digit 3 	id 52 	MultiplicativeExpr 53 	PrimaryExpr 23 	ArrayElem 54 	
 Reduce: 	
 
 Status38:
-AssignExpr -> LeftValue /= AssignExpr  	dotPos: 2 	lookAhead: ; 
-Goto: 	digit 3 	id 4 	AssignExpr 56 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 2 	lookAhead: + - ; 
+Goto: 	digit 3 	id 52 	MultiplicativeExpr 55 	PrimaryExpr 23 	ArrayElem 54 	
 Reduce: 	
 
 Status39:
-AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 2 	lookAhead: + - ; 
-Goto: 	digit 3 	id 57 	MultiplicativeExpr 58 	PrimaryExpr 23 	ArrayElem 59 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ; 
+Goto: 	digit 3 	id 52 	PrimaryExpr 56 	ArrayElem 54 	
 Reduce: 	
 
 Status40:
-AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 2 	lookAhead: + - ; 
-Goto: 	digit 3 	id 57 	MultiplicativeExpr 60 	PrimaryExpr 23 	ArrayElem 59 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ; 
+Goto: 	digit 3 	id 52 	PrimaryExpr 57 	ArrayElem 54 	
 Reduce: 	
 
 Status41:
-MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ; 
-Goto: 	digit 3 	id 57 	PrimaryExpr 61 	ArrayElem 59 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ; 
+Goto: 	digit 3 	id 52 	PrimaryExpr 58 	ArrayElem 54 	
 Reduce: 	
 
 Status42:
-MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ; 
-Goto: 	digit 3 	id 57 	PrimaryExpr 62 	ArrayElem 59 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+Index -> [ digit ] Index  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= ; 
+Index -> [ digit ]  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= ; 
+Goto: 	] 59 	
 Reduce: 	
 
 Status43:
-MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ; 
-Goto: 	digit 3 	id 57 	PrimaryExpr 63 	ArrayElem 59 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+Intialization -> Type id = Expr  	dotPos: 3 	lookAhead: , ; 
+Goto: 	digit 3 	id 4 	Expr 60 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	
 Reduce: 	
 
 Status44:
-ArrayElemDim1 -> id [ digit ]  	dotPos: 3 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 3 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 3 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	] 64 	
+Postfix -> [ digit ]  	dotPos: 1 	lookAhead: [ , ; 
+Goto: 	digit 61 	
 Reduce: 	
 
 Status45:
-Intialization -> Type id = Expr  	dotPos: 3 	lookAhead: , ; 
-Goto: 	digit 3 	id 4 	Expr 65 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status46:
-Postfix1 -> [ digit ]  	dotPos: 1 	lookAhead: [ , ; 
-Goto: 	digit 66 	
-Reduce: 	
-
-Status47:
 PostfixDeclation -> Type id Postfix  	dotPos: 3 	lookAhead: , ; 
-Goto: 	
+Postfix -> Postfix [ digit ]  	dotPos: 1 	lookAhead: [ , ; 
+Goto: 	[ 62 	
 Reduce: 	, -20 	; -20 	
 
-Status48:
-Postfix -> Postfix1  	dotPos: 1 	lookAhead: , ; 
-Postfix2 -> Postfix1 [ digit ]  	dotPos: 1 	lookAhead: [ , ; 
-Goto: 	[ 67 	
-Reduce: 	, -21 	; -21 	
-
-Status49:
-Postfix -> Postfix2  	dotPos: 1 	lookAhead: , ; 
-Postfix3 -> Postfix2 [ digit ]  	dotPos: 1 	lookAhead: , ; 
-Goto: 	[ 68 	
-Reduce: 	, -22 	; -22 	
-
-Status50:
-Postfix -> Postfix3  	dotPos: 1 	lookAhead: , ; 
-Goto: 	
-Reduce: 	, -23 	; -23 	
-
-Status51:
+Status46:
 DeclationList -> DeclationList , id  	dotPos: 3 	lookAhead: , ; 
 DeclationList -> DeclationList , id Postfix  	dotPos: 3 	lookAhead: , ; 
 DeclationList -> DeclationList , id = Expr  	dotPos: 3 	lookAhead: , ; 
-Goto: 	= 69 	[ 46 	Postfix 70 	Postfix1 48 	Postfix2 49 	Postfix3 50 	
+Goto: 	= 63 	[ 44 	Postfix 64 	
 Reduce: 	, -12 	; -12 	
 
-Status52:
+Status47:
 AssignExpr -> LeftValue = AssignExpr  	dotPos: 3 	lookAhead: ; 
+Goto: 	
+Reduce: 	; -26 	
+
+Status48:
+AssignExpr -> LeftValue += AssignExpr  	dotPos: 3 	lookAhead: ; 
+Goto: 	
+Reduce: 	; -27 	
+
+Status49:
+AssignExpr -> LeftValue -= AssignExpr  	dotPos: 3 	lookAhead: ; 
+Goto: 	
+Reduce: 	; -28 	
+
+Status50:
+AssignExpr -> LeftValue *= AssignExpr  	dotPos: 3 	lookAhead: ; 
+Goto: 	
+Reduce: 	; -29 	
+
+Status51:
+AssignExpr -> LeftValue /= AssignExpr  	dotPos: 3 	lookAhead: ; 
 Goto: 	
 Reduce: 	; -30 	
 
-Status53:
-AssignExpr -> LeftValue += AssignExpr  	dotPos: 3 	lookAhead: ; 
-Goto: 	
-Reduce: 	; -31 	
-
-Status54:
-AssignExpr -> LeftValue -= AssignExpr  	dotPos: 3 	lookAhead: ; 
-Goto: 	
-Reduce: 	; -32 	
-
-Status55:
-AssignExpr -> LeftValue *= AssignExpr  	dotPos: 3 	lookAhead: ; 
-Goto: 	
-Reduce: 	; -33 	
-
-Status56:
-AssignExpr -> LeftValue /= AssignExpr  	dotPos: 3 	lookAhead: ; 
-Goto: 	
-Reduce: 	; -34 	
-
-Status57:
+Status52:
 PrimaryExpr -> id  	dotPos: 1 	lookAhead: + - * / % ; 
-ArrayElemDim1 -> id [ digit ]  	dotPos: 1 	lookAhead: + - * / % ; 
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 1 	lookAhead: + - * / % ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 1 	lookAhead: + - * / % ; 
-Goto: 	[ 28 	
-Reduce: 	+ -43 	- -43 	* -43 	/ -43 	% -43 	; -43 	
+ArrayElem -> id Index  	dotPos: 1 	lookAhead: + - * / % ; 
+Goto: 	[ 25 	Index 26 	
+Reduce: 	+ -39 	- -39 	* -39 	/ -39 	% -39 	; -39 	
 
-Status58:
+Status53:
 AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 3 	lookAhead: + - ; 
 MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
 MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
 MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
-Goto: 	* 41 	/ 42 	% 43 	
-Reduce: 	+ -36 	- -36 	; -36 	
+Goto: 	* 39 	/ 40 	% 41 	
+Reduce: 	+ -32 	- -32 	; -32 	
 
-Status59:
+Status54:
 PrimaryExpr -> ArrayElem  	dotPos: 1 	lookAhead: + - * / % ; 
 Goto: 	
-Reduce: 	+ -45 	- -45 	* -45 	/ -45 	% -45 	; -45 	
+Reduce: 	+ -41 	- -41 	* -41 	/ -41 	% -41 	; -41 	
 
-Status60:
+Status55:
 AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 3 	lookAhead: + - ; 
 MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
 MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
 MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
-Goto: 	* 41 	/ 42 	% 43 	
-Reduce: 	+ -37 	- -37 	; -37 	
+Goto: 	* 39 	/ 40 	% 41 	
+Reduce: 	+ -33 	- -33 	; -33 	
 
-Status61:
+Status56:
 MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % ; 
 Goto: 	
-Reduce: 	+ -40 	- -40 	* -40 	/ -40 	% -40 	; -40 	
+Reduce: 	+ -36 	- -36 	* -36 	/ -36 	% -36 	; -36 	
 
-Status62:
+Status57:
 MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % ; 
 Goto: 	
-Reduce: 	+ -39 	- -39 	* -39 	/ -39 	% -39 	; -39 	
+Reduce: 	+ -35 	- -35 	* -35 	/ -35 	% -35 	; -35 	
 
-Status63:
+Status58:
 MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % ; 
 Goto: 	
-Reduce: 	+ -41 	- -41 	* -41 	/ -41 	% -41 	; -41 	
+Reduce: 	+ -37 	- -37 	* -37 	/ -37 	% -37 	; -37 	
 
-Status64:
-ArrayElemDim1 -> id [ digit ]  	dotPos: 4 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 4 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 4 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	[ 71 	
-Reduce: 	+ -49 	- -49 	* -49 	/ -49 	= -49 	% -49 	+= -49 	-= -49 	*= -49 	/= -49 	; -49 	
+Status59:
+Index -> [ digit ] Index  	dotPos: 3 	lookAhead: + - * / = % += -= *= /= ; 
+Index -> [ digit ]  	dotPos: 3 	lookAhead: + - * / = % += -= *= /= ; 
+Goto: 	[ 25 	Index 65 	
+Reduce: 	+ -44 	- -44 	* -44 	/ -44 	= -44 	% -44 	+= -44 	-= -44 	*= -44 	/= -44 	; -44 	
 
-Status65:
+Status60:
 Intialization -> Type id = Expr  	dotPos: 4 	lookAhead: , ; 
 Goto: 	
-Reduce: 	, -27 	; -27 	
+Reduce: 	, -23 	; -23 	
 
-Status66:
-Postfix1 -> [ digit ]  	dotPos: 2 	lookAhead: [ , ; 
-Goto: 	] 72 	
+Status61:
+Postfix -> [ digit ]  	dotPos: 2 	lookAhead: [ , ; 
+Goto: 	] 66 	
 Reduce: 	
 
-Status67:
-Postfix2 -> Postfix1 [ digit ]  	dotPos: 2 	lookAhead: [ , ; 
-Goto: 	digit 73 	
+Status62:
+Postfix -> Postfix [ digit ]  	dotPos: 2 	lookAhead: [ , ; 
+Goto: 	digit 67 	
 Reduce: 	
 
-Status68:
-Postfix3 -> Postfix2 [ digit ]  	dotPos: 2 	lookAhead: , ; 
-Goto: 	digit 74 	
-Reduce: 	
-
-Status69:
+Status63:
 DeclationList -> DeclationList , id = Expr  	dotPos: 4 	lookAhead: , ; 
-Goto: 	digit 3 	id 4 	Expr 75 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+Goto: 	digit 3 	id 4 	Expr 68 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	
 Reduce: 	
 
-Status70:
+Status64:
 DeclationList -> DeclationList , id Postfix  	dotPos: 4 	lookAhead: , ; 
-Goto: 	
+Postfix -> Postfix [ digit ]  	dotPos: 1 	lookAhead: [ , ; 
+Goto: 	[ 62 	
 Reduce: 	, -13 	; -13 	
 
-Status71:
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 5 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 5 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	digit 76 	
-Reduce: 	
-
-Status72:
-Postfix1 -> [ digit ]  	dotPos: 3 	lookAhead: [ , ; 
+Status65:
+Index -> [ digit ] Index  	dotPos: 4 	lookAhead: + - * / = % += -= *= /= ; 
 Goto: 	
-Reduce: 	[ -24 	, -24 	; -24 	
-
-Status73:
-Postfix2 -> Postfix1 [ digit ]  	dotPos: 3 	lookAhead: [ , ; 
-Goto: 	] 77 	
 Reduce: 	
-
-Status74:
-Postfix3 -> Postfix2 [ digit ]  	dotPos: 3 	lookAhead: , ; 
-Goto: 	] 78 	
-Reduce: 	
-
-Status75:
-DeclationList -> DeclationList , id = Expr  	dotPos: 5 	lookAhead: , ; 
-Goto: 	
-Reduce: 	, -14 	; -14 	
-
-Status76:
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 6 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 6 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	] 79 	
-Reduce: 	
-
-Status77:
-Postfix2 -> Postfix1 [ digit ]  	dotPos: 4 	lookAhead: [ , ; 
-Goto: 	
-Reduce: 	[ -25 	, -25 	; -25 	
-
-Status78:
-Postfix3 -> Postfix2 [ digit ]  	dotPos: 4 	lookAhead: , ; 
-Goto: 	
-Reduce: 	, -26 	; -26 	
-
-Status79:
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 7 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 7 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	[ 80 	
-Reduce: 	+ -50 	- -50 	* -50 	/ -50 	= -50 	% -50 	+= -50 	-= -50 	*= -50 	/= -50 	; -50 	
-
-Status80:
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 8 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	digit 81 	
-Reduce: 	
-
-Status81:
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 9 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	] 82 	
-Reduce: 	
-
-Status82:
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 10 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	
-Reduce: 	+ -51 	- -51 	* -51 	/ -51 	= -51 	% -51 	+= -51 	-= -51 	*= -51 	/= -51 	; -51 	
-
-
-

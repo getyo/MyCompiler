@@ -12,42 +12,46 @@ vector<string> Type::typeID2Str = {
 unordered_map<string, int> Type::typeStr2ID = {
 	{"int",0}, {"float",1}
 };
-vector<WidthOrPtr> Type::typeWidth = {
-	4,4
-};
+
+
+//创建基本数据类型
+void Type::BasicTypeDef() {
+	typePtr.reserve(20);
+	Type* intTy = new Type(0, 4);
+	Type* floatTy = new Type(1, 4);
+	typePtr.push_back(intTy);
+	typePtr.push_back(floatTy);
+}
+
+vector<Type*> Type::typePtr;
 
 int Type::GetTypeWidth(int typeID) {
-	int a[10];
-	if (arrayTypeSet.count(typeID)) {
-		auto typePtr = (ArrayType*)typeWidth.at(typeID).typeDef;
-		return typePtr->totalSize;
-	}
-	else return typeWidth.at(typeID).width;
+	return typePtr.at(typeID)->width;
 		
 }
 
 ArrayType* Type::GetArrayType(int typeID) {
-	if (!arrayTypeSet.count(typeID)) return nullptr;
-	else return (ArrayType*)typeWidth.at(typeID).typeDef;
+	ArrayType* ap;
+	if (ap = dynamic_cast<ArrayType*>(typePtr.at(typeID))){
+		return ap;
+	}
+	else {
+		cout << "Error : The array dimension does not match the definition \t" << Parser::RowAndCol() << "\n";
+		exit(1);
+		return nullptr;
+	}
 }
 
-string Type::CreateArrayStr (int typeID, int dim) {
-	string s = GetTypeStr(typeID);
-	while (dim-- > 0) s += "[]";
-	return s;
-}
 
 
-
-int Type::CreateArrayType(int typeID, int dim1Size,int dim2Size,int dim3Size) {
-	ArrayType* a = new ArrayType(typeID, dim1Size, dim2Size, dim3Size);
-	int newID = typeWidth.size();
-	string arrStr = CreateArrayStr(a->elemID, a->dim);
-	typeWidth.push_back((void*)a);
-	typeStr2ID.insert({ arrStr, newID });
-	typeID2Str.push_back(arrStr);
-	arrayTypeSet.insert(newID);
-	return newID;
+int Type::CreateArrayType(int elemID, int size) {
+	int typeID = typePtr.size();
+	ArrayType* a = new ArrayType(elemID,size,typeID);
+	string typeStr = GetTypeStr(elemID) + "[]";
+	typeStr2ID.insert({ typeStr,typeID });
+	typeID2Str.push_back(typeStr);
+	typePtr.push_back(a);
+	return typeID;
 }
 
 
@@ -60,11 +64,13 @@ size_t Environmemt::getID() {
 	return EnvID++;
 }
 
+
 Environmemt::Environmemt(Environmemt * pre){
 	if (pre == nullptr) {
 		base = dataFieldSize;
 		offset = 0;
 		this->pre = nullptr;
+		Type::BasicTypeDef();
 		return;
 	}
 	this->base = dataFieldSize;
@@ -111,11 +117,6 @@ Variable& Environmemt::EnvGet(string lexeme) {
 ArrayType* Environmemt::GetArrayType(string lex) {
 	Type t = curEnv->EnvGet(lex).t;
 	auto ap = Type::GetArrayType(t.typeID);
-	if (ap == nullptr) {
-		cout << "Error : " << lex << " has Type " << Type::GetTypeStr(t.typeID) << \
-		" which isn't array type \t" + Parser::RowAndCol() << "\n";
-		exit(1);
-	}
 	return ap;
 }
 
@@ -132,46 +133,10 @@ void Environmemt::Print() {
 	}
 }
 
-ArrayType::ArrayType(int elemID, int rowSize1, int rowSize2, int rowSize3) :\
-elemID(elemID), rowSize1(rowSize1), rowSize2(rowSize2), rowSize3(rowSize3) {
+ArrayType::ArrayType(int elemID, int size,int arrayTypeID) : elemID(elemID),size(size){
 	elemWidth = Type::GetTypeWidth(elemID);
-	totalSize = rowSize1 * elemWidth;
-	dim = 1;
-	if (rowSize2 != ATTR_NON) {
-		if (rowSize2 <= 0) {
-			cout << "Error : The size of array must be positive value \t" << Parser::RowAndCol();
-			exit(1);
-		}
-		totalSize *= rowSize2;
-		dim += 1;
-	}
-	if (rowSize3 > 0) {
-		if (rowSize2 <= 0) {
-			cout << "Error : The size of array must be positive value \t" << Parser::RowAndCol();
-			exit(1);
-		}
-		totalSize *= rowSize3;
-		dim += 1;
-	}
+	this->typeID = arrayTypeID;
+	this->width = size * elemWidth;
 }
 
 
-int ArrayType::GetDimSize(int dim) {
-	switch (dim)
-	{
-	case 1: {
-		if (rowSize2 > 0 && rowSize3 > 0) return rowSize2 * rowSize3;
-		else if (rowSize2 > 0) return rowSize2;
-		else return -1;
-	}
-	case 2: {
-		if (rowSize3 > 0) return rowSize3;
-		else return -1;
-	}
-	default: {
-		cout << "Error : illegal index " << Parser::RowAndCol() << '\n';
-		exit(1);
-	}
-		   break;
-	}
-}

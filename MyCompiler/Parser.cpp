@@ -4,11 +4,21 @@
 #include "Type.h"
 #include "Triple.h"
 #include "AuxiliaryFunction.h"
+#include <string>
 Parser* Parser::parserPtr = nullptr;
 extern SymbolTable symbolTable;
 int Parser::row;
 int Parser::col;
 extern Generator* genPtr;
+
+
+void SymbolStack::Print() {
+	for (int i = 0; i <= topIndex; ++i) {
+		if (array[i].symbol == PH_SYM) cout << "PlaceHolder" << " ";
+		else cout << Grammer::GetSymbolStr(array[i].symbol) << " ";
+	}
+	cout << endl;
+}
 
 Parser::Parser() {
 	collectionPtr = Collection::CollectionFactory();
@@ -28,11 +38,21 @@ string Parser::makeErrorInfo(Token t) {
 	return s;
 }
 
-//使用该函数时默认符号栈以及含有该表达式全部内容
 void* Parser::GetAttrPtr(int pItr, int smbIndex, int attrIndex) {
 	auto& p = (*grammer)[pItr];
 	int bodysize = p.GetBody().size();
-	int symID = p.GetBody()[smbIndex - 1];
+	int symID;
+
+	if (smbIndex >= 0) symID = p[smbIndex];
+	else {
+#ifdef DEBUG
+		ASSERT(smbIndex == -1, "Parser: illegal symbol Index");
+#endif // DEBUG
+		int offset = - dotPosStack.top();
+		if (symbolStack.top().symbol == -1) --offset;
+		auto& swa = symbolStack.get(offset);
+		return &swa.attr->at(attrIndex);
+	}
 	int offset = smbIndex - bodysize;
 	auto& swa = symbolStack.get(offset);
 
@@ -92,7 +112,7 @@ void ComputedOp(stack<void*>& oprandStack,vector<int*>&unused,int op) {
 }
 
 //执行表达式的action并返回产生式头
-SymbolWithAttr Parser::ExecuteAction(int pItr) {
+SymbolWithAttr Parser::ExecuteAction(int pItr,int dotPos) {
 	auto& p = (*grammer)[pItr];
 	vector<int> postfix;
 	vector<int*> unused;
@@ -103,12 +123,12 @@ SymbolWithAttr Parser::ExecuteAction(int pItr) {
 	bool isFunPara = false;
 	int curParaIndex = 0;
 	int curfunID;
-	for (auto &action : p.actions) {
+	for (auto &action : p.actionLists[dotPos]) {
 		//构建后缀表达式
 		for (int i = 0; i < action->requested.size(); ++i) {
 			auto elem = action->requested[i];
 			//处理运算操作
-			if (elem < 0) {
+			if (elem < 0 && elem != -1) {
 				//以下操作保证了运算优先级
 				//如果操作栈为空，将当前操作压入栈中
 				if (opStack.empty()) {
@@ -297,14 +317,15 @@ int Parser::Reduce(int productionIndex) {
 		if (topTokenKind == body[i]) {
 			statusStack.pop();
 		}
+		
 		else {
 			cerr << "Parser : Reduce Error \n";
 			PrintStackTrace();
 			abort();
 		}
-			
 	}
-	auto headSwa = ExecuteAction(productionIndex);
+	auto headSwa = ExecuteAction(productionIndex,p.GetBody().size());
+	curStatus = statusStack.top();
 
 #ifdef _PARSER_REDUCE_PRINT
 	cout << "\nInput Token : " << Grammer::GetSymbolStr(curInputToken) << "\n";
@@ -318,24 +339,51 @@ int Parser::Reduce(int productionIndex) {
 	PrintAttr(productionIndex, headSwa);
 	cout << "\n\nReturn Status : Status " << curStatus << "\n";
 	collectionPtr->PrintStatus(curStatus);
+#endif
+
+	PopToken(body.size() + 1);
+	dotPosStack.pop();
+
+#ifdef DEBUG
+	cout << "\nSymbolStack : \t";
+	symbolStack.Print();
 	cout << "\n\n";
 #endif // _PARSER_ACTION_PRINT
 
-	PopToken(body.size());
-	curStatus = statusStack.top();
 	shift(headSwa);
 	curInputToken = (*tokenStream)[tokenIndex].kind;
 	return p.GetHead();
 }
 
-void Parser::shift(SymbolWithAttr& swa) {
-#ifdef _PARSER_SHIFT_PRINT
-	int preStatus = curStatus;
-#endif // _PARSER_ACTION_PRINT
 
-	symbolStack.push(swa);
+void Parser::shift(SymbolWithAttr& swa) {
+
+	int preStatus = curStatus;
+	//跳转状态
 	curStatus = collectionPtr->Goto(curStatus, swa.symbol);
 	statusStack.push(curStatus);
+
+	//移入符号
+	if (NewProduction(swa.symbol) || preStatus == 0) {
+		//如是新的表达式，需要压入PlaceHolder，用于继承属性的占位
+		symbolStack.push(SymbolWithAttr(PH_SYM));
+		//执行继承Acion
+		int curDotPos = dotPosStack.top();
+		auto itemSet = collectionPtr->GetStatus(preStatus);
+		for (auto& item : itemSet) {
+			for (auto& pair : item.actionLists) {
+				if (pair.first == curDotPos)
+					ExecuteAction(item.GetPItr() - 1, curDotPos); 
+			}
+		}
+		//重新开始dotPos的计数
+		dotPosStack.push(0);
+	}
+
+	symbolStack.push(swa);
+	dotPosStack.top() += 1;
+
+
 
 #ifdef _PARSER_SHIFT_PRINT
 	cout << "\nInput Token : " << Grammer::GetSymbolStr(swa.symbol) << "\n";
@@ -345,21 +393,66 @@ void Parser::shift(SymbolWithAttr& swa) {
 	cout << "\n";
 	cout << "\nGoto : Status " << curStatus << "\n";
 	collectionPtr->PrintStatus(curStatus);
+	cout << "\nSymbolStack : \t";
+	symbolStack.Print();
 	cout << "\n\n";
 #endif // _PARSER_ACTION_PRINT
 }
 
+bool Parser::NewProduction(int inputSymbol) {
+	int curStatus = statusStack.top();
+	statusStack.pop();
+	int preStatus = statusStack.top();
+	statusStack.push(curStatus);
+
+	bool hasFollowDot = collectionPtr->HasFollowDot(preStatus, inputSymbol);
+	bool hasDotPos1 = collectionPtr->HasDotPos1(curStatus);
+#ifdef DEBUG
+	ASSERT(hasFollowDot || hasDotPos1, "LOGIC ERROR");
+#endif // DEBUG
+
+	if (hasFollowDot && !hasDotPos1) return false;
+	else if (!hasFollowDot && hasDotPos1) return true;
+	//左递归
+	else if (hasDotPos1 && hasFollowDot) {
+		int nextToken = (*tokenStream)[tokenIndex].kind;
+		int action = collectionPtr->Goto(curStatus,curInputToken);
+		if (action < 0) return false;
+		else return true;
+	}
+}
+
 void Parser::shift(int symbol){
 
-#ifdef _PARSER_SHIFT_PRINT
 	int preStatus = curStatus;
-#endif // _PARSER_ACTION_PRINT
+
+	curStatus = collectionPtr->Goto(curStatus, symbol);
+	statusStack.push(curStatus);
+
+	//移入符号
+	if (NewProduction(symbol)) {
+		//如是新的表达式，需要压入PlaceHolder，用于继承属性的占位
+		symbolStack.push(SymbolWithAttr(PH_SYM));
+		//执行继承Acion
+		int curDotPos = dotPosStack.top();
+		auto itemSet = collectionPtr->GetStatus(preStatus);
+		for (auto& item : itemSet) {
+			int pItr = item.GetPItr() - 1;
+			auto& p = (*grammer)[pItr];
+			for (auto& pair : p.actionLists) {
+				if (pair.first == curDotPos && curDotPos < p.GetBody().size())
+					ExecuteAction(pItr, curDotPos);
+			}
+		}
+		//重新开始dotPos的计数
+		dotPosStack.push(0);
+	}
+
 	if (Grammer::IsTerminal(symbol))
 		symbolStack.push(SymbolWithAttr((*tokenStream)[tokenIndex]));
 	else if (Grammer::IsUnterminal(symbol))
 		symbolStack.push(SymbolWithAttr(symbol));
-	curStatus = collectionPtr->Goto(curStatus, symbol);
-	statusStack.push(curStatus);
+	dotPosStack.top() += 1;
 
 #ifdef _PARSER_SHIFT_PRINT
 	cout << "\nInput Token : " << Grammer::GetSymbolStr(curInputToken) << "\n";
@@ -369,6 +462,8 @@ void Parser::shift(int symbol){
 	cout << "\n";
 	cout << "\nGoto : Status " << curStatus << "\n";
 	collectionPtr->PrintStatus(curStatus);
+	cout << "\nSymbolStack : \t";
+	symbolStack.Print();
 	cout << "\n\n";
 #endif // _PARSER_ACTION_PRINT
 }
@@ -397,11 +492,15 @@ bool Parser::Analyse() {
 		cerr << "Parser: hasn't Input stream\n";
 		abort();
 	}
+
 	bool success = true;
 	curStatus = 0;
+	symbolStack.push(SymbolWithAttr(PH_SYM));
 	statusStack.push(curStatus);
 	curInputToken = (*tokenStream)[tokenIndex].kind;
-	action = collectionPtr->Goto(curStatus, curInputToken);
+	action = collectionPtr->Goto(curStatus, curInputToken);;
+	dotPosStack.push(0);
+
 
 	Environmemt::curEnv = Environmemt::NewEnv();
 	while(tokenIndex < tokenStream->size()){
