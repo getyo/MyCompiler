@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <list>
 using namespace std;
 
 class Triple{
@@ -52,6 +53,7 @@ typedef vector<Triple> CodeStore;
 
 class Generator {
 private:
+	static list<int> backList;
 	static Generator* genPtr;
 	static CodeStore* csPtr;
 	static vector<string> icopInt2Str;
@@ -69,7 +71,9 @@ public:
 	static int Gen(int op,int code1,int code2);
 	static int GenAssign(int op, int desAddr, int srcCode);
 	static int InsertElem(int addr, int val);
-	static int Update() { return codeStart = csPtr->size() - 1; }
+	static int BackPatch(int codeIndex) { backList.push_back(codeIndex); return 1; }
+	static int DoPatch(int codeIndex);
+	static int Update() { return codeStart = csPtr->size(); }
 	static string GetIcopStr(int icop);
 	static void Print();
 };

@@ -7,13 +7,19 @@
 Generator* Generator::genPtr = nullptr;
 CodeStore* Generator::csPtr = nullptr;
 int Generator::codeStart = 0;
+list<int> Generator::backList;
+
 vector <string> Generator::icopInt2Str = {
-	"+","-","*","/","%","=","id","digit","+=","-=","*=","/=","LD"
+	"+","-","*","/","%","=","id","digit","+=","-=","*=","/=","LD","&&",\
+	"||","==","!=","<","<=",">",">=","jc"
 };
 unordered_map<string, int> Generator::icopStr2Int = {
 	{"+",0},{"-",1},{"*",2},{"/",3},{"%",4},\
 	{"=", 5}, { "id",6 }, { "digit",7 }, {"+=",8},\
-{"-=", 9}, { "*=",10 }, { "/=",11 }, { "LD",12 }
+	{"-=", 9}, { "*=",10 }, { "/=",11 }, { "LD",12 },\
+	{"&&", 13}, { "||",14 }, { "==",15 }, {"!=",16},\
+	{"<", 17}, { "<=",18 }, { ">",19 }, {">=",20},\
+	{"jc",21}
 };
 
 Generator::Generator(CodeStore &cs) {
@@ -84,7 +90,13 @@ static bool IsAssign(Triple& t) {
 	return false;
 }
 
-
+int Generator::DoPatch(int codeIndex) {
+	for (auto& i : backList) {
+		(*csPtr)[i].valNum2 = codeIndex;
+	}
+	backList.clear();
+	return 1;
+}
 
 void Generator::Print() {
 	auto& cs = *csPtr;

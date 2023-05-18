@@ -22,12 +22,14 @@ struct SymbolWithAttr
 	}
 	SymbolWithAttr(int symbol) {
 		this->symbol = symbol;
-		if (Grammer::IsTerminal(symbol))
+		if (Grammer::IsTerminal(symbol)) {
 			attr = nullptr;
-		else if (Grammer::IsUnterminal(symbol)|| symbol == PH_SYM)
-			attr = make_shared<array<int,8>>();
-		for (auto& i : *attr)
-			i = ATTR_NON;
+		}
+		else if (Grammer::IsUnterminal(symbol) || symbol == PH_SYM) {
+			attr = make_shared<array<int, 8>>();
+			for (auto& i : *attr)
+				i = ATTR_NON;
+		}
 	}
 	SymbolWithAttr(const SymbolWithAttr&& sw) {
 		symbol = sw.symbol;

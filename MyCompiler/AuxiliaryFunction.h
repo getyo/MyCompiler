@@ -30,8 +30,10 @@ using namespace std;
 		case 13:{retVal = (int)Type::GetArrayType( INT_ATTR(0) )->elemWidth; break;}\
 		case 14:{retVal = (int)Type::GetArrayType( INT_ATTR(0) )->elemID; break;}\
 		case 15:{retVal = (int)Type::GetTypeWidth( INT_ATTR(0) ) ; break;}\
+		case 16:{retVal = (int)Generator::BackPatch( INT_ATTR(0) ) ; break;}\
+		case 17:{retVal = (int)Generator::DoPatch( INT_ATTR(0) ) ; break;}\
 		default:{\
-			cerr << "Parser: illegal function ID"; break;\
+			cerr << "Parser: illegal function ID"; abort();break;\
 		}\
 	};\
 	}

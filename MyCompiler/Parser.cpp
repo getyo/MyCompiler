@@ -42,6 +42,8 @@ void* Parser::GetAttrPtr(int pItr, int smbIndex, int attrIndex) {
 	auto& p = (*grammer)[pItr];
 	int bodysize = p.GetBody().size();
 	int symID;
+	bool isInhAction = true;
+	if (bodysize == dotPosStack.top()) isInhAction = false;
 
 	if (smbIndex >= 0) symID = p[smbIndex];
 	else {
@@ -49,11 +51,18 @@ void* Parser::GetAttrPtr(int pItr, int smbIndex, int attrIndex) {
 		ASSERT(smbIndex == -1, "Parser: illegal symbol Index");
 #endif // DEBUG
 		int offset = - dotPosStack.top();
+		//如果是继承属性使用继承属性的情况下，由于当前栈中除了dotPos个符号外还压入了一个
+		//PalceHolder，所以需要将偏移量+1才能获取到表达式头的继承属性
 		if (symbolStack.top().symbol == -1) --offset;
 		auto& swa = symbolStack.get(offset);
 		return &swa.attr->at(attrIndex);
 	}
-	int offset = smbIndex - bodysize;
+	int offset;
+	if (!isInhAction) offset = smbIndex - bodysize;
+	else {
+		offset = smbIndex - dotPosStack.top();
+		if (symbolStack.top().symbol == -1) --offset;
+	}
 	auto& swa = symbolStack.get(offset);
 
 	if (Grammer::IsTerminal(symID)) {
@@ -201,6 +210,8 @@ SymbolWithAttr Parser::ExecuteAction(int pItr,int dotPos) {
 				if (elem == 0) 
 					postfix.push_back((int)&headSwa.attr->at(attrIndex));
 				else {
+					if (elem == 1 && attrIndex == 0 && pItr == 60)
+						cout << "";
 					int attrPtr = (int)GetAttrPtr(pItr, elem, attrIndex);
 #ifdef DEBUG
 					ASSERT(attrPtr != 0,"Parser: attrPtr is null");
@@ -448,8 +459,15 @@ void Parser::shift(int symbol){
 		dotPosStack.push(0);
 	}
 
-	if (Grammer::IsTerminal(symbol))
+	if (Grammer::IsTerminal(symbol)) {
 		symbolStack.push(SymbolWithAttr((*tokenStream)[tokenIndex]));
+		//对于NON来说，它并不存在于符号表中，上一步使用NON之后的终结符创建
+		//swa，这一步将符号表项置为0
+		if (symbol == nonInt) {
+			symbolStack.top().symbol = nonInt;
+			symbolStack.top().symTableIndex = -1;
+		}
+	}
 	else if (Grammer::IsUnterminal(symbol))
 		symbolStack.push(SymbolWithAttr(symbol));
 	dotPosStack.top() += 1;
@@ -479,9 +497,7 @@ bool Parser::RedressNon() {
 	}
 	else if(action < 0) {
 		//注意 在PraserTable中-1代表使用Production0进行归约
-		curInputToken = Reduce(-(action + 1));
-		shift(curInputToken);
-		curInputToken = (*tokenStream)[tokenIndex].kind;
+		Reduce(-(action + 1));
 		return true;
 	}
 	return false;
@@ -562,6 +578,10 @@ void Parser::PrintAttr(int pItr, SymbolWithAttr& head) {
 	for (int i = bodySize-1; i >= 0; --i) {
 		auto& swa = symbolStack.get(-i);
 		if (Grammer::IsTerminal(swa.symbol)) {
+			if (swa.symbol == nonInt) {
+				cout << "_NON";
+				continue;
+			}
 			auto symStr = Grammer::GetSymbolStr(swa.symbol);
 			cout << symStr + ".lexeme : " \
 				+ symbolTable[swa.symTableIndex].lexeme + " \t";

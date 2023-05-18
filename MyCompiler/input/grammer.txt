@@ -82,6 +82,13 @@ GetElemType : 1
 //typeID
 sizeof : 1
 
+//16 将指定的指令索引加入链表中，等待反向修补
+//codeIndex
+BackPatch : 1
+
+//17 将backpacth链表中的指令中第二个valuenum置为指定值，并清空链表
+//codeIndex
+DoPatch : 1
 END$
 
 //关于常数，如果要在属性计算中使用常数，需要使用$n的形式
@@ -91,7 +98,7 @@ StatementList -> StatementList Statement	## 0.6 = 1.6 ; 0.7 = 2.7 ##
 StatementList -> Statement					## 0.6 = 1.6 ; 0.7 = 1.7 ##
 Statement -> ExprStatement					## 0.6 = 1.6 ; 0.7 = 1.7 ##
 Statement -> DefinationStatement			
-$$ StatementList : 0 test
+Statement -> IfStatement					## 0.6 = 1.6 ; 0.7 = 1.7 ##
 
 //类型定义
 Type -> BasicType			## 0.0 = 1.0 ##
@@ -105,7 +112,6 @@ $$ ValueType : 0 typeID
 //变量定义以及初始化
 DefinationStatement -> Defination ;
 Defination -> DeclationList
-
 
 DeclationList -> DeclationList , id					## 0.0 = 1.0 ; EnvPush (3.0,0.0) ; ##
 DeclationList -> DeclationList , id ## 4.0 = 1.0 ## Postfix 		## 0.0 = 1.0 ; EnvPush (3.0,4.0) ##  
@@ -131,41 +137,55 @@ $$ Postfix : 0 arrayTypeID
 Intialization -> Type id = Expr		## 0.0 = 1.0 ; EnvPush (2.0,1.0) ; 0.1 = EnvGetAddr (2.0) ; 0.6 = GenAssign ('=',0.1,4.6) ##
 
 //计算表达式
-ExprStatement -> Expr ;		## 0.0 = 1.0 ; 0.6 = 1.6 ; 0.7 = UpdateCodeStart () ##
-$$ ExprStatement : 0 val
-Expr -> AssignExpr			## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = 1.6 ##
-$$ Expr : 0 addr 1 typeID
+ExprStatement -> TempStore ## 1.6 = UpdateCodeStart () ## Expr ;		## 0.6 = 1.6 ; 0.7 = UpdateCodeStart () ##
+Expr -> AssignExpr			## 0.1 = 1.1 ; 0.6 = 1.6 ; 0.7 = 1.7 ##
+$$ Expr : 1 typeID
 
 //赋值表达式
-AssignExpr -> LeftValue =  AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('=',1.0,3.6) ##
-AssignExpr -> LeftValue += AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('+=',1.0,3.6) ##
-AssignExpr -> LeftValue -= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('-=',1.0,3.6) ##
-AssignExpr -> LeftValue *= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('*=',1.0,3.6) ##
-AssignExpr -> LeftValue /= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('/=',1.0,3.6) ##
-AssignExpr -> AddtiveExpr			## 0.6 = 1.6 ##
+AssignExpr -> LeftValue =  AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('=',1.0,3.6) ; 0.7 = 0.6 + $1 ##
+AssignExpr -> LeftValue += AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('+=',1.0,3.6) ; 0.7 = 0.6 + $1 ##
+AssignExpr -> LeftValue -= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('-=',1.0,3.6) ; 0.7 = 0.6 + $1 ##
+AssignExpr -> LeftValue *= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('*=',1.0,3.6) ; 0.7 = 0.6 + $1 ##
+AssignExpr -> LeftValue /= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('/=',1.0,3.6) ; 0.7 = 0.6 + $1 ##
+AssignExpr -> LogicOrExpr			## 0.6 = 1.6 ; 0.7 = 1.7 ##
 $$ AssignExpr : 0 addr 1 typeID
 
+LogicOrExpr -> LogicOrExpr || LogicAndExpr			## 0.6 = Gen ('||',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+LogicOrExpr -> LogicAndExpr							## 0.6 = 1.6 ; 0.7 = 1.7 ##
 
+LogicAndExpr -> LogicAndExpr && EqualExpr			## 0.6 = Gen ('&&',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+LogicAndExpr -> EqualExpr							## 0.6 = 1.6 ; 0.7 = 1.7 ##
+
+EqualExpr -> EqualExpr == CompareExpr				## 0.6 = Gen ('==',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+EqualExpr -> EqualExpr != CompareExpr				## 0.6 = Gen ('!=',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+EqualExpr -> CompareExpr							## 0.6 = 1.6 ; 0.7 = 1.7 ##
+//比较表达式定义
+CompareExpr -> CompareExpr > AddtiveExpr			## 0.6 = Gen ('>',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+CompareExpr -> CompareExpr < AddtiveExpr			## 0.6 = Gen ('<',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+CompareExpr -> CompareExpr >= AddtiveExpr			## 0.6 = Gen ('>=',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+CompareExpr -> CompareExpr <= AddtiveExpr			## 0.6 = Gen ('<=',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+CompareExpr -> AddtiveExpr							## 0.6 = 1.6 ; 0.7 = 1.7 ##
 
 //加法表达式
-AddtiveExpr -> AddtiveExpr + MultiplicativeExpr		## 0.6 = Gen ('+',1.6,3.6) ; ##
-AddtiveExpr -> AddtiveExpr - MultiplicativeExpr		## 0.6 = Gen ('-',1.6,3.6) ; ##
-AddtiveExpr -> MultiplicativeExpr						## 0.6 = 1.6 ##
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr		## 0.6 = Gen ('+',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr		## 0.6 = Gen ('-',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+AddtiveExpr -> MultiplicativeExpr						## 0.6 = 1.6 ; 0.7 = 1.7 ##
 $$ AddtiveExpr : 0 addr 1 typeID
-$$ MultiplicativeExpr : 0 addr 1 typeID 
+$$ MultiplicativeExpr : 0 addr 1 typeID 2 val
 //乘法表达式
-MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr		## 0.6 = Gen ('/',1.6,3.6) ; ##
-MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr		## 0.6 = Gen ('*',1.6,3.6) ; ##
-MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr		## 0.6 = Gen ('*',1.6,3.6) ; ##
-MultiplicativeExpr -> PrimaryExpr							## 0.6 = 1.6 ##
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr		## 0.6 = Gen ('/',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr		## 0.6 = Gen ('*',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr		## 0.6 = Gen ('*',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+MultiplicativeExpr -> PrimaryExpr							## 0.6 = 1.6 ; 0.7 = 1.7 ##
 $$ PrimaryExpr : 0 addr 1 typeID 2 val
 
 //addr = -1,代表当前primaryexpr是常量
 //基本表达式
 //terminal: 0 lexeme	1 val	2 row	3 col	5 typeID
-PrimaryExpr -> id				## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ; 0.2 = $-1 ; 0.6 = InsertElem (0.0,0.2) ##	
-PrimaryExpr -> digit			## 0.0 = $-1 ; 0.1 = $0 ; 0.2 = 1.1 ; 0.6 = InsertElem (0.0,0.2) ##
-PrimaryExpr -> ArrayElem		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.2 = $-1 ; 0.6 = InsertElem (0.0,0.2)##
+PrimaryExpr -> id				## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ; 0.2 = $-1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##	
+PrimaryExpr -> digit			## 0.0 = $-1 ; 0.1 = $0 ; 0.2 = 1.1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##
+PrimaryExpr -> ArrayElem		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.2 = $-1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##
+PrimaryExpr -> ( Expr )			## 0.0 = 2.0 ; 0.1 = 2.1 ; 0.6 = 2.6 ; 0.7 = 2.7 ##
 ArrayElem -> id ## 2.1 = EnvGetType (1.0) ; 2.0 = EnvGetAddr (1.0) ## Index						## 0.0 = 2.0 ; 0.1 = 2.1 ##
 Index -> [ digit ]	## 4.1 = GetElemType (-1.1) ; 4.0 = -1.0 + 2.1 * sizeof (4.1) ## Index		## 0.0 = 4.0 ; 0.1 = 4.1 ##
 Index -> [ digit ]																					## 0.1 = GetElemType (-1.1) ; 0.0 = -1.0 + 2.1 * sizeof (0.1) ##
@@ -178,3 +198,13 @@ $$ Index : 0 addr 1 varTypeID
 LeftValue -> id				## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ##
 LeftValue -> ArrayElem		## 0.0 = 1.0 ; 0.1 = 1.1 ##
 $$ LeftValue : 0 addr 1 typeID
+
+//if语句定义
+IfStatement -> if TempStore ## 2.6 = UpdateCodeStart () ##  ( Expr ) ## 2.0 = Gen ('jc',4.6,2.0) ; BackPatch (2.0) ## Statement SubIfStatement			## 0.6 = 2.6 ; 0.7 = UpdateCodeStart () ##
+SubIfStatement -> else IfStatement SubIfStatement 
+SubIfStatement -> else _NON Statement				## 0.6 = 3.6 ; 0.7 = 3.7 ; DoPatch (0.7) ##
+SubIfStatement -> _NON								## 0.7 = UpdateCodeStart () ; DoPatch (0.7) ##
+
+//用于暂存的辅助非终结符
+TempStore -> _NON
+$$ TempStore : 0 store0 1 store1 2 store2 3 store3 4 store4 5 store5
