@@ -99,6 +99,10 @@ StatementList -> Statement					## 0.6 = 1.6 ; 0.7 = 1.7 ##
 Statement -> ExprStatement					## 0.6 = 1.6 ; 0.7 = 1.7 ##
 Statement -> DefinationStatement			
 Statement -> IfStatement					## 0.6 = 1.6 ; 0.7 = 1.7 ##
+Statement -> WhileStatement					## 0.6 = 1.6 ; 0.7 = 1.7 ##
+Statement -> CompoundStatement				## 0.6 = 1.6 ; 0.7 = 1.7 ##
+CompoundStatement -> { StatementList }		## 0.6 = 2.6 ; 0.7 = 2.7 ##
+
 
 //类型定义
 Type -> BasicType			## 0.0 = 1.0 ##
@@ -184,6 +188,7 @@ $$ PrimaryExpr : 0 addr 1 typeID 2 val
 //terminal: 0 lexeme	1 val	2 row	3 col	5 typeID
 PrimaryExpr -> id				## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ; 0.2 = $-1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##	
 PrimaryExpr -> digit			## 0.0 = $-1 ; 0.1 = $0 ; 0.2 = 1.1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##
+PrimaryExpr -> - digit			## 0.0 = $-1 ; 0.1 = $0 ; 0.2 = 2.1 * $-1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##
 PrimaryExpr -> ArrayElem		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.2 = $-1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##
 PrimaryExpr -> ( Expr )			## 0.0 = 2.0 ; 0.1 = 2.1 ; 0.6 = 2.6 ; 0.7 = 2.7 ##
 ArrayElem -> id ## 2.1 = EnvGetType (1.0) ; 2.0 = EnvGetAddr (1.0) ## Index						## 0.0 = 2.0 ; 0.1 = 2.1 ##
@@ -199,12 +204,19 @@ LeftValue -> id				## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ##
 LeftValue -> ArrayElem		## 0.0 = 1.0 ; 0.1 = 1.1 ##
 $$ LeftValue : 0 addr 1 typeID
 
+BooleanExpr -> Expr			## 0.1 = 1.1 ; 0.6 = 1.6 ; 0.7 = 1.7 ##
+$$ BooleanExpr :  1 typeID 
+
 //if语句定义
-IfStatement -> if TempStore ## 2.6 = UpdateCodeStart () ##  ( Expr ) ## 2.0 = Gen ('jc',4.6,2.0) ; BackPatch (2.0) ## Statement SubIfStatement			## 0.6 = 2.6 ; 0.7 = UpdateCodeStart () ##
+IfStatement -> if ## 2.6 = UpdateCodeStart () ## TempStore ( BooleanExpr ) ## 2.0 = Gen ('jc',4.6,2.0) ; BackPatch (2.0) ## Statement SubIfStatement			## 0.6 = 2.6 ; 0.7 = UpdateCodeStart () ##
 SubIfStatement -> else IfStatement SubIfStatement 
 SubIfStatement -> else _NON Statement				## 0.6 = 3.6 ; 0.7 = 3.7 ; DoPatch (0.7) ##
 SubIfStatement -> _NON								## 0.7 = UpdateCodeStart () ; DoPatch (0.7) ##
 
+//while语句定义
+WhileStatement -> while ## 2.6 = UpdateCodeStart () ## TempStore  ( BooleanExpr )	## 2.0 = Gen ('jc',4.6,2.6) ## Statement		## 0.6 = 2.6 ; 0.7 = Gen ('jmp',0.6,0.7) + $1; ##
+
 //用于暂存的辅助非终结符
-TempStore -> _NON
+TempStore -> _NON		## 0.0 = -1.0 ; 0.1 = -1.1 ; 0.2 = -1.2 ; 0.3 = -1.3; 0.4 = -1.4; 0.5 = -1.5 ; 0.6 = -1.6 ; 0.7 = -1.7 ##
+$$ - TempStore : 0 store0 1 store1 2 store2 3 store3 4 store4 5 store5
 $$ TempStore : 0 store0 1 store1 2 store2 3 store3 4 store4 5 store5

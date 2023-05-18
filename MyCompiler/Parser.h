@@ -121,7 +121,7 @@ private:
 	SymbolWithAttr ExecuteAction(int pItr,int dotPos);
 
 	bool RedressNon();
-	bool NewProduction(int inputSymbol);
+	bool NewProduction(int inputSymbol,int curStatus,int preStatus);
 	void shift(SymbolWithAttr &swa);
 	void shift(int);
 	int Reduce(int productionIndex);

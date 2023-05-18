@@ -375,7 +375,7 @@ void Parser::shift(SymbolWithAttr& swa) {
 	statusStack.push(curStatus);
 
 	//移入符号
-	if (NewProduction(swa.symbol) || preStatus == 0) {
+	if (NewProduction(swa.symbol,curStatus,preStatus)) {
 		//如是新的表达式，需要压入PlaceHolder，用于继承属性的占位
 		symbolStack.push(SymbolWithAttr(PH_SYM));
 		//执行继承Acion
@@ -410,11 +410,7 @@ void Parser::shift(SymbolWithAttr& swa) {
 #endif // _PARSER_ACTION_PRINT
 }
 
-bool Parser::NewProduction(int inputSymbol) {
-	int curStatus = statusStack.top();
-	statusStack.pop();
-	int preStatus = statusStack.top();
-	statusStack.push(curStatus);
+bool Parser::NewProduction(int inputSymbol,int curStatus,int preStatus) {
 
 	bool hasFollowDot = collectionPtr->HasFollowDot(preStatus, inputSymbol);
 	bool hasDotPos1 = collectionPtr->HasDotPos1(curStatus);
@@ -429,7 +425,7 @@ bool Parser::NewProduction(int inputSymbol) {
 		int nextToken = (*tokenStream)[tokenIndex].kind;
 		int action = collectionPtr->Goto(curStatus,curInputToken);
 		if (action < 0) return false;
-		else return true;
+		else return NewProduction(nextToken, action, curStatus);
 	}
 }
 
@@ -441,7 +437,7 @@ void Parser::shift(int symbol){
 	statusStack.push(curStatus);
 
 	//移入符号
-	if (NewProduction(symbol)) {
+	if (NewProduction(symbol,curStatus,preStatus)) {
 		//如是新的表达式，需要压入PlaceHolder，用于继承属性的占位
 		symbolStack.push(SymbolWithAttr(PH_SYM));
 		//执行继承Acion

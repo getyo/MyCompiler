@@ -73,7 +73,9 @@ public:
 	static int InsertElem(int addr, int val);
 	static int BackPatch(int codeIndex) { backList.push_back(codeIndex); return 1; }
 	static int DoPatch(int codeIndex);
-	static int Update() { return codeStart = csPtr->size(); }
+	static int Update() { 
+		codeStart = csPtr->size(); 
+		return codeStart; }
 	static string GetIcopStr(int icop);
 	static void Print();
 };
