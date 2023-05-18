@@ -10,13 +10,13 @@ int Item::BLANK_FOLLOW_DOT = -100000000;
 Production::Production(const Production&& p) {
 	this->head = p.head;
 	this->body = p.body;
-	this->actions = p.actions;
+	this->actionLists = p.actionLists;
 }
 
 Production::Production(const Production& p) {
 	head = p.head;
 	body = p.body;
-	this->actions = p.actions;
+	this->actionLists = p.actionLists;
 }
 
 Production::Production(vector<int>& p) {
@@ -45,7 +45,16 @@ vector<int> Production::GetBody() const {
 
 int& Production::operator[](int index) {
 	if (!index) return head;
-	else return body[index - 1];
+	else 
+		return body[index - 1];
+}
+
+void Production::PushBack(int symbol) {
+#ifdef DEBUG
+	ASSERT(symbol >= 0, "Grammer: symbol < 0");
+#endif // DEBUG
+	if (head == NO_SYMBOL) head = symbol;
+	else body.push_back(symbol);
 }
 
 string Production::Info() const {
@@ -57,7 +66,7 @@ string Production::Info() const {
 	return s;
 }
 
-string Production::AttrStr(int smbID,int attrIndex) const {
+string Production::AttrStr(int smbID,int attrIndex,bool inh) const {
 	if (Grammer::IsTerminal(smbID)) {
 		switch (attrIndex)
 		{
@@ -71,7 +80,8 @@ string Production::AttrStr(int smbID,int attrIndex) const {
 		}
 	}
 	else if (Grammer::IsUnterminal(smbID)) {
-		return Grammer::GetAttrStr(smbID, attrIndex);
+		if (!inh) return Grammer::GetAttrStr(smbID, attrIndex);
+		else return Grammer::GetAttrStr(-smbID, attrIndex);
 	}
 }
 
@@ -80,76 +90,109 @@ void Production::Print() const {
 		<< ' ' << "-> ";
 	for (auto& i : body)
 		cout << Grammer::GetSymbolStr(i)<< " ";
-	if (!actions.size())
+	if (!actionLists.size())
 		return;
-	cout << "\n{ ";
 	int a;
-	for (auto& action : actions) {
-		for (int i = 0; i < action->requested.size(); ++i) {
-			a = action->requested[i];
-			switch (a)
-			{
-			case Action::ADD: { cout << "+ "; break; }
-			case Action::ASSIGN: { cout << "= "; break; }
-			case Action::DIV: { cout << "/ "; break; }
-			case Action::MINUS: { cout << "- "; break; }
-			case Action::MULT: { cout << "* "; break; }
-			case Action::REM: { cout << "% "; break; }
-			case Action::DIGIT: { cout << "$" << action->requested[++i]<<' '; break; }
-			case Action::OP: {
-				cout << Generator::GetIcopStr(action->requested[++i]) << ' '; break;
-			}
-			case Action::FUN: {
-				int funID = action->requested[++i];
-				cout << Grammer::GetFunName(funID) << "(";
-				
-				int symbolIndex, attrIndex;
-				for (int pCnt = 0; pCnt < Grammer::GetFunParaCnt(funID); ++pCnt) {
-					symbolIndex = action->requested[++i];
-					attrIndex = action->requested[++i];
-
-					if (symbolIndex == Action::DIGIT) {
-						cout << "$" << attrIndex;
-						goto Continue;
-					}
-					else if(symbolIndex == Action::OP){
-						cout << Generator::GetIcopStr(attrIndex);
-						goto Continue;
-					}
-
-					if (symbolIndex == 0)
-						cout << Grammer::GetSymbolStr(head) + '.' + \
-						AttrStr(head,attrIndex);
-					else 
-						cout << Grammer::GetSymbolStr(body[symbolIndex - 1]) + '.'+ \
-						AttrStr(body[symbolIndex-1],attrIndex);
-					Continue:
-					if (pCnt < (Grammer::GetFunParaCnt(funID) - 1))
-						cout << ",";
+	bool isSem = false;
+	for (auto& pair : actionLists) {
+		cout  << "\n"<< "dotPos : " << pair.first  << " \t { ";
+		if (pair.first == body.size()) isSem = true;
+		else isSem = false;
+		for (auto action : pair.second) {
+			for (int i = 0; i < action->requested.size(); ++i) {
+				a = action->requested[i];
+				switch (a)
+				{
+				case Action::ADD: { cout << "+ "; break; }
+				case Action::ASSIGN: { cout << "= "; break; }
+				case Action::DIV: { cout << "/ "; break; }
+				case Action::MINUS: { cout << "- "; break; }
+				case Action::MULT: { cout << "* "; break; }
+				case Action::REM: { cout << "% "; break; }
+				case Action::DIGIT: { cout << "$" << action->requested[++i] << ' '; break; }
+				case Action::OP: {
+					cout << Generator::GetIcopStr(action->requested[++i]) << ' '; break;
 				}
-				cout << ")";
-				break; }
-			default: {
-				int symbolIndex = action->requested[i++];
-				int attrIndex = action->requested[i];
-				if (symbolIndex == 0) cout << Grammer::GetSymbolStr(head) + '.' + \
-					AttrStr(head, attrIndex);
-				else cout << Grammer::GetSymbolStr(body[symbolIndex - 1]) + '.' + \
-					AttrStr(body[symbolIndex - 1], attrIndex);
-				cout << " ";
-				break;
+				case Action::FUN: {
+					int funID = action->requested[++i];
+					cout << Grammer::GetFunName(funID) << "(";
+
+					int symbolIndex,attrIndex,symID;
+					for (int pCnt = 0; pCnt < Grammer::GetFunParaCnt(funID); ++pCnt) {
+						symbolIndex = action->requested[++i];
+						attrIndex = action->requested[++i];
+
+						if (symbolIndex == Action::DIGIT) {
+							cout << "$" << attrIndex;
+							goto Continue;
+						}
+						else if (symbolIndex == Action::OP) {
+							cout << Generator::GetIcopStr(attrIndex);
+							goto Continue;
+						}
+
+						if (!isSem && symbolIndex == pair.first + 1) {
+							symID = body[symbolIndex - 1];
+							cout << Grammer::GetSymbolStr(symID) + "(bodyinh)." + \
+								AttrStr(symID, attrIndex,true);
+						}
+						else if (symbolIndex == 0) {
+							cout << Grammer::GetSymbolStr(head) + '.' + \
+								AttrStr(head, attrIndex);
+						}
+						else if (symbolIndex == -1) {
+							cout << Grammer::GetSymbolStr(head) + "(headinh)." + \
+								AttrStr(head, attrIndex, true);
+						}
+						else {
+							symID = body[symbolIndex - 1];
+							cout << Grammer::GetSymbolStr(symID) + '.' + \
+								AttrStr(symID, attrIndex);
+						}
+						
+					Continue:
+						if (pCnt < (Grammer::GetFunParaCnt(funID) - 1))
+							cout << ",";
+					}
+					cout << ")";
+					break; }
+				default: {
+					int symbolIndex = action->requested[i++];
+					int attrIndex = action->requested[i];
+					int symID;
+					if (!isSem && symbolIndex == pair.first + 1) {
+						symID = body[symbolIndex - 1];
+						cout << Grammer::GetSymbolStr(symID) + "(bodyinh)." + \
+							AttrStr(symID, attrIndex,true);
+					}
+					else if (symbolIndex == 0) {
+						cout << Grammer::GetSymbolStr(head) + '.' + \
+							AttrStr(head, attrIndex);
+					}
+					else if (symbolIndex == -1) {
+						cout << Grammer::GetSymbolStr(head) + "(headinh)." + \
+							AttrStr(head, attrIndex, true);
+					}
+					else {
+						symID = body[symbolIndex - 1];
+						cout << Grammer::GetSymbolStr(symID) + '.' + \
+							AttrStr(symID, attrIndex);
+					}
+					cout << " ";
+					break;
+				}
+				}
 			}
-			}
+			cout << "; \t";
 		}
-		cout << "; \t";
+		cout << "}";
 	}
-	cout << "}";
 }
 
 Production& Production::operator=(const Production& p) {
 	this->head = p.head;
 	this->body = p.body;
-	this->actions = p.actions;
+	this->actionLists = p.actionLists;
 	return *this;
 }
 

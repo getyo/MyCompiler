@@ -3,16 +3,19 @@
 #include <string>
 #include <set>
 #include <memory>
+#include <map>
 using namespace std;
 #define SYMBOL_ATTR_CNT 8
+#define NO_SYMBOL -1
 class Action;
+typedef shared_ptr<Action> ActionPtr;
+typedef vector<ActionPtr> ActionList;
 class Production {
 protected:
-	int head;
+	int head = NO_SYMBOL;
 	vector<int> body;
 public:
-
-	vector<shared_ptr<Action>> actions;
+	map<int, ActionList> actionLists;
 	Production() {}
 	Production(initializer_list<int> l);
 	Production(int head,vector<int>& body);
@@ -22,8 +25,9 @@ public:
 	int GetHead() const;
 	vector<int> GetBody() const;
 	int& operator[](int index);
+	void PushBack(int symbol);
 	virtual string Info() const;
-	string AttrStr(int symbolID, int attrIndex) const;
+	string AttrStr(int symbolID, int attrIndex,bool inh = false) const;
 	virtual void Print() const;
 	Production& operator=(const Production&);
 	bool operator()(const Production&) const;

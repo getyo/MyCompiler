@@ -8,6 +8,7 @@
 #include "Debug.h"
 using namespace std;
 
+#define PH_SYM -1
 struct SymbolWithAttr
 {
 	int symbol;
@@ -21,12 +22,14 @@ struct SymbolWithAttr
 	}
 	SymbolWithAttr(int symbol) {
 		this->symbol = symbol;
-		if (Grammer::IsTerminal(symbol))
+		if (Grammer::IsTerminal(symbol)) {
 			attr = nullptr;
-		else if (Grammer::IsUnterminal(symbol))
-			attr = make_shared<array<int,8>>();
-		for (auto& i : *attr)
-			i = ATTR_NON;
+		}
+		else if (Grammer::IsUnterminal(symbol) || symbol == PH_SYM) {
+			attr = make_shared<array<int, 8>>();
+			for (auto& i : *attr)
+				i = ATTR_NON;
+		}
 	}
 	SymbolWithAttr(const SymbolWithAttr&& sw) {
 		symbol = sw.symbol;
@@ -84,6 +87,7 @@ public:
 		}
 		else return array[topIndex + index];
 	}
+	void Print();
 };
 
 class Parser {
@@ -95,8 +99,11 @@ private:
 	int action;
 	int tokenIndex = 0;
 	int curInputToken;
+
+	bool hasInh = false;
 	SymbolStack symbolStack;
 	stack <int> statusStack;
+	stack<int> dotPosStack;
 
 	vector <string> errorInfo;
 	Collection* collectionPtr;
@@ -111,9 +118,10 @@ private:
 
 	void PrintAttr(int pItr, SymbolWithAttr& head);
 	void* GetAttrPtr(int pItr, int smbIndex, int attrIndex);
-	SymbolWithAttr ExecuteAction(int pItr);
+	SymbolWithAttr ExecuteAction(int pItr,int dotPos);
 
 	bool RedressNon();
+	bool NewProduction(int inputSymbol,int curStatus,int preStatus);
 	void shift(SymbolWithAttr &swa);
 	void shift(int);
 	int Reduce(int productionIndex);

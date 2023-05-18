@@ -4,9 +4,12 @@
 #include <vector>
 #include "Grammer.h"
 #include <memory>
+#include <map>
 #include <unordered_set>
 #include <unordered_map>
+
 typedef list<Item> ItemSet;
+typedef map<int, Item*> InputMap;
 
 class Collection {
 private:
@@ -17,6 +20,7 @@ private:
 	vector<int*> parserTable;
 	//int nonInt;
 	//bool* isNonAble;
+
 
 
 	struct Pair {
@@ -61,7 +65,7 @@ private:
 
 
 	void ClosureLR0(ItemSet&);
-	int InputSymbol(ItemSet& itemSet, int symbolID);
+	int InputSymbol(int statusNum, int symbolID);
 	void RemoveNonKernel();
 	void InsertItemSet();
 	void ConstructLR0();
@@ -79,6 +83,19 @@ public:
 	Grammer* GetGrammer();
 	int Goto(int curStatus, int symbol);
 	string Info();
+	ItemSet& GetStatus(int status) {return collection[status];}
+	bool HasFollowDot(int preStatus,int inputSymbol){
+		for (auto& i : collection[preStatus]) {
+			if (i.FollowDot() == inputSymbol) return true;
+		}
+		return false;
+	}
+	bool HasDotPos1(int curStatus) {
+		for (auto& i : collection[curStatus]) {
+			if (i.GetDotPos() == 1) return true;
+		}
+		return false;
+	}
 	void Print();
 	void PrintStatus(int status);
 };

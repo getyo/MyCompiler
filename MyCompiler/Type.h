@@ -6,34 +6,28 @@
 using namespace std;
 
 class ArrayType;
-
-union WidthOrPtr
-{
-	int width;
-	void* typeDef;
-	WidthOrPtr(){}
-	WidthOrPtr(int width) :width(width) {}
-	WidthOrPtr (void * ptr):typeDef(ptr){}
-};
+class Environmemt;
 
 struct Type
-{private:
+{
+private:
 	static unordered_set<int> arrayTypeSet;
 	static vector<string> typeID2Str;
 	static unordered_map<string,int> typeStr2ID;
-	static vector<WidthOrPtr> typeWidth;
+	static vector<Type *> typePtr;
 	static int maxDefaultTpyeID;
-	static string CreateArrayStr(int typeID, int dim);
 
 public:
 	int typeID;
 	size_t width;
+	static void BasicTypeDef();
 	static int GetTypeID(string s) { return typeStr2ID.at(s); }
 	static int GetTypeWidth(int typeID);
 	static ArrayType* GetArrayType(int typeID);
 	static int GetTypeWidth(string typeName) { return GetTypeWidth(typeStr2ID.at(typeName)); }
 	static string GetTypeStr(int typeID) { return typeID2Str.at(typeID); }
 	Type(){}
+	Type(int typeID,int w):typeID(typeID),width(w){}
 	Type(int typeID) : typeID(typeID), width(GetTypeWidth(typeID)) {};
 	Type(string typeName) : typeID(GetTypeID(typeName)), width(GetTypeWidth(typeName)) {};
 	Type(Type& t) :typeID(t.typeID), width(t.width) {};
@@ -48,7 +42,9 @@ public:
 		this->width = t.width;
 		return *this;
 	}
-	static int CreateArrayType(int typeID, int dim1Size, int dim2Size, int dim3Size);
+	static int CreateArrayType(int elemID, int size);
+
+	virtual ~Type(){}
 };
 
 struct Variable {
@@ -88,16 +84,13 @@ public:
 	static void Print();
 };
 
-struct ArrayType {
+struct ArrayType :Type{
 	//不是数组类型的ID，而是数组里面元素的ID
 	int elemID;
 	int elemWidth;
-	int dim;
-	int rowSize1;
-	int rowSize2;
-	int rowSize3;
-	int totalSize;
+	int size;
+
 	ArrayType(){}
-	ArrayType(int elemID, int rowSize1, int rowSize2, int rowSize3);
+	ArrayType(int elemID, int size,int arrayTypeID);
 	int GetDimSize(int dim);
 };

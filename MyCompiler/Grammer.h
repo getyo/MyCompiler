@@ -27,7 +27,7 @@ private:
 	~Grammer();
 	void ReadAttrMap();
 	void ReadFunction(ifstream& in);
-	void ReadAction(Production& p);
+	void ReadAction(Production& p,ActionList &actions);
 	string NextSymbol();
 	void operator=(const Grammer&) {}
 public:

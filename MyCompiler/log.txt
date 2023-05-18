@@ -1,463 +1,673 @@
 Status0:
 StatementList' -> StatementList  	dotPos: 0 	lookAhead: $ 
-Goto: 	int 1 	float 2 	digit 3 	id 4 	StatementList 5 	Statement 6 	ExprStatement 7 	DefinationStatement 8 	Type 9 	BasicType 10 	ValueType 11 	Defination 12 	DeclationList 13 	Expr 14 	Declation 15 	Intialization 16 	DirectDeclation 17 	PostfixDeclation 18 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
+Goto: 	_NON 1 	if 2 	while 3 	int 4 	float 5 	{ 6 	StatementList 7 	Statement 8 	ExprStatement 9 	DefinationStatement 10 	IfStatement 11 	WhileStatement 12 	CompoundStatement 13 	Type 14 	BasicType 15 	ValueType 16 	Defination 17 	DeclationList 18 	Declation 19 	Intialization 20 	DirectDeclation 21 	PostfixDeclation 22 	TempStore 23 	
 Reduce: 	
 
 Status1:
-ValueType -> int  	dotPos: 1 	lookAhead: id 
+TempStore -> _NON  	dotPos: 1 	lookAhead: - ( digit id 
 Goto: 	
-Reduce: 	id -8 	
+Reduce: 	- -71 	( -71 	digit -71 	id -71 	
 
 Status2:
-ValueType -> float  	dotPos: 1 	lookAhead: id 
-Goto: 	
-Reduce: 	id -9 	
+IfStatement -> if TempStore ( BooleanExpr ) Statement SubIfStatement  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	_NON 1 	TempStore 24 	
+Reduce: 	
 
 Status3:
-PrimaryExpr -> digit  	dotPos: 1 	lookAhead: + - * / % , ; 
-Goto: 	
-Reduce: 	+ -44 	- -44 	* -44 	/ -44 	% -44 	, -44 	; -44 	
+WhileStatement -> while TempStore ( BooleanExpr ) Statement  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	_NON 1 	TempStore 25 	
+Reduce: 	
 
 Status4:
-LeftValue -> id  	dotPos: 1 	lookAhead: = += -= *= /= 
-ArrayElemDim1 -> id [ digit ]  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
-PrimaryExpr -> id  	dotPos: 1 	lookAhead: + - * / % , ; 
-Goto: 	[ 28 	
-Reduce: 	+ -43 	- -43 	* -43 	/ -43 	= -52 	% -43 	+= -52 	-= -52 	*= -52 	/= -52 	, -43 	; -43 	
+ValueType -> int  	dotPos: 1 	lookAhead: id 
+Goto: 	
+Reduce: 	id -12 	
 
 Status5:
-StatementList' -> StatementList  	dotPos: 1 	lookAhead: $ 
-StatementList -> StatementList Statement  	dotPos: 1 	lookAhead: $ int float digit id 
-Goto: 	int 1 	float 2 	digit 3 	id 4 	Statement 29 	ExprStatement 7 	DefinationStatement 8 	Type 9 	BasicType 10 	ValueType 11 	Defination 12 	DeclationList 13 	Expr 14 	Declation 15 	Intialization 16 	DirectDeclation 17 	PostfixDeclation 18 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	$ -1 	
+ValueType -> float  	dotPos: 1 	lookAhead: id 
+Goto: 	
+Reduce: 	id -13 	
 
 Status6:
-StatementList -> Statement  	dotPos: 1 	lookAhead: $ int float digit id 
-Goto: 	
-Reduce: 	$ -3 	int -3 	float -3 	digit -3 	id -3 	
+CompoundStatement -> { StatementList }  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	_NON 1 	if 2 	while 3 	int 4 	float 5 	{ 6 	StatementList 26 	Statement 8 	ExprStatement 9 	DefinationStatement 10 	IfStatement 11 	WhileStatement 12 	CompoundStatement 13 	Type 14 	BasicType 15 	ValueType 16 	Defination 17 	DeclationList 18 	Declation 19 	Intialization 20 	DirectDeclation 21 	PostfixDeclation 22 	TempStore 23 	
+Reduce: 	
 
 Status7:
-Statement -> ExprStatement  	dotPos: 1 	lookAhead: $ int float digit id 
-Goto: 	
-Reduce: 	$ -4 	int -4 	float -4 	digit -4 	id -4 	
+StatementList' -> StatementList  	dotPos: 1 	lookAhead: $ 
+StatementList -> StatementList Statement  	dotPos: 1 	lookAhead: $ _NON if while int float { 
+Goto: 	_NON 1 	if 2 	while 3 	int 4 	float 5 	{ 6 	Statement 27 	ExprStatement 9 	DefinationStatement 10 	IfStatement 11 	WhileStatement 12 	CompoundStatement 13 	Type 14 	BasicType 15 	ValueType 16 	Defination 17 	DeclationList 18 	Declation 19 	Intialization 20 	DirectDeclation 21 	PostfixDeclation 22 	TempStore 23 	
+Reduce: 	$ -1 	
 
 Status8:
-Statement -> DefinationStatement  	dotPos: 1 	lookAhead: $ int float digit id 
+StatementList -> Statement  	dotPos: 1 	lookAhead: $ _NON if while int float { } 
 Goto: 	
-Reduce: 	$ -5 	int -5 	float -5 	digit -5 	id -5 	
+Reduce: 	$ -3 	_NON -3 	if -3 	while -3 	int -3 	float -3 	{ -3 	} -3 	
 
 Status9:
+Statement -> ExprStatement  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -4 	_NON -4 	if -4 	else -4 	while -4 	int -4 	float -4 	{ -4 	} -4 	
+
+Status10:
+Statement -> DefinationStatement  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -5 	_NON -5 	if -5 	else -5 	while -5 	int -5 	float -5 	{ -5 	} -5 	
+
+Status11:
+Statement -> IfStatement  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -6 	_NON -6 	if -6 	else -6 	while -6 	int -6 	float -6 	{ -6 	} -6 	
+
+Status12:
+Statement -> WhileStatement  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -7 	_NON -7 	if -7 	else -7 	while -7 	int -7 	float -7 	{ -7 	} -7 	
+
+Status13:
+Statement -> CompoundStatement  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -8 	_NON -8 	if -8 	else -8 	while -8 	int -8 	float -8 	{ -8 	} -8 	
+
+Status14:
 Intialization -> Type id = Expr  	dotPos: 1 	lookAhead: , ; 
 DirectDeclation -> Type id  	dotPos: 1 	lookAhead: , ; 
 PostfixDeclation -> Type id Postfix  	dotPos: 1 	lookAhead: , ; 
-Goto: 	id 30 	
+Goto: 	id 28 	
 Reduce: 	
 
-Status10:
+Status15:
 Type -> BasicType  	dotPos: 1 	lookAhead: id 
 Goto: 	
-Reduce: 	id -6 	
+Reduce: 	id -10 	
 
-Status11:
+Status16:
 BasicType -> ValueType  	dotPos: 1 	lookAhead: id 
 Goto: 	
-Reduce: 	id -7 	
+Reduce: 	id -11 	
 
-Status12:
-DefinationStatement -> Defination ;  	dotPos: 1 	lookAhead: $ int float digit id 
-Goto: 	; 31 	
+Status17:
+DefinationStatement -> Defination ;  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	; 29 	
 Reduce: 	
 
-Status13:
+Status18:
 Defination -> DeclationList  	dotPos: 1 	lookAhead: ; 
 DeclationList -> DeclationList , id  	dotPos: 1 	lookAhead: , ; 
 DeclationList -> DeclationList , id Postfix  	dotPos: 1 	lookAhead: , ; 
 DeclationList -> DeclationList , id = Expr  	dotPos: 1 	lookAhead: , ; 
-Goto: 	, 32 	
-Reduce: 	; -11 	
-
-Status14:
-ExprStatement -> Expr ;  	dotPos: 1 	lookAhead: $ int float digit id 
-Goto: 	; 33 	
-Reduce: 	
-
-Status15:
-DeclationList -> Declation  	dotPos: 1 	lookAhead: , ; 
-Goto: 	
-Reduce: 	, -15 	; -15 	
-
-Status16:
-DeclationList -> Intialization  	dotPos: 1 	lookAhead: , ; 
-Goto: 	
-Reduce: 	, -16 	; -16 	
-
-Status17:
-Declation -> DirectDeclation  	dotPos: 1 	lookAhead: , ; 
-Goto: 	
-Reduce: 	, -17 	; -17 	
-
-Status18:
-Declation -> PostfixDeclation  	dotPos: 1 	lookAhead: , ; 
-Goto: 	
-Reduce: 	, -18 	; -18 	
+Goto: 	, 30 	
+Reduce: 	; -15 	
 
 Status19:
-Expr -> AssignExpr  	dotPos: 1 	lookAhead: , ; 
+DeclationList -> Declation  	dotPos: 1 	lookAhead: , ; 
 Goto: 	
-Reduce: 	, -29 	; -29 	
-
-Status20:
-AssignExpr -> LeftValue = AssignExpr  	dotPos: 1 	lookAhead: , ; 
-AssignExpr -> LeftValue += AssignExpr  	dotPos: 1 	lookAhead: , ; 
-AssignExpr -> LeftValue -= AssignExpr  	dotPos: 1 	lookAhead: , ; 
-AssignExpr -> LeftValue *= AssignExpr  	dotPos: 1 	lookAhead: , ; 
-AssignExpr -> LeftValue /= AssignExpr  	dotPos: 1 	lookAhead: , ; 
-Goto: 	= 34 	+= 35 	-= 36 	*= 37 	/= 38 	
-Reduce: 	
-
-Status21:
-AssignExpr -> AddtiveExpr  	dotPos: 1 	lookAhead: , ; 
-AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 1 	lookAhead: + - , ; 
-AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 1 	lookAhead: + - , ; 
-Goto: 	+ 39 	- 40 	
-Reduce: 	, -35 	; -35 	
-
-Status22:
-AddtiveExpr -> MultiplicativeExpr  	dotPos: 1 	lookAhead: + - , ; 
-MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % , ; 
-MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % , ; 
-MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % , ; 
-Goto: 	* 41 	/ 42 	% 43 	
-Reduce: 	+ -38 	- -38 	, -38 	; -38 	
-
-Status23:
-MultiplicativeExpr -> PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % , ; 
-Goto: 	
-Reduce: 	+ -42 	- -42 	* -42 	/ -42 	% -42 	, -42 	; -42 	
-
-Status24:
-LeftValue -> ArrayElem  	dotPos: 1 	lookAhead: = += -= *= /= 
-PrimaryExpr -> ArrayElem  	dotPos: 1 	lookAhead: + - * / % , ; 
-Goto: 	
-Reduce: 	+ -45 	- -45 	* -45 	/ -45 	= -53 	% -45 	+= -53 	-= -53 	*= -53 	/= -53 	, -45 	; -45 	
-
-Status25:
-ArrayElem -> ArrayElemDim1  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
-Goto: 	
-Reduce: 	+ -46 	- -46 	* -46 	/ -46 	= -46 	% -46 	+= -46 	-= -46 	*= -46 	/= -46 	, -46 	; -46 	
-
-Status26:
-ArrayElem -> ArrayElemDim2  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
-Goto: 	
-Reduce: 	+ -47 	- -47 	* -47 	/ -47 	= -47 	% -47 	+= -47 	-= -47 	*= -47 	/= -47 	, -47 	; -47 	
-
-Status27:
-ArrayElem -> ArrayElemDim3  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= , ; 
-Goto: 	
-Reduce: 	+ -48 	- -48 	* -48 	/ -48 	= -48 	% -48 	+= -48 	-= -48 	*= -48 	/= -48 	, -48 	; -48 	
-
-Status28:
-ArrayElemDim1 -> id [ digit ]  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	digit 44 	
-Reduce: 	
-
-Status29:
-StatementList -> StatementList Statement  	dotPos: 2 	lookAhead: $ int float digit id 
-Goto: 	
-Reduce: 	$ -2 	int -2 	float -2 	digit -2 	id -2 	
-
-Status30:
-Intialization -> Type id = Expr  	dotPos: 2 	lookAhead: , ; 
-DirectDeclation -> Type id  	dotPos: 2 	lookAhead: , ; 
-PostfixDeclation -> Type id Postfix  	dotPos: 2 	lookAhead: , ; 
-Goto: 	= 45 	[ 46 	Postfix 47 	Postfix1 48 	Postfix2 49 	Postfix3 50 	
 Reduce: 	, -19 	; -19 	
 
-Status31:
-DefinationStatement -> Defination ;  	dotPos: 2 	lookAhead: $ int float digit id 
-Goto: 	
-Reduce: 	$ -10 	int -10 	float -10 	digit -10 	id -10 	
-
-Status32:
-DeclationList -> DeclationList , id  	dotPos: 2 	lookAhead: , ; 
-DeclationList -> DeclationList , id Postfix  	dotPos: 2 	lookAhead: , ; 
-DeclationList -> DeclationList , id = Expr  	dotPos: 2 	lookAhead: , ; 
-Goto: 	id 51 	
-Reduce: 	
-
-Status33:
-ExprStatement -> Expr ;  	dotPos: 2 	lookAhead: $ int float digit id 
-Goto: 	
-Reduce: 	$ -28 	int -28 	float -28 	digit -28 	id -28 	
-
-Status34:
-AssignExpr -> LeftValue = AssignExpr  	dotPos: 2 	lookAhead: ; 
-Goto: 	digit 3 	id 4 	AssignExpr 52 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status35:
-AssignExpr -> LeftValue += AssignExpr  	dotPos: 2 	lookAhead: ; 
-Goto: 	digit 3 	id 4 	AssignExpr 53 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status36:
-AssignExpr -> LeftValue -= AssignExpr  	dotPos: 2 	lookAhead: ; 
-Goto: 	digit 3 	id 4 	AssignExpr 54 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status37:
-AssignExpr -> LeftValue *= AssignExpr  	dotPos: 2 	lookAhead: ; 
-Goto: 	digit 3 	id 4 	AssignExpr 55 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status38:
-AssignExpr -> LeftValue /= AssignExpr  	dotPos: 2 	lookAhead: ; 
-Goto: 	digit 3 	id 4 	AssignExpr 56 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status39:
-AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 2 	lookAhead: + - ; 
-Goto: 	digit 3 	id 57 	MultiplicativeExpr 58 	PrimaryExpr 23 	ArrayElem 59 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status40:
-AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 2 	lookAhead: + - ; 
-Goto: 	digit 3 	id 57 	MultiplicativeExpr 60 	PrimaryExpr 23 	ArrayElem 59 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status41:
-MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ; 
-Goto: 	digit 3 	id 57 	PrimaryExpr 61 	ArrayElem 59 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status42:
-MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ; 
-Goto: 	digit 3 	id 57 	PrimaryExpr 62 	ArrayElem 59 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status43:
-MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % ; 
-Goto: 	digit 3 	id 57 	PrimaryExpr 63 	ArrayElem 59 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status44:
-ArrayElemDim1 -> id [ digit ]  	dotPos: 3 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 3 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 3 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	] 64 	
-Reduce: 	
-
-Status45:
-Intialization -> Type id = Expr  	dotPos: 3 	lookAhead: , ; 
-Goto: 	digit 3 	id 4 	Expr 65 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status46:
-Postfix1 -> [ digit ]  	dotPos: 1 	lookAhead: [ , ; 
-Goto: 	digit 66 	
-Reduce: 	
-
-Status47:
-PostfixDeclation -> Type id Postfix  	dotPos: 3 	lookAhead: , ; 
+Status20:
+DeclationList -> Intialization  	dotPos: 1 	lookAhead: , ; 
 Goto: 	
 Reduce: 	, -20 	; -20 	
 
-Status48:
-Postfix -> Postfix1  	dotPos: 1 	lookAhead: , ; 
-Postfix2 -> Postfix1 [ digit ]  	dotPos: 1 	lookAhead: [ , ; 
-Goto: 	[ 67 	
+Status21:
+Declation -> DirectDeclation  	dotPos: 1 	lookAhead: , ; 
+Goto: 	
 Reduce: 	, -21 	; -21 	
 
-Status49:
-Postfix -> Postfix2  	dotPos: 1 	lookAhead: , ; 
-Postfix3 -> Postfix2 [ digit ]  	dotPos: 1 	lookAhead: , ; 
-Goto: 	[ 68 	
+Status22:
+Declation -> PostfixDeclation  	dotPos: 1 	lookAhead: , ; 
+Goto: 	
 Reduce: 	, -22 	; -22 	
 
-Status50:
-Postfix -> Postfix3  	dotPos: 1 	lookAhead: , ; 
+Status23:
+ExprStatement -> TempStore Expr ;  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	- 31 	( 32 	digit 33 	id 34 	Expr 35 	AssignExpr 36 	LeftValue 37 	LogicOrExpr 38 	LogicAndExpr 39 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 45 	
+Reduce: 	
+
+Status24:
+IfStatement -> if TempStore ( BooleanExpr ) Statement SubIfStatement  	dotPos: 2 	lookAhead: $ _NON if else while int float { } 
+Goto: 	( 46 	
+Reduce: 	
+
+Status25:
+WhileStatement -> while TempStore ( BooleanExpr ) Statement  	dotPos: 2 	lookAhead: $ _NON if else while int float { } 
+Goto: 	( 47 	
+Reduce: 	
+
+Status26:
+CompoundStatement -> { StatementList }  	dotPos: 2 	lookAhead: $ _NON if else while int float { } 
+StatementList -> StatementList Statement  	dotPos: 1 	lookAhead: _NON if while int float { } 
+Goto: 	_NON 1 	if 2 	while 3 	int 4 	float 5 	{ 6 	} 48 	Statement 27 	ExprStatement 9 	DefinationStatement 10 	IfStatement 11 	WhileStatement 12 	CompoundStatement 13 	Type 14 	BasicType 15 	ValueType 16 	Defination 17 	DeclationList 18 	Declation 19 	Intialization 20 	DirectDeclation 21 	PostfixDeclation 22 	TempStore 23 	
+Reduce: 	
+
+Status27:
+StatementList -> StatementList Statement  	dotPos: 2 	lookAhead: $ _NON if while int float { } 
 Goto: 	
+Reduce: 	$ -2 	_NON -2 	if -2 	while -2 	int -2 	float -2 	{ -2 	} -2 	
+
+Status28:
+Intialization -> Type id = Expr  	dotPos: 2 	lookAhead: , ; 
+DirectDeclation -> Type id  	dotPos: 2 	lookAhead: , ; 
+PostfixDeclation -> Type id Postfix  	dotPos: 2 	lookAhead: , ; 
+Goto: 	= 49 	[ 50 	Postfix 51 	
 Reduce: 	, -23 	; -23 	
 
+Status29:
+DefinationStatement -> Defination ;  	dotPos: 2 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -14 	_NON -14 	if -14 	else -14 	while -14 	int -14 	float -14 	{ -14 	} -14 	
+
+Status30:
+DeclationList -> DeclationList , id  	dotPos: 2 	lookAhead: , ; 
+DeclationList -> DeclationList , id Postfix  	dotPos: 2 	lookAhead: , ; 
+DeclationList -> DeclationList , id = Expr  	dotPos: 2 	lookAhead: , ; 
+Goto: 	id 52 	
+Reduce: 	
+
+Status31:
+PrimaryExpr -> - digit  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) , ; 
+Goto: 	digit 53 	
+Reduce: 	
+
+Status32:
+PrimaryExpr -> ( Expr )  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) , ; 
+Goto: 	- 31 	( 32 	digit 33 	id 34 	Expr 54 	AssignExpr 36 	LeftValue 37 	LogicOrExpr 38 	LogicAndExpr 39 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 45 	
+Reduce: 	
+
+Status33:
+PrimaryExpr -> digit  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) , ; 
+Goto: 	
+Reduce: 	+ -56 	- -56 	* -56 	/ -56 	% -56 	&& -56 	|| -56 	< -56 	> -56 	== -56 	<= -56 	>= -56 	) -56 	, -56 	; -56 	
+
+Status34:
+LeftValue -> id  	dotPos: 1 	lookAhead: = += -= *= /= 
+ArrayElem -> id Index  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= && || < > == <= >= ) , ; 
+PrimaryExpr -> id  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) , ; 
+Goto: 	[ 55 	Index 56 	
+Reduce: 	+ -55 	- -55 	* -55 	/ -55 	= -63 	% -55 	+= -63 	-= -63 	*= -63 	/= -63 	&& -55 	|| -55 	< -55 	> -55 	== -55 	<= -55 	>= -55 	) -55 	, -55 	; -55 	
+
+Status35:
+ExprStatement -> TempStore Expr ;  	dotPos: 2 	lookAhead: $ _NON if else while int float { } 
+Goto: 	; 57 	
+Reduce: 	
+
+Status36:
+Expr -> AssignExpr  	dotPos: 1 	lookAhead: ) , ; 
+Goto: 	
+Reduce: 	) -29 	, -29 	; -29 	
+
+Status37:
+AssignExpr -> LeftValue = AssignExpr  	dotPos: 1 	lookAhead: ) , ; 
+AssignExpr -> LeftValue += AssignExpr  	dotPos: 1 	lookAhead: ) , ; 
+AssignExpr -> LeftValue -= AssignExpr  	dotPos: 1 	lookAhead: ) , ; 
+AssignExpr -> LeftValue *= AssignExpr  	dotPos: 1 	lookAhead: ) , ; 
+AssignExpr -> LeftValue /= AssignExpr  	dotPos: 1 	lookAhead: ) , ; 
+Goto: 	= 58 	+= 59 	-= 60 	*= 61 	/= 62 	
+Reduce: 	
+
+Status38:
+AssignExpr -> LogicOrExpr  	dotPos: 1 	lookAhead: ) , ; 
+LogicOrExpr -> LogicOrExpr || LogicAndExpr  	dotPos: 1 	lookAhead: || ) , ; 
+Goto: 	|| 63 	
+Reduce: 	) -35 	, -35 	; -35 	
+
+Status39:
+LogicOrExpr -> LogicAndExpr  	dotPos: 1 	lookAhead: || ) , ; 
+LogicAndExpr -> LogicAndExpr && EqualExpr  	dotPos: 1 	lookAhead: && || ) , ; 
+Goto: 	&& 64 	
+Reduce: 	|| -37 	) -37 	, -37 	; -37 	
+
+Status40:
+LogicAndExpr -> EqualExpr  	dotPos: 1 	lookAhead: && || ) , ; 
+EqualExpr -> EqualExpr == CompareExpr  	dotPos: 1 	lookAhead: && || == ) , ; 
+EqualExpr -> EqualExpr != CompareExpr  	dotPos: 1 	lookAhead: && || == ) , ; 
+Goto: 	== 65 	!= 66 	
+Reduce: 	&& -39 	|| -39 	) -39 	, -39 	; -39 	
+
+Status41:
+EqualExpr -> CompareExpr  	dotPos: 1 	lookAhead: && || == ) , ; 
+CompareExpr -> CompareExpr > AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) , ; 
+CompareExpr -> CompareExpr < AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) , ; 
+CompareExpr -> CompareExpr >= AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) , ; 
+CompareExpr -> CompareExpr <= AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) , ; 
+Goto: 	< 67 	> 68 	<= 69 	>= 70 	
+Reduce: 	&& -42 	|| -42 	== -42 	) -42 	, -42 	; -42 	
+
+Status42:
+CompareExpr -> AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) , ; 
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 1 	lookAhead: + - && || < > == <= >= ) , ; 
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 1 	lookAhead: + - && || < > == <= >= ) , ; 
+Goto: 	+ 71 	- 72 	
+Reduce: 	&& -47 	|| -47 	< -47 	> -47 	== -47 	<= -47 	>= -47 	) -47 	, -47 	; -47 	
+
+Status43:
+AddtiveExpr -> MultiplicativeExpr  	dotPos: 1 	lookAhead: + - && || < > == <= >= ) , ; 
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) , ; 
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) , ; 
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) , ; 
+Goto: 	* 73 	/ 74 	% 75 	
+Reduce: 	+ -50 	- -50 	&& -50 	|| -50 	< -50 	> -50 	== -50 	<= -50 	>= -50 	) -50 	, -50 	; -50 	
+
+Status44:
+MultiplicativeExpr -> PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) , ; 
+Goto: 	
+Reduce: 	+ -54 	- -54 	* -54 	/ -54 	% -54 	&& -54 	|| -54 	< -54 	> -54 	== -54 	<= -54 	>= -54 	) -54 	, -54 	; -54 	
+
+Status45:
+LeftValue -> ArrayElem  	dotPos: 1 	lookAhead: = += -= *= /= 
+PrimaryExpr -> ArrayElem  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) , ; 
+Goto: 	
+Reduce: 	+ -58 	- -58 	* -58 	/ -58 	= -64 	% -58 	+= -64 	-= -64 	*= -64 	/= -64 	&& -58 	|| -58 	< -58 	> -58 	== -58 	<= -58 	>= -58 	) -58 	, -58 	; -58 	
+
+Status46:
+IfStatement -> if TempStore ( BooleanExpr ) Statement SubIfStatement  	dotPos: 3 	lookAhead: $ _NON if else while int float { } 
+Goto: 	- 31 	( 32 	digit 33 	id 34 	Expr 76 	AssignExpr 36 	LeftValue 37 	LogicOrExpr 38 	LogicAndExpr 39 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 45 	BooleanExpr 77 	
+Reduce: 	
+
+Status47:
+WhileStatement -> while TempStore ( BooleanExpr ) Statement  	dotPos: 3 	lookAhead: $ _NON if else while int float { } 
+Goto: 	- 31 	( 32 	digit 33 	id 34 	Expr 76 	AssignExpr 36 	LeftValue 37 	LogicOrExpr 38 	LogicAndExpr 39 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 45 	BooleanExpr 78 	
+Reduce: 	
+
+Status48:
+CompoundStatement -> { StatementList }  	dotPos: 3 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -9 	_NON -9 	if -9 	else -9 	while -9 	int -9 	float -9 	{ -9 	} -9 	
+
+Status49:
+Intialization -> Type id = Expr  	dotPos: 3 	lookAhead: , ; 
+Goto: 	- 31 	( 32 	digit 33 	id 34 	Expr 79 	AssignExpr 36 	LeftValue 37 	LogicOrExpr 38 	LogicAndExpr 39 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 45 	
+Reduce: 	
+
+Status50:
+Postfix -> [ digit ] Postfix  	dotPos: 1 	lookAhead: , ; 
+Postfix -> [ digit ]  	dotPos: 1 	lookAhead: , ; 
+Goto: 	digit 80 	
+Reduce: 	
+
 Status51:
+PostfixDeclation -> Type id Postfix  	dotPos: 3 	lookAhead: , ; 
+Goto: 	
+Reduce: 	, -24 	; -24 	
+
+Status52:
 DeclationList -> DeclationList , id  	dotPos: 3 	lookAhead: , ; 
 DeclationList -> DeclationList , id Postfix  	dotPos: 3 	lookAhead: , ; 
 DeclationList -> DeclationList , id = Expr  	dotPos: 3 	lookAhead: , ; 
-Goto: 	= 69 	[ 46 	Postfix 70 	Postfix1 48 	Postfix2 49 	Postfix3 50 	
-Reduce: 	, -12 	; -12 	
-
-Status52:
-AssignExpr -> LeftValue = AssignExpr  	dotPos: 3 	lookAhead: ; 
-Goto: 	
-Reduce: 	; -30 	
+Goto: 	= 81 	[ 50 	Postfix 82 	
+Reduce: 	, -16 	; -16 	
 
 Status53:
-AssignExpr -> LeftValue += AssignExpr  	dotPos: 3 	lookAhead: ; 
+PrimaryExpr -> - digit  	dotPos: 2 	lookAhead: + - * / % && || < > == <= >= ) ; 
 Goto: 	
-Reduce: 	; -31 	
+Reduce: 	+ -57 	- -57 	* -57 	/ -57 	% -57 	&& -57 	|| -57 	< -57 	> -57 	== -57 	<= -57 	>= -57 	) -57 	; -57 	
 
 Status54:
-AssignExpr -> LeftValue -= AssignExpr  	dotPos: 3 	lookAhead: ; 
-Goto: 	
-Reduce: 	; -32 	
+PrimaryExpr -> ( Expr )  	dotPos: 2 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	) 83 	
+Reduce: 	
 
 Status55:
-AssignExpr -> LeftValue *= AssignExpr  	dotPos: 3 	lookAhead: ; 
-Goto: 	
-Reduce: 	; -33 	
+Index -> [ digit ] Index  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= && || < > == <= >= ) ; 
+Index -> [ digit ]  	dotPos: 1 	lookAhead: + - * / = % += -= *= /= && || < > == <= >= ) ; 
+Goto: 	digit 84 	
+Reduce: 	
 
 Status56:
-AssignExpr -> LeftValue /= AssignExpr  	dotPos: 3 	lookAhead: ; 
+ArrayElem -> id Index  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= && || < > == <= >= ) ; 
 Goto: 	
-Reduce: 	; -34 	
+Reduce: 	+ -60 	- -60 	* -60 	/ -60 	= -60 	% -60 	+= -60 	-= -60 	*= -60 	/= -60 	&& -60 	|| -60 	< -60 	> -60 	== -60 	<= -60 	>= -60 	) -60 	; -60 	
 
 Status57:
-PrimaryExpr -> id  	dotPos: 1 	lookAhead: + - * / % ; 
-ArrayElemDim1 -> id [ digit ]  	dotPos: 1 	lookAhead: + - * / % ; 
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 1 	lookAhead: + - * / % ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 1 	lookAhead: + - * / % ; 
-Goto: 	[ 28 	
-Reduce: 	+ -43 	- -43 	* -43 	/ -43 	% -43 	; -43 	
+ExprStatement -> TempStore Expr ;  	dotPos: 3 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -28 	_NON -28 	if -28 	else -28 	while -28 	int -28 	float -28 	{ -28 	} -28 	
 
 Status58:
-AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 3 	lookAhead: + - ; 
-MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
-MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
-MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
-Goto: 	* 41 	/ 42 	% 43 	
-Reduce: 	+ -36 	- -36 	; -36 	
+AssignExpr -> LeftValue = AssignExpr  	dotPos: 2 	lookAhead: ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 34 	AssignExpr 85 	LeftValue 37 	LogicOrExpr 38 	LogicAndExpr 39 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 45 	
+Reduce: 	
 
 Status59:
-PrimaryExpr -> ArrayElem  	dotPos: 1 	lookAhead: + - * / % ; 
-Goto: 	
-Reduce: 	+ -45 	- -45 	* -45 	/ -45 	% -45 	; -45 	
+AssignExpr -> LeftValue += AssignExpr  	dotPos: 2 	lookAhead: ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 34 	AssignExpr 86 	LeftValue 37 	LogicOrExpr 38 	LogicAndExpr 39 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 45 	
+Reduce: 	
 
 Status60:
-AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 3 	lookAhead: + - ; 
-MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
-MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
-MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % ; 
-Goto: 	* 41 	/ 42 	% 43 	
-Reduce: 	+ -37 	- -37 	; -37 	
+AssignExpr -> LeftValue -= AssignExpr  	dotPos: 2 	lookAhead: ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 34 	AssignExpr 87 	LeftValue 37 	LogicOrExpr 38 	LogicAndExpr 39 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 45 	
+Reduce: 	
 
 Status61:
-MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % ; 
-Goto: 	
-Reduce: 	+ -40 	- -40 	* -40 	/ -40 	% -40 	; -40 	
+AssignExpr -> LeftValue *= AssignExpr  	dotPos: 2 	lookAhead: ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 34 	AssignExpr 88 	LeftValue 37 	LogicOrExpr 38 	LogicAndExpr 39 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 45 	
+Reduce: 	
 
 Status62:
-MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % ; 
-Goto: 	
-Reduce: 	+ -39 	- -39 	* -39 	/ -39 	% -39 	; -39 	
+AssignExpr -> LeftValue /= AssignExpr  	dotPos: 2 	lookAhead: ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 34 	AssignExpr 89 	LeftValue 37 	LogicOrExpr 38 	LogicAndExpr 39 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 45 	
+Reduce: 	
 
 Status63:
-MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % ; 
-Goto: 	
-Reduce: 	+ -41 	- -41 	* -41 	/ -41 	% -41 	; -41 	
+LogicOrExpr -> LogicOrExpr || LogicAndExpr  	dotPos: 2 	lookAhead: || ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	LogicAndExpr 91 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 92 	
+Reduce: 	
 
 Status64:
-ArrayElemDim1 -> id [ digit ]  	dotPos: 4 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 4 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 4 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	[ 71 	
-Reduce: 	+ -49 	- -49 	* -49 	/ -49 	= -49 	% -49 	+= -49 	-= -49 	*= -49 	/= -49 	; -49 	
+LogicAndExpr -> LogicAndExpr && EqualExpr  	dotPos: 2 	lookAhead: && || ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	EqualExpr 93 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 92 	
+Reduce: 	
 
 Status65:
+EqualExpr -> EqualExpr == CompareExpr  	dotPos: 2 	lookAhead: && || == ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	CompareExpr 94 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 92 	
+Reduce: 	
+
+Status66:
+EqualExpr -> EqualExpr != CompareExpr  	dotPos: 2 	lookAhead: && || == ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	CompareExpr 95 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 92 	
+Reduce: 	
+
+Status67:
+CompareExpr -> CompareExpr < AddtiveExpr  	dotPos: 2 	lookAhead: && || < > == <= >= ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	AddtiveExpr 96 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 92 	
+Reduce: 	
+
+Status68:
+CompareExpr -> CompareExpr > AddtiveExpr  	dotPos: 2 	lookAhead: && || < > == <= >= ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	AddtiveExpr 97 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 92 	
+Reduce: 	
+
+Status69:
+CompareExpr -> CompareExpr <= AddtiveExpr  	dotPos: 2 	lookAhead: && || < > == <= >= ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	AddtiveExpr 98 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 92 	
+Reduce: 	
+
+Status70:
+CompareExpr -> CompareExpr >= AddtiveExpr  	dotPos: 2 	lookAhead: && || < > == <= >= ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	AddtiveExpr 99 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 92 	
+Reduce: 	
+
+Status71:
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 2 	lookAhead: + - && || < > == <= >= ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	MultiplicativeExpr 100 	PrimaryExpr 44 	ArrayElem 92 	
+Reduce: 	
+
+Status72:
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 2 	lookAhead: + - && || < > == <= >= ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	MultiplicativeExpr 101 	PrimaryExpr 44 	ArrayElem 92 	
+Reduce: 	
+
+Status73:
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	PrimaryExpr 102 	ArrayElem 92 	
+Reduce: 	
+
+Status74:
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	PrimaryExpr 103 	ArrayElem 92 	
+Reduce: 	
+
+Status75:
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 2 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	- 31 	( 32 	digit 33 	id 90 	PrimaryExpr 104 	ArrayElem 92 	
+Reduce: 	
+
+Status76:
+BooleanExpr -> Expr  	dotPos: 1 	lookAhead: ) 
+Goto: 	
+Reduce: 	) -65 	
+
+Status77:
+IfStatement -> if TempStore ( BooleanExpr ) Statement SubIfStatement  	dotPos: 4 	lookAhead: $ _NON if else while int float { } 
+Goto: 	) 105 	
+Reduce: 	
+
+Status78:
+WhileStatement -> while TempStore ( BooleanExpr ) Statement  	dotPos: 4 	lookAhead: $ _NON if else while int float { } 
+Goto: 	) 106 	
+Reduce: 	
+
+Status79:
 Intialization -> Type id = Expr  	dotPos: 4 	lookAhead: , ; 
 Goto: 	
 Reduce: 	, -27 	; -27 	
 
-Status66:
-Postfix1 -> [ digit ]  	dotPos: 2 	lookAhead: [ , ; 
-Goto: 	] 72 	
-Reduce: 	
-
-Status67:
-Postfix2 -> Postfix1 [ digit ]  	dotPos: 2 	lookAhead: [ , ; 
-Goto: 	digit 73 	
-Reduce: 	
-
-Status68:
-Postfix3 -> Postfix2 [ digit ]  	dotPos: 2 	lookAhead: , ; 
-Goto: 	digit 74 	
-Reduce: 	
-
-Status69:
-DeclationList -> DeclationList , id = Expr  	dotPos: 4 	lookAhead: , ; 
-Goto: 	digit 3 	id 4 	Expr 75 	AssignExpr 19 	LeftValue 20 	AddtiveExpr 21 	MultiplicativeExpr 22 	PrimaryExpr 23 	ArrayElem 24 	ArrayElemDim1 25 	ArrayElemDim2 26 	ArrayElemDim3 27 	
-Reduce: 	
-
-Status70:
-DeclationList -> DeclationList , id Postfix  	dotPos: 4 	lookAhead: , ; 
-Goto: 	
-Reduce: 	, -13 	; -13 	
-
-Status71:
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 5 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 5 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	digit 76 	
-Reduce: 	
-
-Status72:
-Postfix1 -> [ digit ]  	dotPos: 3 	lookAhead: [ , ; 
-Goto: 	
-Reduce: 	[ -24 	, -24 	; -24 	
-
-Status73:
-Postfix2 -> Postfix1 [ digit ]  	dotPos: 3 	lookAhead: [ , ; 
-Goto: 	] 77 	
-Reduce: 	
-
-Status74:
-Postfix3 -> Postfix2 [ digit ]  	dotPos: 3 	lookAhead: , ; 
-Goto: 	] 78 	
-Reduce: 	
-
-Status75:
-DeclationList -> DeclationList , id = Expr  	dotPos: 5 	lookAhead: , ; 
-Goto: 	
-Reduce: 	, -14 	; -14 	
-
-Status76:
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 6 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 6 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	] 79 	
-Reduce: 	
-
-Status77:
-Postfix2 -> Postfix1 [ digit ]  	dotPos: 4 	lookAhead: [ , ; 
-Goto: 	
-Reduce: 	[ -25 	, -25 	; -25 	
-
-Status78:
-Postfix3 -> Postfix2 [ digit ]  	dotPos: 4 	lookAhead: , ; 
-Goto: 	
-Reduce: 	, -26 	; -26 	
-
-Status79:
-ArrayElemDim2 -> id [ digit ] [ digit ]  	dotPos: 7 	lookAhead: + - * / = % += -= *= /= ; 
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 7 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	[ 80 	
-Reduce: 	+ -50 	- -50 	* -50 	/ -50 	= -50 	% -50 	+= -50 	-= -50 	*= -50 	/= -50 	; -50 	
-
 Status80:
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 8 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	digit 81 	
+Postfix -> [ digit ] Postfix  	dotPos: 2 	lookAhead: , ; 
+Postfix -> [ digit ]  	dotPos: 2 	lookAhead: , ; 
+Goto: 	] 107 	
 Reduce: 	
 
 Status81:
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 9 	lookAhead: + - * / = % += -= *= /= ; 
-Goto: 	] 82 	
+DeclationList -> DeclationList , id = Expr  	dotPos: 4 	lookAhead: , ; 
+Goto: 	- 31 	( 32 	digit 33 	id 34 	Expr 108 	AssignExpr 36 	LeftValue 37 	LogicOrExpr 38 	LogicAndExpr 39 	EqualExpr 40 	CompareExpr 41 	AddtiveExpr 42 	MultiplicativeExpr 43 	PrimaryExpr 44 	ArrayElem 45 	
 Reduce: 	
 
 Status82:
-ArrayElemDim3 -> id [ digit ] [ digit ] [ digit ]  	dotPos: 10 	lookAhead: + - * / = % += -= *= /= ; 
+DeclationList -> DeclationList , id Postfix  	dotPos: 4 	lookAhead: , ; 
 Goto: 	
-Reduce: 	+ -51 	- -51 	* -51 	/ -51 	= -51 	% -51 	+= -51 	-= -51 	*= -51 	/= -51 	; -51 	
+Reduce: 	, -17 	; -17 	
+
+Status83:
+PrimaryExpr -> ( Expr )  	dotPos: 3 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	
+Reduce: 	+ -59 	- -59 	* -59 	/ -59 	% -59 	&& -59 	|| -59 	< -59 	> -59 	== -59 	<= -59 	>= -59 	) -59 	; -59 	
+
+Status84:
+Index -> [ digit ] Index  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= && || < > == <= >= ) ; 
+Index -> [ digit ]  	dotPos: 2 	lookAhead: + - * / = % += -= *= /= && || < > == <= >= ) ; 
+Goto: 	] 109 	
+Reduce: 	
+
+Status85:
+AssignExpr -> LeftValue = AssignExpr  	dotPos: 3 	lookAhead: ) ; 
+Goto: 	
+Reduce: 	) -30 	; -30 	
+
+Status86:
+AssignExpr -> LeftValue += AssignExpr  	dotPos: 3 	lookAhead: ) ; 
+Goto: 	
+Reduce: 	) -31 	; -31 	
+
+Status87:
+AssignExpr -> LeftValue -= AssignExpr  	dotPos: 3 	lookAhead: ) ; 
+Goto: 	
+Reduce: 	) -32 	; -32 	
+
+Status88:
+AssignExpr -> LeftValue *= AssignExpr  	dotPos: 3 	lookAhead: ) ; 
+Goto: 	
+Reduce: 	) -33 	; -33 	
+
+Status89:
+AssignExpr -> LeftValue /= AssignExpr  	dotPos: 3 	lookAhead: ) ; 
+Goto: 	
+Reduce: 	) -34 	; -34 	
+
+Status90:
+PrimaryExpr -> id  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) ; 
+ArrayElem -> id Index  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	[ 55 	Index 56 	
+Reduce: 	+ -55 	- -55 	* -55 	/ -55 	% -55 	&& -55 	|| -55 	< -55 	> -55 	== -55 	<= -55 	>= -55 	) -55 	; -55 	
+
+Status91:
+LogicOrExpr -> LogicOrExpr || LogicAndExpr  	dotPos: 3 	lookAhead: || ) ; 
+LogicAndExpr -> LogicAndExpr && EqualExpr  	dotPos: 1 	lookAhead: && || ) ; 
+Goto: 	&& 64 	
+Reduce: 	|| -36 	) -36 	; -36 	
+
+Status92:
+PrimaryExpr -> ArrayElem  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	
+Reduce: 	+ -58 	- -58 	* -58 	/ -58 	% -58 	&& -58 	|| -58 	< -58 	> -58 	== -58 	<= -58 	>= -58 	) -58 	; -58 	
+
+Status93:
+LogicAndExpr -> LogicAndExpr && EqualExpr  	dotPos: 3 	lookAhead: && || ) ; 
+EqualExpr -> EqualExpr == CompareExpr  	dotPos: 1 	lookAhead: && || == ) ; 
+EqualExpr -> EqualExpr != CompareExpr  	dotPos: 1 	lookAhead: && || == ) ; 
+Goto: 	== 65 	!= 66 	
+Reduce: 	&& -38 	|| -38 	) -38 	; -38 	
+
+Status94:
+EqualExpr -> EqualExpr == CompareExpr  	dotPos: 3 	lookAhead: && || == ) ; 
+CompareExpr -> CompareExpr > AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) ; 
+CompareExpr -> CompareExpr < AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) ; 
+CompareExpr -> CompareExpr >= AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) ; 
+CompareExpr -> CompareExpr <= AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) ; 
+Goto: 	< 67 	> 68 	<= 69 	>= 70 	
+Reduce: 	&& -40 	|| -40 	== -40 	) -40 	; -40 	
+
+Status95:
+EqualExpr -> EqualExpr != CompareExpr  	dotPos: 3 	lookAhead: && || == ) ; 
+CompareExpr -> CompareExpr > AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) ; 
+CompareExpr -> CompareExpr < AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) ; 
+CompareExpr -> CompareExpr >= AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) ; 
+CompareExpr -> CompareExpr <= AddtiveExpr  	dotPos: 1 	lookAhead: && || < > == <= >= ) ; 
+Goto: 	< 67 	> 68 	<= 69 	>= 70 	
+Reduce: 	&& -41 	|| -41 	== -41 	) -41 	; -41 	
+
+Status96:
+CompareExpr -> CompareExpr < AddtiveExpr  	dotPos: 3 	lookAhead: && || < > == <= >= ) ; 
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 1 	lookAhead: + - && || < > == <= >= ) ; 
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 1 	lookAhead: + - && || < > == <= >= ) ; 
+Goto: 	+ 71 	- 72 	
+Reduce: 	&& -44 	|| -44 	< -44 	> -44 	== -44 	<= -44 	>= -44 	) -44 	; -44 	
+
+Status97:
+CompareExpr -> CompareExpr > AddtiveExpr  	dotPos: 3 	lookAhead: && || < > == <= >= ) ; 
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 1 	lookAhead: + - && || < > == <= >= ) ; 
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 1 	lookAhead: + - && || < > == <= >= ) ; 
+Goto: 	+ 71 	- 72 	
+Reduce: 	&& -43 	|| -43 	< -43 	> -43 	== -43 	<= -43 	>= -43 	) -43 	; -43 	
+
+Status98:
+CompareExpr -> CompareExpr <= AddtiveExpr  	dotPos: 3 	lookAhead: && || < > == <= >= ) ; 
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 1 	lookAhead: + - && || < > == <= >= ) ; 
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 1 	lookAhead: + - && || < > == <= >= ) ; 
+Goto: 	+ 71 	- 72 	
+Reduce: 	&& -46 	|| -46 	< -46 	> -46 	== -46 	<= -46 	>= -46 	) -46 	; -46 	
+
+Status99:
+CompareExpr -> CompareExpr >= AddtiveExpr  	dotPos: 3 	lookAhead: && || < > == <= >= ) ; 
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 1 	lookAhead: + - && || < > == <= >= ) ; 
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 1 	lookAhead: + - && || < > == <= >= ) ; 
+Goto: 	+ 71 	- 72 	
+Reduce: 	&& -45 	|| -45 	< -45 	> -45 	== -45 	<= -45 	>= -45 	) -45 	; -45 	
+
+Status100:
+AddtiveExpr -> AddtiveExpr + MultiplicativeExpr  	dotPos: 3 	lookAhead: + - && || < > == <= >= ) ; 
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) ; 
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) ; 
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	* 73 	/ 74 	% 75 	
+Reduce: 	+ -48 	- -48 	&& -48 	|| -48 	< -48 	> -48 	== -48 	<= -48 	>= -48 	) -48 	; -48 	
+
+Status101:
+AddtiveExpr -> AddtiveExpr - MultiplicativeExpr  	dotPos: 3 	lookAhead: + - && || < > == <= >= ) ; 
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) ; 
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) ; 
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 1 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	* 73 	/ 74 	% 75 	
+Reduce: 	+ -49 	- -49 	&& -49 	|| -49 	< -49 	> -49 	== -49 	<= -49 	>= -49 	) -49 	; -49 	
+
+Status102:
+MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	
+Reduce: 	+ -52 	- -52 	* -52 	/ -52 	% -52 	&& -52 	|| -52 	< -52 	> -52 	== -52 	<= -52 	>= -52 	) -52 	; -52 	
+
+Status103:
+MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	
+Reduce: 	+ -51 	- -51 	* -51 	/ -51 	% -51 	&& -51 	|| -51 	< -51 	> -51 	== -51 	<= -51 	>= -51 	) -51 	; -51 	
+
+Status104:
+MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr  	dotPos: 3 	lookAhead: + - * / % && || < > == <= >= ) ; 
+Goto: 	
+Reduce: 	+ -53 	- -53 	* -53 	/ -53 	% -53 	&& -53 	|| -53 	< -53 	> -53 	== -53 	<= -53 	>= -53 	) -53 	; -53 	
+
+Status105:
+IfStatement -> if TempStore ( BooleanExpr ) Statement SubIfStatement  	dotPos: 5 	lookAhead: $ _NON if else while int float { } 
+Goto: 	_NON 1 	if 2 	while 3 	int 4 	float 5 	{ 6 	Statement 110 	ExprStatement 9 	DefinationStatement 10 	IfStatement 11 	WhileStatement 12 	CompoundStatement 13 	Type 14 	BasicType 15 	ValueType 16 	Defination 17 	DeclationList 18 	Declation 19 	Intialization 20 	DirectDeclation 21 	PostfixDeclation 22 	TempStore 23 	
+Reduce: 	
+
+Status106:
+WhileStatement -> while TempStore ( BooleanExpr ) Statement  	dotPos: 5 	lookAhead: $ _NON if else while int float { } 
+Goto: 	_NON 1 	if 2 	while 3 	int 4 	float 5 	{ 6 	Statement 111 	ExprStatement 9 	DefinationStatement 10 	IfStatement 11 	WhileStatement 12 	CompoundStatement 13 	Type 14 	BasicType 15 	ValueType 16 	Defination 17 	DeclationList 18 	Declation 19 	Intialization 20 	DirectDeclation 21 	PostfixDeclation 22 	TempStore 23 	
+Reduce: 	
+
+Status107:
+Postfix -> [ digit ] Postfix  	dotPos: 3 	lookAhead: , ; 
+Postfix -> [ digit ]  	dotPos: 3 	lookAhead: , ; 
+Goto: 	[ 50 	Postfix 112 	
+Reduce: 	, -26 	; -26 	
+
+Status108:
+DeclationList -> DeclationList , id = Expr  	dotPos: 5 	lookAhead: , ; 
+Goto: 	
+Reduce: 	, -18 	; -18 	
+
+Status109:
+Index -> [ digit ] Index  	dotPos: 3 	lookAhead: + - * / = % += -= *= /= && || < > == <= >= ) ; 
+Index -> [ digit ]  	dotPos: 3 	lookAhead: + - * / = % += -= *= /= && || < > == <= >= ) ; 
+Goto: 	[ 55 	Index 113 	
+Reduce: 	+ -62 	- -62 	* -62 	/ -62 	= -62 	% -62 	+= -62 	-= -62 	*= -62 	/= -62 	&& -62 	|| -62 	< -62 	> -62 	== -62 	<= -62 	>= -62 	) -62 	; -62 	
+
+Status110:
+IfStatement -> if TempStore ( BooleanExpr ) Statement SubIfStatement  	dotPos: 6 	lookAhead: $ _NON if else while int float { } 
+Goto: 	_NON 114 	else 115 	SubIfStatement 116 	
+Reduce: 	
+
+Status111:
+WhileStatement -> while TempStore ( BooleanExpr ) Statement  	dotPos: 6 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -70 	_NON -70 	if -70 	else -70 	while -70 	int -70 	float -70 	{ -70 	} -70 	
+
+Status112:
+Postfix -> [ digit ] Postfix  	dotPos: 4 	lookAhead: , ; 
+Goto: 	
+Reduce: 	, -25 	; -25 	
+
+Status113:
+Index -> [ digit ] Index  	dotPos: 4 	lookAhead: + - * / = % += -= *= /= && || < > == <= >= ) ; 
+Goto: 	
+Reduce: 	+ -61 	- -61 	* -61 	/ -61 	= -61 	% -61 	+= -61 	-= -61 	*= -61 	/= -61 	&& -61 	|| -61 	< -61 	> -61 	== -61 	<= -61 	>= -61 	) -61 	; -61 	
+
+Status114:
+SubIfStatement -> _NON  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -69 	_NON -69 	if -69 	else -69 	while -69 	int -69 	float -69 	{ -69 	} -69 	
+
+Status115:
+SubIfStatement -> else IfStatement SubIfStatement  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+SubIfStatement -> else _NON Statement  	dotPos: 1 	lookAhead: $ _NON if else while int float { } 
+Goto: 	_NON 117 	if 2 	IfStatement 118 	
+Reduce: 	
+
+Status116:
+IfStatement -> if TempStore ( BooleanExpr ) Statement SubIfStatement  	dotPos: 7 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -66 	_NON -66 	if -66 	else -66 	while -66 	int -66 	float -66 	{ -66 	} -66 	
+
+Status117:
+SubIfStatement -> else _NON Statement  	dotPos: 2 	lookAhead: $ _NON if else while int float { } 
+Goto: 	_NON 1 	if 2 	while 3 	int 4 	float 5 	{ 6 	Statement 119 	ExprStatement 9 	DefinationStatement 10 	IfStatement 11 	WhileStatement 12 	CompoundStatement 13 	Type 14 	BasicType 15 	ValueType 16 	Defination 17 	DeclationList 18 	Declation 19 	Intialization 20 	DirectDeclation 21 	PostfixDeclation 22 	TempStore 23 	
+Reduce: 	
+
+Status118:
+SubIfStatement -> else IfStatement SubIfStatement  	dotPos: 2 	lookAhead: $ _NON if else while int float { } 
+Goto: 	_NON 114 	else 115 	SubIfStatement 120 	
+Reduce: 	
+
+Status119:
+SubIfStatement -> else _NON Statement  	dotPos: 3 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -68 	_NON -68 	if -68 	else -68 	while -68 	int -68 	float -68 	{ -68 	} -68 	
+
+Status120:
+SubIfStatement -> else IfStatement SubIfStatement  	dotPos: 3 	lookAhead: $ _NON if else while int float { } 
+Goto: 	
+Reduce: 	$ -67 	_NON -67 	if -67 	else -67 	while -67 	int -67 	float -67 	{ -67 	} -67 	
 
 
 
