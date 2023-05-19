@@ -62,31 +62,28 @@ UpdateCodeStart : 0
 //addr , val
 InsertElem : 2
 
-//11:生成赋值运算符的中间代码
-//op ,EnvGetAddr(id.lexeme) , addr 
-GenAssign : 3
-
-//12: 创建数组类型，并返回其typeID
+//11: 创建数组类型，并返回其typeID
 //elemTypeID（要创建什么类型的数组）,元素个数
 CreateArrayType : 2
 
-//13 获取数组类型元素宽度
+//12 获取数组类型元素宽度
 //arrayTypeID,数组最开始的id.lexeme（用于报错）
 GetElemWidth : 1
 
-//14 获取数组类型元素类型
+//13 获取数组类型元素类型
 //arrayTypeID,数组最开始的id.lexeme（用于报错）
 GetElemType : 1
 
-//15 获取相应类型的大小
+//14 获取相应类型的大小
 //typeID
 sizeof : 1
 
-//16 将指定的指令索引加入链表中，等待反向修补
-//codeIndex
-BackPatch : 1
+//15 将指定的指令索引加入链表中，等待反向修补,
+//第二个参数是1代表使用原来的链表，为其他值则新建链表
+//codeIndex,old?
+BackPatch : 2
 
-//17 将backpacth链表中的指令中第二个valuenum置为指定值，并清空链表
+//16 将backpacth链表中的指令中第二个valuenum置为指定值，并删除当前链表
 //codeIndex
 DoPatch : 1
 END$
@@ -101,7 +98,7 @@ Statement -> DefinationStatement
 Statement -> IfStatement					## 0.6 = 1.6 ; 0.7 = 1.7 ##
 Statement -> WhileStatement					## 0.6 = 1.6 ; 0.7 = 1.7 ##
 Statement -> CompoundStatement				## 0.6 = 1.6 ; 0.7 = 1.7 ##
-CompoundStatement -> { StatementList }		## 0.6 = 2.6 ; 0.7 = 2.7 ##
+CompoundStatement -> NewEnv { StatementList } PopEnv		## 0.6 = 3.6 ; 0.7 = 3.7 ##
 
 
 //类型定义
@@ -114,14 +111,14 @@ $$ BasicType : 0 typeID
 $$ ValueType : 0 typeID
 
 //变量定义以及初始化
-DefinationStatement -> Defination ;
-Defination -> DeclationList
+DefinationStatement -> ## 1.6 = UpdateCodeStart () ## TempStore ## 2.6 = 1.6 ## Defination ;		## 0.6 = 1.6 ; 0.7 = 1.7 ##
+Defination -> DeclationList								## 0.6 = 1.6 ; 0.7 = 1.7 ##
 
-DeclationList -> DeclationList , id					## 0.0 = 1.0 ; EnvPush (3.0,0.0) ; ##
-DeclationList -> DeclationList , id ## 4.0 = 1.0 ## Postfix 		## 0.0 = 1.0 ; EnvPush (3.0,4.0) ##  
-DeclationList -> DeclationList , id = Expr				## 0.0 = 1.0 ; EnvPush (3.0,0.0) ; 0.1 = EnvGetAddr (3.0) ; GenAssign ('=',0.1,5.6) ; ##
-DeclationList -> Declation								## 0.0 = 1.0 ##
-DeclationList -> Intialization							## 0.0 = 1.0 ##
+DeclationList -> DeclationList , id					## 0.0 = 1.0 ; EnvPush (3.0,0.0) ; 0.6 = 1.6 ; 0.7 = 0.6 + $1 ##
+DeclationList -> DeclationList , id ## 4.0 = 1.0 ## Postfix 		## 0.0 = 1.0 ; EnvPush (3.0,4.0) ; 0.6 = 1.6 ; 0.7 = 0.6 + $1 ##  
+DeclationList -> DeclationList , id = Expr				## 0.0 = 1.0 ; EnvPush (3.0,0.0) ; 0.1 = EnvGetEntry (3.0) ; 0.7 = $-1 ; 0.6 = InsertElem (0.1,0.7) ; 0.6 = Gen ('=',0.6,5.6) ; 0.7 = 0.6 + $1 ##
+DeclationList -> Declation								## 0.0 = 1.0 ; 0.6 = -1.6 ; 0.7 = 0.6 + $1 ##
+DeclationList -> Intialization							## 0.0 = 1.0 ; 0.6 = -1.6 ; 0.7 = 0.6 + $1 ##
 $$ DeclationList : 0 typeID/elemID 
 $$ Declation : 0 typeID
 $$ Intialization : 0 typeID 1 idAddr
@@ -138,7 +135,7 @@ $$ - Postfix : 0 elemTypeID
 $$ Postfix : 0 arrayTypeID	 
 
 
-Intialization -> Type id = Expr		## 0.0 = 1.0 ; EnvPush (2.0,1.0) ; 0.1 = EnvGetAddr (2.0) ; 0.6 = GenAssign ('=',0.1,4.6) ##
+Intialization -> Type id = Expr		## 0.0 = 1.0 ; EnvPush (2.0,1.0) ; 0.1 = EnvGetEntry (2.0) ; 0.7 = $-1 ; 0.6 = InsertElem (0.1,0.7) ; 0.6 = Gen ('=',0.6,4.6) ; 0.7 = 0.6 + $1 ##
 
 //计算表达式
 ExprStatement -> TempStore ## 1.6 = UpdateCodeStart () ## Expr ;		## 0.6 = 1.6 ; 0.7 = UpdateCodeStart () ##
@@ -146,11 +143,11 @@ Expr -> AssignExpr			## 0.1 = 1.1 ; 0.6 = 1.6 ; 0.7 = 1.7 ##
 $$ Expr : 1 typeID
 
 //赋值表达式
-AssignExpr -> LeftValue =  AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('=',1.0,3.6) ; 0.7 = 0.6 + $1 ##
-AssignExpr -> LeftValue += AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('+=',1.0,3.6) ; 0.7 = 0.6 + $1 ##
-AssignExpr -> LeftValue -= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('-=',1.0,3.6) ; 0.7 = 0.6 + $1 ##
-AssignExpr -> LeftValue *= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('*=',1.0,3.6) ; 0.7 = 0.6 + $1 ##
-AssignExpr -> LeftValue /= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = GenAssign ('/=',1.0,3.6) ; 0.7 = 0.6 + $1 ##
+AssignExpr -> LeftValue =  AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = Gen ('=',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+AssignExpr -> LeftValue += AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = Gen ('+=',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+AssignExpr -> LeftValue -= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = Gen ('-=',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+AssignExpr -> LeftValue *= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = Gen ('*=',1.6,3.6) ; 0.7 = 0.6 + $1 ##
+AssignExpr -> LeftValue /= AssignExpr		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = Gen ('/=',1.6,3.6) ; 0.7 = 0.6 + $1 ##
 AssignExpr -> LogicOrExpr			## 0.6 = 1.6 ; 0.7 = 1.7 ##
 $$ AssignExpr : 0 addr 1 typeID
 
@@ -181,42 +178,48 @@ MultiplicativeExpr -> MultiplicativeExpr / PrimaryExpr		## 0.6 = Gen ('/',1.6,3.
 MultiplicativeExpr -> MultiplicativeExpr * PrimaryExpr		## 0.6 = Gen ('*',1.6,3.6) ; 0.7 = 0.6 + $1 ##
 MultiplicativeExpr -> MultiplicativeExpr % PrimaryExpr		## 0.6 = Gen ('*',1.6,3.6) ; 0.7 = 0.6 + $1 ##
 MultiplicativeExpr -> PrimaryExpr							## 0.6 = 1.6 ; 0.7 = 1.7 ##
-$$ PrimaryExpr : 0 addr 1 typeID 2 val
+$$ PrimaryExpr : 0 entryPtr 1 typeID 2 val
 
 //addr = -1,代表当前primaryexpr是常量
 //基本表达式
 //terminal: 0 lexeme	1 val	2 row	3 col	5 typeID
-PrimaryExpr -> id				## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ; 0.2 = $-1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##	
+PrimaryExpr -> id				## 0.0 = EnvGetEntry (1.0) ; 0.1 = EnvGetType (1.0) ; 0.2 = $-1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##	
 PrimaryExpr -> digit			## 0.0 = $-1 ; 0.1 = $0 ; 0.2 = 1.1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##
 PrimaryExpr -> - digit			## 0.0 = $-1 ; 0.1 = $0 ; 0.2 = 2.1 * $-1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##
-PrimaryExpr -> ArrayElem		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.2 = $-1 ; 0.6 = InsertElem (0.0,0.2) ; 0.7 = 0.6 + $1 ##
+PrimaryExpr -> ArrayElem		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = 1.6 ; 0.7 = 0.6 + $1 ##
 PrimaryExpr -> ( Expr )			## 0.0 = 2.0 ; 0.1 = 2.1 ; 0.6 = 2.6 ; 0.7 = 2.7 ##
-ArrayElem -> id ## 2.1 = EnvGetType (1.0) ; 2.0 = EnvGetAddr (1.0) ## Index						## 0.0 = 2.0 ; 0.1 = 2.1 ##
-Index -> [ digit ]	## 4.1 = GetElemType (-1.1) ; 4.0 = -1.0 + 2.1 * sizeof (4.1) ## Index		## 0.0 = 4.0 ; 0.1 = 4.1 ##
-Index -> [ digit ]																					## 0.1 = GetElemType (-1.1) ; 0.0 = -1.0 + 2.1 * sizeof (0.1) ##
-$$ - Index : 0 offset 1 typeID  
-//typeID为本次产生式数组ID
-$$ ArrayElem : 0 addr 1 varTypeID 
-$$ Index : 0 addr 1 varTypeID
+ArrayElem -> id [ digit ]  ## 5.0 = EnvGetType (1.0) ; 5.0 = GetElemType (5.0) ; 5.1 = EnvGetEntry (1.0) ; 5.7 = $-1 ; 5.6 = InsertElem (5.1,5.7) ; 5.6 = Gen ('[]',5.6 ,3.1) ## Index		## 0.0 = 5.1 ; 0.1 = 5.0 ; 0.6 = 5.6 ; 0.7 = 5.7 ##														
+Index -> _NON					## 0.0 = -1.0 ; 0.6 = -1.6 ; 0.7 = 0.6 + $1 ##
+Index -> [ digit ]	## 4.0 = GetElemType (-1.0) ; 4.6 = Gen ('[]', -1.6 , 2.1 ) ## Index		## 0.0 = 4.0 ; 0.6 = 4.6 ; 0.7 = 4.7 ##
+$$ - Index : 0 arrayTypeID
+$$ Index : 0 elemTypeID 
+$$ ArrayElem : 0 entryPtr 1 varTypeID 
 
 //左值定义
-LeftValue -> id				## 0.0 = EnvGetAddr (1.0) ; 0.1 = EnvGetType (1.0) ##
-LeftValue -> ArrayElem		## 0.0 = 1.0 ; 0.1 = 1.1 ##
+LeftValue -> id				## 0.0 = EnvGetEntry (1.0) ; 0.7 = $-1 ; 0.6 = InsertElem (0.0,0.7) ; 0.1 = EnvGetType (1.0) ##
+LeftValue -> ArrayElem		## 0.1 = 1.1 ; 0.6 = 1.6 ##
 $$ LeftValue : 0 addr 1 typeID
 
 BooleanExpr -> Expr			## 0.1 = 1.1 ; 0.6 = 1.6 ; 0.7 = 1.7 ##
 $$ BooleanExpr :  1 typeID 
 
 //if语句定义
-IfStatement -> if ## 2.6 = UpdateCodeStart () ## TempStore ( BooleanExpr ) ## 2.0 = Gen ('jc',4.6,2.0) ; BackPatch (2.0) ## Statement SubIfStatement			## 0.6 = 2.6 ; 0.7 = UpdateCodeStart () ##
-SubIfStatement -> else IfStatement SubIfStatement 
+IfStatement -> if ## 2.6 = UpdateCodeStart () ## TempStore ( BooleanExpr ) ## 2.0 = Gen ('jc',4.6,2.0) ; BackPatch (2.0,-1.0) ## Statement SubIfStatement			## 0.6 = 2.6 ; 0.7 = UpdateCodeStart () ##
+SubIfStatement -> else ## 2.0 = $1 ## IfStatement SubIfStatement 
 SubIfStatement -> else _NON Statement				## 0.6 = 3.6 ; 0.7 = 3.7 ; DoPatch (0.7) ##
 SubIfStatement -> _NON								## 0.7 = UpdateCodeStart () ; DoPatch (0.7) ##
+$$ - IfStatement : 0 oldPatchFalg
 
 //while语句定义
-WhileStatement -> while ## 2.6 = UpdateCodeStart () ## TempStore  ( BooleanExpr )	## 2.0 = Gen ('jc',4.6,2.6) ## Statement		## 0.6 = 2.6 ; 0.7 = Gen ('jmp',0.6,0.7) + $1; ##
+WhileStatement -> while ## 2.6 = UpdateCodeStart () ## TempStore  ( BooleanExpr )	## 2.0 = Gen ('jc',4.6,2.0) ; 2.1 = $0 ; BackPatch (2.0,2.1) ## Statement		## 0.6 = 2.6 ; 0.7 = Gen ('jmp',0.6,0.7) + $1 ; DoPatch (0.7) ##
 
 //用于暂存的辅助非终结符
 TempStore -> _NON		## 0.0 = -1.0 ; 0.1 = -1.1 ; 0.2 = -1.2 ; 0.3 = -1.3; 0.4 = -1.4; 0.5 = -1.5 ; 0.6 = -1.6 ; 0.7 = -1.7 ##
 $$ - TempStore : 0 store0 1 store1 2 store2 3 store3 4 store4 5 store5
 $$ TempStore : 0 store0 1 store1 2 store2 3 store3 4 store4 5 store5
+
+//用于创建新的命名空间
+NewEnv -> _NON		## NewEnv () ##
+
+//用于弹出当前命名环境
+PopEnv -> _NON		## PopEnv () ##

@@ -355,7 +355,7 @@ int Parser::Reduce(int productionIndex) {
 	PopToken(body.size() + 1);
 	dotPosStack.pop();
 
-#ifdef DEBUG
+#ifdef _PARSER_REDUCE_PRINT
 	cout << "\nSymbolStack : \t";
 	symbolStack.Print();
 	cout << "\n\n";
@@ -514,7 +514,7 @@ bool Parser::Analyse() {
 	dotPosStack.push(0);
 
 
-	Environmemt::curEnv = Environmemt::NewEnv();
+	Environment::curEnv = Environment::NewEnv();
 	while(tokenIndex < tokenStream->size()){
 		if (action == Collection::NON_ENTRY) {
 			bool redressNon = RedressNon();

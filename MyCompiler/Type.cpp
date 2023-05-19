@@ -55,48 +55,51 @@ int Type::CreateArrayType(int elemID, int size) {
 }
 
 
-Environmemt* Environmemt::curEnv = nullptr;
-size_t Environmemt::dataFieldSize = DATA_START;
-
+Environment* Environment::curEnv = nullptr;
+size_t Environment::dataFieldSize = DATA_START;
+vector<Environment*> Environment::envAll;
 static size_t EnvID = 0;
 
-size_t Environmemt::getID() {
+size_t Environment::getID() {
 	return EnvID++;
 }
 
 
-Environmemt::Environmemt(Environmemt * pre){
+Environment::Environment(Environment * pre){
 	if (pre == nullptr) {
 		base = dataFieldSize;
+		this->envID = Environment::getID();
 		offset = 0;
 		this->pre = nullptr;
 		Type::BasicTypeDef();
+		envAll.push_back(this);
 		return;
 	}
 	this->base = dataFieldSize;
+	this->envID = Environment::getID();
 	offset = 0;
 	this->pre = pre;
+	envAll.push_back(this);
 }
 
-Environmemt* Environmemt::NewEnv() {
+Environment* Environment::NewEnv() {
 	if (curEnv == nullptr) {
-		curEnv = new Environmemt(nullptr);
+		curEnv = new Environment(nullptr);
 		return curEnv;
 	}
 		
-	Environmemt* env = new Environmemt(curEnv);
+	Environment* env = new Environment(curEnv);
 	curEnv = env;
 	return env;
 }
 
-Environmemt* Environmemt::PopEnv() {
+Environment* Environment::PopEnv() {
 	auto temp = curEnv;
 	curEnv = curEnv->pre;
-	delete temp;
 	return curEnv;
 }
 
-bool Environmemt::EnvPush(string lexeme, int typeID) {
+bool Environment::EnvPush(string &lexeme, int typeID) {
 	if (symTable.count(lexeme)) {
 		cout << "Error : Redefination of identifier : " << lexeme << " " << Parser::RowAndCol() << endl;
 		exit(1);
@@ -106,31 +109,50 @@ bool Environmemt::EnvPush(string lexeme, int typeID) {
 	offset += symTable[lexeme].t.width;
 }
 
-Variable& Environmemt::EnvGet(string lexeme) {
+Variable& Environment::EnvGet(string &lexeme) {
 	if (!symTable.count(lexeme)) {
-		cout << "Error : No identifier defined : " << lexeme <<  " " << Parser::RowAndCol() << endl;
-		exit(1);
+		if (pre == nullptr) {
+			cout << "Error : No identifier defined : " << lexeme << " " << Parser::RowAndCol() << endl;
+			exit(1);
+		}
+		else return pre->EnvGet(lexeme);
 	}
 	return symTable.at(lexeme);
 }
 
-ArrayType* Environmemt::GetArrayType(string lex) {
+ArrayType* Environment::GetArrayType(string lex) {
 	Type t = curEnv->EnvGet(lex).t;
 	auto ap = Type::GetArrayType(t.typeID);
 	return ap;
 }
 
-void Environmemt::Print() {
-	Environmemt* te = curEnv;
+void Environment::PrintCur() {
+	Environment* te = curEnv;
 	while (te != nullptr) {
-		cout << "Env" << te->envID << ": \n";
-		cout << " \tlexeme \ttype \taddr \t\twidth\n";
-		for (auto& i : te->symTable) {
-			cout << " \t" << i.first << " \t" << Type::GetTypeStr(i.second.t.typeID) << \
-			" \t" <<  hex << "0x" << i.second.addr << dec << " \t" << i.second.t.width << "\n";
-		}
+		te->Print();
 		te = curEnv->pre;
 	}
+}
+
+void Environment::Print() {
+	cout << "Env" << envID << ": \n";
+	cout << " \tlexeme \t\ttype \t\taddr \t\twidth\n";
+	for (auto& i : symTable) {
+		cout << " \t" << i.first << " \t\t" << Type::GetTypeStr(i.second.t.typeID) << \
+			" \t\t" << hex << "0x" << i.second.addr << dec << " \t\t" << i.second.t.width << "\n";
+	}
+}
+
+void Environment::PrintAll() {
+	for (auto& e : envAll) {
+		cout << "\n";
+		e->Print();
+	}
+}
+
+void Environment::DeleteAll() {
+	for (auto& e : envAll)
+		delete e;
 }
 
 ArrayType::ArrayType(int elemID, int size,int arrayTypeID) : elemID(elemID),size(size){

@@ -3,15 +3,16 @@
 #include <iostream>
 #include "Debug.h"
 #include "Type.h"
+#include <iomanip> 
 #define NULLADDR -1
 Generator* Generator::genPtr = nullptr;
 CodeStore* Generator::csPtr = nullptr;
 int Generator::codeStart = 0;
-list<int> Generator::backList;
+stack <list<int>*> Generator::backList;
 
 vector <string> Generator::icopInt2Str = {
 	"+","-","*","/","%","=","id","digit","+=","-=","*=","/=","LD","&&",\
-	"||","==","!=","<","<=",">",">=","jc","jmp"
+	"||","==","!=","<","<=",">",">=","jc","jmp","[]"
 };
 unordered_map<string, int> Generator::icopStr2Int = {
 	{"+",0},{"-",1},{"*",2},{"/",3},{"%",4},\
@@ -19,7 +20,7 @@ unordered_map<string, int> Generator::icopStr2Int = {
 	{"-=", 9}, { "*=",10 }, { "/=",11 }, { "LD",12 },\
 	{"&&", 13}, { "||",14 }, { "==",15 }, {"!=",16},\
 	{"<", 17}, { "<=",18 }, { ">",19 }, {">=",20},\
-	{"jc", 21}, {"jmp",22}
+	{"jc", 21}, {"jmp",22},{"[]",23}
 };
 
 Generator::Generator(CodeStore &cs) {
@@ -72,12 +73,6 @@ int Generator::Gen(int icop,  int code1,int code2) {
 	return index;
 }
 
-int Generator::GenAssign(int op, int desAddr, int srcCode) {
-	Triple temp(op, desAddr, srcCode);
-	int index = InsertTriple(temp);
-	return index;
-}
-
 string Generator::GetIcopStr(int icop) {
 	return icopInt2Str.at(icop);
 }
@@ -90,20 +85,32 @@ static bool IsAssign(Triple& t) {
 	return false;
 }
 
+int Generator::BackPatch(int codeIndex, int isOld) {
+	if (isOld != 1) backList.push(new list<int>());
+	backList.top()->push_back(codeIndex);
+	return 1;
+}
+
 int Generator::DoPatch(int codeIndex) {
-	for (auto& i : backList) {
+	auto topList = backList.top();
+	backList.pop();
+	for (auto& i : *topList) {
 		(*csPtr)[i].valNum2 = codeIndex;
 	}
-	backList.clear();
+
+	delete topList;
 	return 1;
 }
 
 void Generator::Print() {
 	auto& cs = *csPtr;
 	int i = 0;
+	cout << setiosflags(ios::left);
 	for (auto& t : cs) {
-		cout << i++ << " : " << GetIcopStr(t.icop) + " \t";
-		cout << t.valNum1 << "\t" << t.valNum2;
+		cout << i++ << " : \t"  << setw(15) << GetIcopStr(t.icop);
+		if (t.icop == GetIcopInt("id"))
+			cout << "0x" << hex << setw(13) <<t.valNum1 << dec << setw(15) <<  t.valNum2;
+		else cout << setw(15) <<t.valNum1 << setw(15) << t.valNum2;
 		cout << "\n";
 	}
 }

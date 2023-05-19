@@ -6,7 +6,7 @@
 using namespace std;
 
 class ArrayType;
-class Environmemt;
+class Environment;
 
 struct Type
 {
@@ -60,28 +60,32 @@ struct Variable {
 
 #define DATA_START 0
 
-class Environmemt {
+class Environment {
 private:
 	static size_t dataFieldSize;
 	static size_t getID();
+	static vector<Environment*> envAll;
 	size_t envID;
 	unsigned int base;
 	unsigned int offset;
 	unordered_map<string,Variable> symTable;
-	Environmemt* pre;
-	Environmemt(Environmemt* pre);
+	Environment* pre;
+	Environment(Environment* pre);
 public:
-	static Environmemt* curEnv;
-	Variable& EnvGet(string lexeme);
-	bool EnvPush(string lexeme, int typeID);
+	static Environment* curEnv;
+	Variable& EnvGet(string &lexeme);
+	bool EnvPush(string &lexeme, int typeID);
 	ArrayType* GetArrayType(string lex);
-	static Environmemt* NewEnv();
-	static Environmemt* PopEnv();
+	static Environment* NewEnv();
+	static Environment* PopEnv();
 	static int NewTemp(int typeID) { 
 		dataFieldSize += Type::GetTypeWidth(typeID); 
 		return -1; 
 	}
-	static void Print();
+	static void DeleteAll();
+	static void PrintAll();
+	void PrintCur();
+	void Print();
 };
 
 struct ArrayType :Type{

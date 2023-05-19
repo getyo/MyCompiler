@@ -8,7 +8,7 @@
 
 class Grammer {
 private:
-	string path = "input\\grammer.txt";
+	string path = "D:\\proj\\MyCompiler\\MyCompiler\\input\\grammer.txt";
 	static Grammer* grammerPtr;
 	//默认id terminal从0开始计数
 	static int maxTerminal;
