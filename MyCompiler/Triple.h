@@ -77,6 +77,9 @@ public:
 	static int Update() { 
 		codeStart = csPtr->size(); 
 		return codeStart; }
+	static int GetCodeStart() {
+		return codeStart;
+	}
 	static string GetIcopStr(int icop);
 	static void Print();
 };

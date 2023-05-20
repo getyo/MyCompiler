@@ -1,8 +1,13 @@
 int a,b,c;
-while (a+b+c > 0){
-	if(a >= 0) a+1;
-	else{
-		int a[5];
-		a[2] = 3; 
+
+int f (int a){
+	return f(a);
+}
+
+int main(){
+	if (a+b+c > 0)
+	{
+		while (a > 0) a = f(a);
 	}
+	return 0;
 }

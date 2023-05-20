@@ -5,25 +5,34 @@
 #include <iostream>
 using namespace std;
 
-class ArrayType;
+struct ArrayType;
 class Environment;
-
+struct Type;
+struct FunType;
+#define FUN_TYWD -1
+#define VOID_ID 0
+#define VOID_WD 0
+#define INT_WD 4
+#define FLOAT_WD 4
 struct Type
 {
 private:
 	static unordered_set<int> arrayTypeSet;
 	static vector<string> typeID2Str;
 	static unordered_map<string,int> typeStr2ID;
-	static vector<Type *> typePtr;
+	static vector<Type*> typePtr;
 	static int maxDefaultTpyeID;
+	static vector<int> funPara;
 
+	static string MakeFunTyStr(int retType, vector<int>& funPara);
 public:
 	int typeID;
-	size_t width;
+	//如果为0代表类型为void,为-1代表类型为函数
+	int width;
 	static void BasicTypeDef();
+	static Type* GetTypePtr(int typeID) { return typePtr.at(typeID); }
 	static int GetTypeID(string s) { return typeStr2ID.at(s); }
 	static int GetTypeWidth(int typeID);
-	static ArrayType* GetArrayType(int typeID);
 	static int GetTypeWidth(string typeName) { return GetTypeWidth(typeStr2ID.at(typeName)); }
 	static string GetTypeStr(int typeID) { return typeID2Str.at(typeID); }
 	Type(){}
@@ -42,20 +51,30 @@ public:
 		this->width = t.width;
 		return *this;
 	}
+	bool IsFunType() { return width == FUN_TYWD; }
+
+	static ArrayType* GetArrayType(int typeID);
 	static int CreateArrayType(int elemID, int size);
 
+	static int FunParaPush(int typeID);
+	static FunType * GetFunType(int typeID);
+	static int CreateFunType(int retType);
+
+	//类型检测以及转化
+	static int FunCheck(int funTyID);
+	static int RetCheck(int t1, int t2);
 	virtual ~Type(){}
 };
 
+//也可以表示函数
 struct Variable {
-	Type t;
+	Type * t;
 	string name;
+	//如果是函数则表示第一条指令的起始地址
 	unsigned int addr;
 	Variable(){}
-	Variable(int typeID, string name, int addr) :t(Type(typeID)), \
-		name(name), addr(addr) {};
-	Variable(string typeName, string name, int addr) :t(Type(typeName)), \
-		name(name), addr(addr) {};
+	Variable(int typeID, string name, int addr) :t( Type::GetTypePtr(typeID) ), name(name), addr(addr) {}
+	Variable(string typeName, string name, int addr) : Variable(Type::GetTypeID(typeName),name,addr) {}
 };
 
 #define DATA_START 0
@@ -68,20 +87,23 @@ private:
 	size_t envID;
 	unsigned int base;
 	unsigned int offset;
-	unordered_map<string,Variable> symTable;
+	unordered_map<string,Variable *> symTable;
 	Environment* pre;
 	Environment(Environment* pre);
 public:
 	static Environment* curEnv;
-	Variable& EnvGet(string &lexeme);
+	Variable* EnvGet(string &lexeme);
 	bool EnvPush(string &lexeme, int typeID);
 	ArrayType* GetArrayType(string lex);
+	Environment* GetPre() { return pre; }
+	int GetRetType(string lex);
 	static Environment* NewEnv();
 	static Environment* PopEnv();
 	static int NewTemp(int typeID) { 
 		dataFieldSize += Type::GetTypeWidth(typeID); 
 		return -1; 
 	}
+	static int SetFunStart(string lex,int codeStart);
 	static void DeleteAll();
 	static void PrintAll();
 	void PrintCur();
@@ -96,5 +118,12 @@ struct ArrayType :Type{
 
 	ArrayType(){}
 	ArrayType(int elemID, int size,int arrayTypeID);
-	int GetDimSize(int dim);
+};
+
+struct FunType :Type {
+	int retType;
+	vector <int> paraType;
+
+	FunType();
+	FunType(int retType,vector<int>& funPara,int funTyID);
 };

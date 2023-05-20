@@ -12,7 +12,7 @@ stack <list<int>*> Generator::backList;
 
 vector <string> Generator::icopInt2Str = {
 	"+","-","*","/","%","=","id","digit","+=","-=","*=","/=","LD","&&",\
-	"||","==","!=","<","<=",">",">=","jc","jmp","[]"
+	"||","==","!=","<","<=",">",">=","jc","jmp","[]","call","para","ret"
 };
 unordered_map<string, int> Generator::icopStr2Int = {
 	{"+",0},{"-",1},{"*",2},{"/",3},{"%",4},\
@@ -20,7 +20,8 @@ unordered_map<string, int> Generator::icopStr2Int = {
 	{"-=", 9}, { "*=",10 }, { "/=",11 }, { "LD",12 },\
 	{"&&", 13}, { "||",14 }, { "==",15 }, {"!=",16},\
 	{"<", 17}, { "<=",18 }, { ">",19 }, {">=",20},\
-	{"jc", 21}, {"jmp",22},{"[]",23}
+	{"jc", 21}, { "jmp",22 }, { "[]",23 }, {"call",24},\
+	{"para",25},{"ret",26}
 };
 
 Generator::Generator(CodeStore &cs) {

@@ -164,6 +164,10 @@ void Grammer::ReadAction(Production &p,ActionList &actionList) {
 #endif // DEBUG
 					break;
 				}
+				case '@': {
+					action->requested.push_back(Action::VAL);
+					++curLineIt;
+				}
 				default: {
 					if (!IsDigit(curLine[curLineIt])) {
 						cerr << "\nGrammer:" + RowAndCol() + "Incorrect Input: should input digit\n";
