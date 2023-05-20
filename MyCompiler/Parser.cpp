@@ -132,6 +132,7 @@ SymbolWithAttr Parser::ExecuteAction(int pItr,int dotPos) {
 	bool isFunPara = false;
 	int curParaIndex = 0;
 	int curfunID;
+	bool isVal = false;
 	for (auto &action : p.actionLists[dotPos]) {
 		//构建后缀表达式
 		for (int i = 0; i < action->requested.size(); ++i) {
@@ -203,6 +204,8 @@ SymbolWithAttr Parser::ExecuteAction(int pItr,int dotPos) {
 						isFunPara = false;
 					}
 				}
+				else if (elem == Action::VAL)
+					isVal = true;
 			}
 			//处理符号.属性
 			else {
@@ -210,13 +213,19 @@ SymbolWithAttr Parser::ExecuteAction(int pItr,int dotPos) {
 				if (elem == 0) 
 					postfix.push_back((int)&headSwa.attr->at(attrIndex));
 				else {
-					if (elem == 1 && attrIndex == 0 && pItr == 60)
-						cout << "";
 					int attrPtr = (int)GetAttrPtr(pItr, elem, attrIndex);
 #ifdef DEBUG
 					ASSERT(attrPtr != 0,"Parser: attrPtr is null");
 #endif // DEBUG
 					postfix.push_back(attrPtr);
+				}
+				if (isVal) {
+#ifdef DEBUG
+					ASSERT(opStack.top() == Action::VAL, "Parser : opStack Error");
+#endif // DEBUG
+					postfix.push_back(Action::VAL);
+					opStack.pop();
+					isVal = false;
 				}
 				if (isFunPara) {
 					++curParaIndex;
@@ -294,6 +303,12 @@ SymbolWithAttr Parser::ExecuteAction(int pItr,int dotPos) {
 				}
 				break;
 			}
+			case Action::VAL:{
+				auto oprand = oprandStack.top();
+				oprandStack.pop();
+				oprandStack.push((void*) *((int *)oprand) );
+				break;
+			}
 			default: {
 				oprandStack.push((void*)postfix[i]);
 				break;
@@ -355,7 +370,7 @@ int Parser::Reduce(int productionIndex) {
 	PopToken(body.size() + 1);
 	dotPosStack.pop();
 
-#ifdef DEBUG
+#ifdef _PARSER_REDUCE_PRINT
 	cout << "\nSymbolStack : \t";
 	symbolStack.Print();
 	cout << "\n\n";
@@ -412,6 +427,7 @@ void Parser::shift(SymbolWithAttr& swa) {
 
 bool Parser::NewProduction(int inputSymbol,int curStatus,int preStatus) {
 
+	if (curStatus == Collection::NON_ENTRY) return false;
 	bool hasFollowDot = collectionPtr->HasFollowDot(preStatus, inputSymbol);
 	bool hasDotPos1 = collectionPtr->HasDotPos1(curStatus);
 #ifdef DEBUG
@@ -514,7 +530,7 @@ bool Parser::Analyse() {
 	dotPosStack.push(0);
 
 
-	Environmemt::curEnv = Environmemt::NewEnv();
+	Environment::curEnv = Environment::NewEnv();
 	while(tokenIndex < tokenStream->size()){
 		if (action == Collection::NON_ENTRY) {
 			bool redressNon = RedressNon();
@@ -559,11 +575,11 @@ void Parser::PrintAttr(int pItr, SymbolWithAttr& head) {
 	string headStr = Grammer::GetSymbolStr(head.symbol);
 	cout << "HeadAttr:\n";
 	int attrVal;
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < 6; i++) {
 		if (head.attr->at(i) != ATTR_NON)
 			cout << headStr + '.' + Grammer::GetAttrStr(head.symbol, i) + " : "\
 			+ to_string(head.attr->at(i)) + " \t";
-		else break;
+		else continue;
 	}
 	cout << headStr + '.' + Grammer::GetAttrStr(head.symbol,6) + " : "\
 		+ to_string(head.attr->at(6)) + " \t";
@@ -592,7 +608,7 @@ void Parser::PrintAttr(int pItr, SymbolWithAttr& head) {
 				if (swa.attr->at(i) != ATTR_NON)
 					cout << symStr + '.' + Grammer::GetAttrStr(swa.symbol, i) + " : "\
 					+ to_string(swa.attr->at(i)) + " \t";
-				else break;
+				else continue;
 			}
 			cout << symStr + '.' + Grammer::GetAttrStr(swa.symbol, 6) + " : "\
 				+ to_string(swa.attr->at(6)) + " \t";

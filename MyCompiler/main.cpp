@@ -10,6 +10,7 @@ SymbolTable symbolTable;
 FileManager* fileManager;
 Generator* genPtr;
 CodeStore cs;
+string testCodeFile = "D:\\proj\\MyCompiler\\MyCompiler\\input\\testCode.txt";
 
 int main() {
 
@@ -19,7 +20,12 @@ int main() {
 	lex->InitLex();
 	Parser* parser = Parser::ParserFactory();
 
-	lex->SetInput(cin);
+	ifstream* sourceCode = new ifstream(testCodeFile);
+	if (!sourceCode->is_open()) {
+		cerr << "input file cann't open : " << testCodeFile;
+	}
+		
+	lex->SetInput(*sourceCode);
 	auto tokenStream = lex->Analyse();
 	lex->PrintError();
 
@@ -35,7 +41,7 @@ int main() {
 #endif // _ICP
 #ifdef _ENVP
 	cout << endl; 
-	Environmemt::Print();
+	Environment::PrintAll();
 #endif // _ENVP
 
 

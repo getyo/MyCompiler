@@ -115,13 +115,14 @@ void Lexeme::GetInput() {
 	if (istream* in = dynamic_cast<istream*>(input)) {
 		while (in->good()) {
 			getline(*in, line);
-			if (!line.size()) break;
+			if (!line.size()) continue;
 			sourceCode.push_back(line);
 		}
 	}
 	else if (ifstream* in = dynamic_cast<ifstream*>(input)) {
 		while (in->good()) {
 			getline(*in, line);
+			if (!line.size()) continue;
 			sourceCode.push_back(line);
 		}
 	}
@@ -133,6 +134,11 @@ void Lexeme::GetInput() {
 
 int curPos;
 
+void JumpBlank(string &line){
+	while (curPos < line.size() && (line[curPos] == ' ' || line[curPos] == '\t'))
+		++curPos;
+}
+
 vector<Token> Lexeme::Analyse() {
 	vector<Token> tokenVec;
 	GetInput();
@@ -143,15 +149,18 @@ vector<Token> Lexeme::Analyse() {
 		line = sourceCode[row];
 		++row;
 		curPos = 0;
-		if (line.empty()) break;
+		if (line.empty()) continue;
 		while (curPos < line.size()) {
+			JumpBlank(line);
 			int prePos;
 			Ty_TokenKind tokenKind = unoptimizedDfa.Recognize(line, curPos, prePos);
+			int lexEnd = curPos;
+			JumpBlank(line);
 			if (tokenKind != Token::FAILED) {
 				Token token;
 				token.kind = tokenKind;
 				token.symbolTableIndex = symbolTable.Size();
-				string lexeme = line.substr(prePos, curPos - prePos);
+				string lexeme = line.substr(prePos, lexEnd - prePos);
 				symbolTable.Push(TokenAttribute(lexeme, row, prePos + 1));
 
 				if (token.kind == tokenKindStr2Num["digit"])
@@ -160,6 +169,8 @@ vector<Token> Lexeme::Analyse() {
 					symbolTable[token.symbolTableIndex].typeID = Type::GetTypeID("int");
 				else if(token.kind == tokenKindStr2Num["float"])
 					symbolTable[token.symbolTableIndex].typeID = Type::GetTypeID("float");
+				else if(token.kind == tokenKindStr2Num["void"])
+					symbolTable[token.symbolTableIndex].typeID = Type::GetTypeID("void");
 
 				tokenVec.push_back(token);
 				if (errorFlag) errorFlag = false;

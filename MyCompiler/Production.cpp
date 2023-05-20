@@ -109,6 +109,7 @@ void Production::Print() const {
 				case Action::MINUS: { cout << "- "; break; }
 				case Action::MULT: { cout << "* "; break; }
 				case Action::REM: { cout << "% "; break; }
+				case Action::VAL: {cout << "@"; break; }
 				case Action::DIGIT: { cout << "$" << action->requested[++i] << ' '; break; }
 				case Action::OP: {
 					cout << Generator::GetIcopStr(action->requested[++i]) << ' '; break;
@@ -130,7 +131,12 @@ void Production::Print() const {
 							cout << Generator::GetIcopStr(attrIndex);
 							goto Continue;
 						}
-
+						else if (symbolIndex == Action::VAL) {
+							cout << "@";
+							--i;
+							--pCnt;
+							continue;
+						}
 						if (!isSem && symbolIndex == pair.first + 1) {
 							symID = body[symbolIndex - 1];
 							cout << Grammer::GetSymbolStr(symID) + "(bodyinh)." + \

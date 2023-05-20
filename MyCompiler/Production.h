@@ -41,7 +41,7 @@ struct Action {
 	vector <int> requested;
 	//遇到PUSH_ALL说明要把之后跟的数字（设为n），产生式中的第n个语法符号ID以及其属性指针当作参数
 	//这里同时也表明了运算优先级，处于十位数相同的处于同一优先级，十位数越大优先级越低
-	static const int DIGIT = -3, OP = -2,\
+	static const int DIGIT = -3, OP = -2,VAL = -4,\
 		FUN = -11, \
 		MULT = -21, DIV = -22, REM = -23, \
 		ADD = -31, MINUS = -32, \

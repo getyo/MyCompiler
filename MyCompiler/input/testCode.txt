@@ -1,0 +1,13 @@
+int a,b,c;
+
+int f (int a){
+	return f(a);
+}
+
+int main(){
+	if (a+b+c > 0)
+	{
+		while (a > 0) a = f(a);
+	}
+	return 0;
+}
