@@ -61,7 +61,14 @@ private:
 	static unordered_map<string,int> icopStr2Int;
 	Generator(CodeStore&);
 	Generator(const Generator& g) {}
-	~Generator() {}
+	~Generator() {
+		list<int>* l;
+		while (!backList.empty()) {
+			l = backList.top();
+			backList.pop();
+			delete l;
+		}
+	}
 
 	static int FindTriple(Triple& t);
 	static int InsertTriple(Triple& t);
@@ -82,4 +89,7 @@ public:
 	}
 	static string GetIcopStr(int icop);
 	static void Print();
+	static void Release() {
+		delete genPtr;
+	}
 };

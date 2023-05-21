@@ -50,4 +50,11 @@ public:
 	void SetInput(ios& in) { this->input = &in; }
 	vector<Token> Analyse();
 	void PrintError();
+
+	static void Release() {
+		if (lexemePtr != nullptr) {
+			delete lexemePtr;
+			lexemePtr = nullptr;
+		}
+	}
 };

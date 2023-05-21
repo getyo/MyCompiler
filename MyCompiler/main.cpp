@@ -15,10 +15,11 @@ string testCodeFile = "D:\\proj\\MyCompiler\\MyCompiler\\input\\testCode.txt";
 int main() {
 
 	fileManager = FileManager::FileManagerFactory();
-
 	Lexeme* lex = Lexeme::LexemeFactory();
 	lex->InitLex();
 	Parser* parser = Parser::ParserFactory();
+	genPtr = Generator::GeneratorFactory(cs);
+
 
 	ifstream* sourceCode = new ifstream(testCodeFile);
 	if (!sourceCode->is_open()) {
@@ -29,7 +30,6 @@ int main() {
 	auto tokenStream = lex->Analyse();
 	lex->PrintError();
 
-	genPtr = Generator::GeneratorFactory(cs);
 
 	parser->SetInput(tokenStream);
 	bool syntalPass = parser->Analyse();
@@ -44,5 +44,9 @@ int main() {
 	Environment::PrintAll();
 #endif // _ENVP
 
-
+	Environment::DeleteAll();
+	Generator::Release();
+	Parser::Release();
+	Lexeme::Release();
+	FileManager::Release();
 }
