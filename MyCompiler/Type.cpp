@@ -250,6 +250,7 @@ void Environment::PrintAll() {
 void Environment::DeleteAll() {
 	for (auto& e : envAll)
 		delete e;
+	Type::ReleaseTypePtr();
 }
 
 ArrayType::ArrayType(int elemID, int size,int arrayTypeID) : elemID(elemID),size(size){

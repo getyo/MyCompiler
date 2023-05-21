@@ -59,4 +59,11 @@ public:
 	int StartSymbol();
 	string Info();
 	void Print();
+
+	static void Release() {
+		if (grammerPtr != nullptr) {
+			delete grammerPtr;
+			grammerPtr = nullptr;
+		}
+	}
 };

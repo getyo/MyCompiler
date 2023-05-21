@@ -64,6 +64,10 @@ public:
 	static int FunCheck(int funTyID);
 	static int RetCheck(int t1, int t2);
 	virtual ~Type(){}
+	static void ReleaseTypePtr() {
+		for (auto& t : typePtr)
+			delete t;
+	}
 };
 
 //也可以表示函数
@@ -104,10 +108,10 @@ public:
 		return -1; 
 	}
 	static int SetFunStart(string lex,int codeStart);
-	static void DeleteAll();
 	static void PrintAll();
 	void PrintCur();
 	void Print();
+	static void DeleteAll();
 };
 
 struct ArrayType :Type{

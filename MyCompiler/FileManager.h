@@ -15,12 +15,19 @@ private:
 	FileManager();
 	FileManager(const FileManager&) {}
 	void operator=(const FileManager&) {}
+	~FileManager(){}
 public:
 	static FileManager* FileManagerFactory();
 	bool ChangeWorkPath(string path);
 	string getWorkPath();
 	bool IsDir(string dirPath);
 	bool CreateDir(string relativePath);
+	static void Release() { 
+		if (fileMangerPtr != nullptr) {
+			delete fileMangerPtr;
+			fileMangerPtr = nullptr;
+		}
+	}
 };
 
 class FileNotOpen :exception {

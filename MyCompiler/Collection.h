@@ -98,4 +98,12 @@ public:
 	}
 	void Print();
 	void PrintStatus(int status);
+
+	static void Release() {
+		Grammer::Release();
+		if (collectionPtr != nullptr) {
+			delete collectionPtr;
+			collectionPtr = nullptr;
+		}
+	}
 };
