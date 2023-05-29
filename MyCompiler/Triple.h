@@ -1,12 +1,36 @@
 #pragma once
 #define ICOP_ADD 0
-#define ICOP_MINUS 1
+#define ICOP_SUB 1
 #define ICOP_MULT 2
 #define ICOP_DIV 3
 #define ICOP_REM 4
 #define ICOP_ASSIGN 5
 #define ICOP_ID 6
-#define ICOP_DIGIT 7
+#define ICOP_DIG 7
+#define ICOP_ASSADD 8
+#define ICOP_ASSSUB 9
+#define ICOP_ASSMLUT 10
+#define ICOP_ASSDIV 11
+#define ICOP_LD 12
+#define ICOP_AND 13
+#define ICOP_OR 14
+#define ICOP_EQL 15
+#define ICOP_NEQ 16 
+#define ICOP_SML 17
+#define ICOP_SEQ 18
+#define ICOP_BIG 19
+#define ICOP_BEQ 20
+#define ICOP_JC 21
+#define ICOP_JMP 22
+#define ICOP_SQUBAC 23
+#define ICOP_CALL 24
+#define ICOP_PARA 25
+#define ICOP_RET 26
+#define ICOP_START 27
+#define ICOP_END 28
+#define ICOP_LABEL 29
+#define ICOP_FUN 30
+
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -54,6 +78,8 @@ typedef vector<Triple> CodeStore;
 
 class Generator {
 private:
+	static vector<string*> labelSt;
+	static int labelSeq;
 	static stack<list<int> *> backList;
 	static Generator* genPtr;
 	static CodeStore* csPtr;
@@ -68,16 +94,17 @@ private:
 			backList.pop();
 			delete l;
 		}
+		for (auto& s : labelSt) delete s;
 	}
 
 	static int FindTriple(Triple& t);
 	static int InsertTriple(Triple& t);
 public:
+	static int Label();
 	static int codeStart;
 	static int GetIcopInt(string op);
 	static Generator* GeneratorFactory(CodeStore&);
 	static int Gen(int op,int code1,int code2);
-	static int GenAssign(int op, int desAddr, int srcCode);
 	static int InsertElem(int addr, int val);
 	static int BackPatch(int codeIndex,int isOld);
 	static int DoPatch(int codeIndex);

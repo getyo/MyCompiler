@@ -10,10 +10,6 @@ extern SymbolTable symbolTable;;
 unordered_map <string, Ty_TokenKind> Lexeme::tokenKindStr2Num;
 vector<string> Lexeme::tokenKindNum2Str;
 
-Lexeme::~Lexeme() {
-	if (lexemePtr != nullptr) delete lexemePtr;
-}
-
 Lexeme* Lexeme::LexemeFactory() {
 	if (lexemePtr == nullptr)
 		lexemePtr = new Lexeme();

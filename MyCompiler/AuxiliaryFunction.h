@@ -41,6 +41,9 @@ using namespace std;
 		case 24:{retVal = Type::RetCheck( INT_ATTR(0), INT_ATTR(1) ); break;}\
 		case 25:{retVal = Environment::curEnv->GetRetType( ST_ATTR(0) ); break;}\
 		case 26:{retVal = Environment::curEnv->GetPre()->EnvPush( ST_ATTR(0) ,INT_ATTR(1) ); break;}\
+		case 27:{retVal = (int)Environment::curEnv; break;}\
+		case 28:{retVal = (int)Environment::curEnv->GetPre()->EnvGet( ST_ATTR(0) ); break;}\
+		case 29:{retVal = Generator::Label(); break;}\
 		default:{\
 			cerr << "Parser: illegal function ID"; abort();break;\
 		}\

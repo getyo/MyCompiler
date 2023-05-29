@@ -22,6 +22,9 @@
     <Filter Include="源文件\semanticAndIntermediateCode">
       <UniqueIdentifier>{894e96ce-2542-427f-8212-62e9affaf4bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\assembly">
+      <UniqueIdentifier>{ca469f1a-d0f7-4827-a0a8-5c54cd568bf1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lex.h">
@@ -61,6 +64,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Triple.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Assembly.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Reg.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -106,6 +115,12 @@
     </ClCompile>
     <ClCompile Include="Triple.cpp">
       <Filter>源文件\semanticAndIntermediateCode</Filter>
+    </ClCompile>
+    <ClCompile Include="Reg.cpp">
+      <Filter>源文件\assembly</Filter>
+    </ClCompile>
+    <ClCompile Include="Asm.cpp">
+      <Filter>源文件\assembly</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

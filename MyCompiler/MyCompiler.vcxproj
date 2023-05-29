@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Assembly.h" />
     <ClInclude Include="AuxiliaryFunction.h" />
     <ClInclude Include="Collection.h" />
     <ClInclude Include="Debug.h" />
@@ -154,12 +155,14 @@
     <ClInclude Include="Lex.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="Production.h" />
+    <ClInclude Include="Reg.h" />
     <ClInclude Include="SyntaxTree.h" />
     <ClInclude Include="Token.h" />
     <ClInclude Include="Triple.h" />
     <ClInclude Include="Type.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Asm.cpp" />
     <ClCompile Include="AuxiliaryFunction.cpp" />
     <ClCompile Include="Collection.cpp" />
     <ClCompile Include="Debug.cpp" />
@@ -170,6 +173,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Production.cpp" />
+    <ClCompile Include="Reg.cpp" />
     <ClCompile Include="SyntaxTree.cpp" />
     <ClCompile Include="Token.cpp" />
     <ClCompile Include="Triple.cpp" />

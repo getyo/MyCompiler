@@ -634,3 +634,12 @@ Parser* Parser::ParserFactory() {
 string Parser::RowAndCol() {
 	return "row : " + to_string(row) + " column : " + to_string(col);
 }
+
+void Parser::Release() {
+	Environment::DeleteAll();
+	Collection::Release();
+	if (parserPtr != nullptr) {
+		delete parserPtr;
+		parserPtr = nullptr;
+	}
+}

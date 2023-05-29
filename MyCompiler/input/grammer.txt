@@ -122,6 +122,16 @@ GetRetType : 1
 
 //26 在父环境中压入变量
 PreEnvPush : 2
+
+//27 获取当前ENV指针
+CurEnv : 0
+
+//28 在父环境中查找变量
+PreEnvGet : 1
+
+//29 创建新标签,返回标签地址
+Label : 0
+
 END$
 
 Program' -> Program
@@ -243,7 +253,7 @@ PrimaryExpr -> ( Expr )			## 0.0 = 2.0 ; 0.1 = 2.1 ; 0.6 = 2.6 ; 0.7 = 2.7 ##
 PrimaryExpr -> ArrayElem		## 0.0 = 1.0 ; 0.1 = 1.1 ; 0.6 = 1.6 ; 0.7 = 0.6 + $1 ##
 PrimaryExpr -> CallExpr			## 0.1 = 1.2 ; 0.6 = 1.6 ; 0.7 = 1.7 ##
 
-CallExpr -> id ( ActualPara )		## 0.1 = EnvGetType (1.0) ; FunCheck (0.1) ; 0.0 = EnvGetEntry (1.0) ; 0.2 = GetRetType (1.0) ; 0.7 = $-1 ; 0.6 = InsertElem (0.0,0.7) ; 0.7 = $-1 ; 0.6 = Gen ('call',0.6,0.7) ; 0.7 = 0.6 + $1 ##
+CallExpr -> id ( ActualPara )		## 0.1 = EnvGetType (1.0) ; FunCheck (0.1) ; 0.0 = EnvGetEntry (1.0) ; 0.2 = GetRetType (1.0) ; 0.7 = $-1 ; 0.6 = Gen ('call',0.0,0.7) ; 0.7 = 0.6 + $1 ##
 ActualPara -> Expr , ## FunParaPush (1.1) ; 3.6 = $-1 ; 3.6 = Gen ('para',1.6,3.6) ## ActualPara		
 ActualPara -> Expr					## FunParaPush (1.1) ; 0.6 = $-1 ; 0.6 = Gen ('para',1.6,0.6) ##
 ActualPara -> _NON
@@ -268,11 +278,11 @@ $$ BooleanExpr :  1 typeID
 IfStatement -> if ## 2.6 = UpdateCodeStart () ## TempStore ( BooleanExpr ) ## 2.0 = Gen ('jc',4.6,2.0) ; BackPatch (2.0,-1.0) ## Statement SubIfStatement			## 0.6 = 2.6 ; 0.7 = UpdateCodeStart () ##
 SubIfStatement -> else ## 2.0 = $1 ## IfStatement SubIfStatement 
 SubIfStatement -> else _NON Statement				## 0.6 = 3.6 ; 0.7 = 3.7 ; DoPatch (0.7) ##
-SubIfStatement -> _NON								## 0.7 = UpdateCodeStart () ; DoPatch (0.7) ##
+SubIfStatement -> _NON								## 0.7 = UpdateCodeStart () ; 0.7 = Label () ; DoPatch (0.7) ##
 $$ - IfStatement : 0 oldPatchFalg
 
 //while语句定义
-WhileStatement -> while ## 2.6 = UpdateCodeStart () ## TempStore  ( BooleanExpr )	## 2.0 = Gen ('jc',4.6,2.0) ; 2.1 = $0 ; BackPatch (2.0,2.1) ## Statement		## 0.6 = 2.6 ; 0.7 = Gen ('jmp',0.6,0.7) + $1 ; DoPatch (0.7) ##
+WhileStatement -> while ## 2.6 = Label () ## TempStore  ( BooleanExpr )	## 2.0 = Gen ('jc',4.6,2.0) ; 2.1 = $0 ; BackPatch (2.0,2.1) ## Statement		## 0.6 = 2.6 ; 0.7 = Gen ('jmp',0.6,0.7) + $1 ; 0.7 = Label () ; DoPatch (0.7) ##
 
 //用于暂存的辅助非终结符
 TempStore -> _NON		## 0.0 = -1.0 ; 0.1 = -1.1 ; 0.2 = -1.2 ; 0.3 = -1.3; 0.4 = -1.4; 0.5 = -1.5 ; 0.6 = -1.6 ; 0.7 = -1.7 ##
@@ -281,7 +291,7 @@ $$ TempStore : 0 store0 1 store1 2 store2 3 store3 4 store4 5 store5
 
 
 //函数定义
-Function -> DirectDeclation ## 2.0 = UpdateCodeStart () ## TempStore NewEnv ( ParaList ) ## 7.0 = CreateFunType (1.0) ; PreEnvPush (@1.1,7.0) ## TempStore  ## 8.1 = 1.0 ## FunBody PopEnv	 ##  0.0 = 7.0 ; 0.6 = 2.0 ; 0.7 = 8.7 ; SetFunStart (@1.1,0.6) ##
+Function -> DirectDeclation ## 2.0 = UpdateCodeStart () ## TempStore NewEnv ( ParaList ) ## 7.0 = CreateFunType (1.0) ; PreEnvPush (@1.1,7.0) ; 7.1 =  PreEnvGet (@1.1) ; Gen ('start',7.1,7.1) ## TempStore  ## 8.1 = 1.0 ## FunBody PopEnv	 ##  0.0 = 7.0 ; 0.6 = 2.0 ; 0.7 = 8.7 ; SetFunStart (@1.1,0.6) ##
 ParaList -> Type id , ParaList			## FunParaDecl (1.0) ; EnvPush (2.0,1.0) ##
 ParaList -> Type id						## FunParaDecl (1.0) ; EnvPush (2.0,1.0) ##
 ParaList -> _NON

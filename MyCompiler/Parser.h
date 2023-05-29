@@ -135,11 +135,5 @@ public:
 	bool Analyse();
 	void PrintError();
 
-	static void Release() {
-		Collection::Release();
-		if (parserPtr != nullptr) {
-			delete parserPtr;
-			parserPtr = nullptr;
-		}
-	}
+	static void Release();
 };

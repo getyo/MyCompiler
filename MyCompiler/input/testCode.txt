@@ -5,6 +5,7 @@ int f (int a){
 }
 
 int main(){
+	int a = 0;
 	if (a+b+c > 0)
 	{
 		while (a > 0) a = f(a);

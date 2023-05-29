@@ -40,7 +40,7 @@ private:
 	Lexeme(const Lexeme&) {}
 	Lexeme(const Lexeme&&) {}
 	void operator=(const Lexeme&) {}
-	~Lexeme();
+	~Lexeme() {}
 	static Lexeme* lexemePtr;
 public:
 	static Lexeme* LexemeFactory();

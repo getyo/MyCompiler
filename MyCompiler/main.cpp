@@ -5,12 +5,15 @@
 #include "Triple.h"
 #include "Debug.h"
 #include "Type.h"
+#include "Assembly.h"
 
 SymbolTable symbolTable;
 FileManager* fileManager;
 Generator* genPtr;
 CodeStore cs;
 string testCodeFile = "D:\\proj\\MyCompiler\\MyCompiler\\input\\testCode.txt";
+AssemblyStore as;
+
 
 int main() {
 
@@ -35,6 +38,7 @@ int main() {
 	bool syntalPass = parser->Analyse();
 	if (!syntalPass) parser->PrintError();
 
+
 #ifdef _ICP
 	cout << endl << '\n';
 	Generator::Print();
@@ -43,8 +47,12 @@ int main() {
 	cout << endl; 
 	Environment::PrintAll();
 #endif // _ENVP
+	AssGen* assGen = AssGen::AssGenFactory(as);
+	assGen->SetInput(cs);
+	assGen->Gen();
+	assGen->Print();
 
-	Environment::DeleteAll();
+	AssGen::Release();
 	Generator::Release();
 	Parser::Release();
 	Lexeme::Release();
