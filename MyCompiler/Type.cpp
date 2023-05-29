@@ -80,8 +80,9 @@ FunType* Type::GetFunType(int typeID) {
 
 int Type::CreateFunType(int retType) {
 	int typeID = typePtr.size();
-	auto fp = new FunType(retType,funPara,typeID);
 	string typeStr = MakeFunTyStr(retType, funPara);
+	if (typeStr2ID.count(typeStr)) return typeStr2ID.at(typeStr);
+	auto fp = new FunType(retType,funPara,typeID);
 	typeStr2ID.insert({ typeStr,typeID });
 	typeID2Str.push_back(typeStr);
 	typePtr.push_back(fp);
@@ -177,8 +178,10 @@ bool Environment::EnvPush(string &lexeme, int typeID) {
 		exit(1);
 		return false;
 	}
-	auto v = new Variable(typeID, lexeme, offset + base);
+	auto v = new Variable(typeID, lexeme, offset);
+	v->e = curEnv;
 	symTable.insert({ lexeme, v });
+	dataFieldSize += v->t->width;
 	offset += v->t->width;
 	return true;
 }
@@ -233,7 +236,7 @@ void Environment::PrintCur() {
 void Environment::Print() {
 	cout << "Env" << envID << ": \n";
 	cout << setiosflags(ios::left);
-	cout << setw(20) <<"lexeme" << setw(20) << "type" << setw(20) << "taddr" << setw(20) << "width" << "\n";
+	cout << setw(20) <<"lexeme" << setw(20) << "type" << setw(20) << "addr" << setw(20) << "width" << "\n";
 	for (auto& i : symTable) {
 		cout <<setw(20) << i.first << setw(20) << Type::GetTypeStr(i.second->t->typeID) << \
 			 hex << "0x" << setw(18) <<i.second->addr << dec << setw(20) << i.second->t->width << "\n";

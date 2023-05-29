@@ -8,11 +8,14 @@
 Generator* Generator::genPtr = nullptr;
 CodeStore* Generator::csPtr = nullptr;
 int Generator::codeStart = 0;
+int Generator::labelSeq = 0;
 stack <list<int>*> Generator::backList;
+vector<string*> Generator::labelSt;
 
 vector <string> Generator::icopInt2Str = {
 	"+","-","*","/","%","=","id","digit","+=","-=","*=","/=","LD","&&",\
-	"||","==","!=","<","<=",">",">=","jc","jmp","[]","call","para","ret"
+	"||","==","!=","<","<=",">",">=","jc","jmp","[]","call","para","ret",\
+	"start","end","label","fun"
 };
 unordered_map<string, int> Generator::icopStr2Int = {
 	{"+",0},{"-",1},{"*",2},{"/",3},{"%",4},\
@@ -21,7 +24,8 @@ unordered_map<string, int> Generator::icopStr2Int = {
 	{"&&", 13}, { "||",14 }, { "==",15 }, {"!=",16},\
 	{"<", 17}, { "<=",18 }, { ">",19 }, {">=",20},\
 	{"jc", 21}, { "jmp",22 }, { "[]",23 }, {"call",24},\
-	{"para",25},{"ret",26}
+	{"para", 25}, { "ret",26 }, { "start",27 }, {"end",28},\
+	{"label", 29}, {"fun",30}
 };
 
 Generator::Generator(CodeStore &cs) {
@@ -57,7 +61,7 @@ int Generator::InsertTriple(Triple& t) {
 
 int Generator::InsertElem(int addr, int val) {
 	Triple* temp;
-	if (addr == -1) temp = new Triple(ICOP_DIGIT, val);
+	if (addr == -1) temp = new Triple(ICOP_DIG, val);
 	else temp = new Triple(ICOP_ID, addr);
 	int index = InsertTriple(*temp);
 	delete temp;
@@ -70,6 +74,7 @@ int Generator::Gen(int icop,  int code1,int code2) {
 	ASSERT(valNum1 != -1, "Code : tirple miss");
 #endif // DEBUG
 	Triple temp(icop, valNum1, valNum2);
+	if (icop == ICOP_CALL) Type::ClearFunPara();
 	int index = InsertTriple(temp);
 	return index;
 }
@@ -103,14 +108,34 @@ int Generator::DoPatch(int codeIndex) {
 	return 1;
 }
 
+int Generator::Label() {
+	if ((*csPtr)[csPtr->size() - 1].icop == ICOP_LABEL) return csPtr->size() - 1;
+	Triple t;
+	t.icop = ICOP_LABEL;
+	string* s = new string("L" + to_string(labelSeq++));
+	t.valNum1 = (int)s;
+	labelSt.push_back(s);
+	csPtr->push_back(t);
+	return csPtr->size()-1;
+}
+
 void Generator::Print() {
 	auto& cs = *csPtr;
 	int i = 0;
 	cout << setiosflags(ios::left);
 	for (auto& t : cs) {
 		cout << i++ << " : \t"  << setw(15) << GetIcopStr(t.icop);
-		if (t.icop == GetIcopInt("id"))
-			cout << "0x" << hex << setw(13) <<t.valNum1 << dec << setw(15) <<  t.valNum2;
+		if (t.icop == GetIcopInt("id") || t.icop == ICOP_START || t.icop == ICOP_CALL || t.icop == ICOP_FUN) {
+			Variable* v = (Variable*)t.valNum1;
+			cout << setw(13) << v->name ;
+		}
+		else if (t.icop == ICOP_LABEL) {
+			string* s = (string*)t.valNum1;
+			cout << setw(13) << *s ;
+		}
+		else if (t.icop == ICOP_PARA || t.icop == ICOP_JMP || t.icop == ICOP_DIG || t.icop == ICOP_RET) {
+			cout << setw(15) << t.valNum1;
+		}
 		else cout << setw(15) <<t.valNum1 << setw(15) << t.valNum2;
 		cout << "\n";
 	}

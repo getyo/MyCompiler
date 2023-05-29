@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <iostream>
+#include "Reg.h"
 using namespace std;
 
 struct ArrayType;
@@ -60,6 +61,7 @@ public:
 	static FunType * GetFunType(int typeID);
 	static int CreateFunType(int retType);
 
+	static void ClearFunPara() { funPara.clear(); }
 	//类型检测以及转化
 	static int FunCheck(int funTyID);
 	static int RetCheck(int t1, int t2);
@@ -74,8 +76,12 @@ public:
 struct Variable {
 	Type * t;
 	string name;
+	Environment * e;
 	//如果是函数则表示第一条指令的起始地址
 	unsigned int addr;
+	//寄存器编号，详见Reg.h中的规定
+	int reg = REG_EMPTY;
+	bool live = true;
 	Variable(){}
 	Variable(int typeID, string name, int addr) :t( Type::GetTypePtr(typeID) ), name(name), addr(addr) {}
 	Variable(string typeName, string name, int addr) : Variable(Type::GetTypeID(typeName),name,addr) {}
@@ -84,8 +90,8 @@ struct Variable {
 #define DATA_START 0
 
 class Environment {
+	friend class Variable;
 private:
-	static size_t dataFieldSize;
 	static size_t getID();
 	static vector<Environment*> envAll;
 	size_t envID;
@@ -95,6 +101,8 @@ private:
 	Environment* pre;
 	Environment(Environment* pre);
 public:
+	int size() { return offset; }
+	static size_t dataFieldSize;
 	static Environment* curEnv;
 	Variable* EnvGet(string &lexeme);
 	bool EnvPush(string &lexeme, int typeID);

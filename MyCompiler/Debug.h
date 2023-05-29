@@ -10,7 +10,7 @@
 #define DEBUG 
 extern std::ofstream logOut;
 #ifdef DEBUG
-#define _PARSER
+//#define _PARSER
 	#ifdef _PARSER
 		#define _GRAMMER_PRINT
 		//#define _LR0_PRINT
