@@ -4,7 +4,7 @@
 #include <iomanip>
 using namespace std;
 
-
+const int Variable::UNUSED = -1;
 int Type::maxDefaultTpyeID = 2;
 unordered_set<int> Type::arrayTypeSet;
 vector<string> Type::typeID2Str = {
@@ -61,7 +61,7 @@ string Type::MakeFunTyStr(int retType, vector<int>& funParaDecl) {
 	for (int i = funParaDecl.size() - 1; i >= 0;--i) {
 		s += ( GetTypeStr(funParaDecl[i]) + ",");
 	}
-	if (s.size() == 1)s += ')';
+	if (s.back() == '(')s += ')';
 	else s[s.size() - 1] = ')';
 	return s;
 }

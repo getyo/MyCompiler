@@ -116,6 +116,8 @@ public:
 	}
 	static string GetIcopStr(int icop);
 	static void Print();
+	static bool ComputeOp(Triple &t);
+	static bool AssignOp(Triple& t);
 	static void Release() {
 		delete genPtr;
 	}

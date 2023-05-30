@@ -72,8 +72,10 @@ public:
 	}
 };
 
+
 //也可以表示函数
 struct Variable {
+	static const int UNUSED;
 	Type * t;
 	string name;
 	Environment * e;
@@ -82,6 +84,7 @@ struct Variable {
 	//寄存器编号，详见Reg.h中的规定
 	int reg = REG_EMPTY;
 	bool live = true;
+	int lastUsed = UNUSED;
 	Variable(){}
 	Variable(int typeID, string name, int addr) :t( Type::GetTypePtr(typeID) ), name(name), addr(addr) {}
 	Variable(string typeName, string name, int addr) : Variable(Type::GetTypeID(typeName),name,addr) {}
@@ -96,12 +99,14 @@ private:
 	static vector<Environment*> envAll;
 	size_t envID;
 	unsigned int base;
-	unsigned int offset;
+	unsigned int offset = 0;
 	unordered_map<string,Variable *> symTable;
 	Environment* pre;
 	Environment(Environment* pre);
 public:
 	int size() { return offset; }
+	const unordered_map<string, Variable*> & GetSymTable() const { return this->symTable; }
+	static Environment* Global(){ return envAll[0]; }
 	static size_t dataFieldSize;
 	static Environment* curEnv;
 	Variable* EnvGet(string &lexeme);

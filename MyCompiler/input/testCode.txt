@@ -1,14 +1,10 @@
-int a,b,c;
 
-int f (int a){
-	return f(a);
-}
-
+int a;
 int main(){
-	int a = 0;
-	if (a+b+c > 0)
-	{
-		while (a > 0) a = f(a);
+	int a = 5,temp = 3;
+	while(a != temp){
+		if(a > temp) temp+= 1;
+		else temp-= 1;
 	}
 	return 0;
 }
