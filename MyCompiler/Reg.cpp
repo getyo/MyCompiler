@@ -29,14 +29,27 @@ bool RegFile::isEmpty(int reg) {
 }
 
 Variable* RegManager::GetOprand(int csSub) {
-	if ((*cs)[csSub].icop == ICOP_DIG)
+	auto& t = (*cs)[csSub];
+	if (t.icop == ICOP_DIG)
 		return nullptr;
-	else return (Variable*)((*cs)[csSub].valNum1);
+	else if (t.icop == ICOP_ID)
+		return (Variable*)t.valNum1;
+	if (AssGen::beforeGen) return nullptr;
+	else return (Variable*)t.valNum1;
 }
 
-string RegManager::StOffset(Variable *v) {
+string RegManager::GetAddr(Variable *v) {
+	if (v->e == Environment::Global()) {
+		Instruction i;
+		i.optype == OpType::OTHER;
+		i.op = "lea";
+		i.oprand1 = rf.regName[REG_ESI];
+		i.oprand2 = "[" + v->name + "]";
+		as->push_back(i);
+		return rf.regName[REG_ESI];
+	}
 	string s = rf.regName[ REG_EBP ];
-	if (v->addr > AssGen::stBase) s += ("-" + to_string(v->addr - AssGen::stBase));
+	if (v->addr >= AssGen::stBase) s += ("-" + to_string(v->addr - AssGen::stBase + 4));
 	else if (v->addr < AssGen::stBase) s += ("+" + to_string(AssGen::stBase - v->addr));
 	return s;
 }
@@ -44,19 +57,20 @@ string RegManager::StOffset(Variable *v) {
 void RegManager::RegSpill(int reg){
 	for (auto& v : rf.regStore[reg]) {
 		Instruction i;
-		i.op = "move";
+		i.op = "mov";
 		i.optype = OpType::ST;
 
-		i.oprand1 = "[" + StOffset(v) + "]";
+		i.oprand1 = "[" + GetAddr(v) + "]";
 		i.oprand2 = rf.regName[reg];
 		v->reg = REG_EMPTY;
 
 		as->push_back(i);
 	}
+	rf.regStore[reg].clear();
 }
 
 int RegManager::GetBasicReg() {
-	for (int i = 0; i < 6; ++i) {
+	for (int i = 0; i < 3; ++i) {
 		if (rf.regStore[i].empty())
 			return i;
 		else if (!rf.IsLived(i))
@@ -82,13 +96,14 @@ int RegManager::LDReg(Instruction &i, Variable* v) {
 	v->reg = dst;
 	i.oprand1 = rf.regName[dst];
 
-	i.oprand2 = "[" + StOffset(v) + "]";
+	i.oprand2 = "[" + GetAddr(v) + "]";
 	return 0;
 }
 
 int RegManager::STReg(Instruction& i, Triple& ic) {
 	Variable* v = GetOprand(ic.valNum1);
 #ifdef DEBUG
+	if (v->reg == REG_EMPTY) AssGen::assGenPtr->Print();
 	ASSERT(v->reg != REG_EMPTY, "Assembly : v isn't in reg");
 #endif // DEBUG
 
@@ -111,7 +126,7 @@ int RegManager::ComputeReg(Instruction& asmi, Triple& ic) {
 
 	if (lhs->reg == REG_EMPTY){
 		Instruction ldLhs;
-		ldLhs.op = "move";
+		ldLhs.op = "mov";
 		ldLhs.optype = OpType::LD;
 		LDReg(ldLhs,lhs);
 		as->push_back(ldLhs);
@@ -122,7 +137,7 @@ int RegManager::ComputeReg(Instruction& asmi, Triple& ic) {
 	if (rhs != nullptr) {
 		if (rhs->reg == REG_EMPTY) {
 			Instruction rdLhs;
-			rdLhs.op = "move";
+			rdLhs.op = "mov";
 			rdLhs.optype = OpType::LD;
 			LDReg(rdLhs, rhs);
 			as->push_back(rdLhs);
@@ -136,6 +151,13 @@ int RegManager::ComputeReg(Instruction& asmi, Triple& ic) {
 	//进行计算后将结果变量保存在ic的valNum1
 	ic.valNum1 = (int)lhs;
 
+	if (Generator::AssignOp(ic)) {
+		if (rhs != nullptr && lhs != nullptr) {
+			rhs->reg = lhs->reg;
+			rf.regStore[rhs->reg].insert(rhs);
+		}
+	}
+
 	return 0;
 }
 
@@ -145,19 +167,29 @@ int RegManager::AssignReg(Instruction& asmi, Triple& ic) {
 	
 	//如果源操作数不是常数
 	if (src != nullptr) {
-		if (src->reg == REG_EMPTY) {
+		if (src->t->IsFunType()) {
+			rf.regStore[REG_EAX].insert(dst);
+			dst->reg = REG_EAX;
+			return 0;
+		}
+		else if (src->reg == REG_EMPTY) {
 			Instruction ldSrc;
-			ldSrc.op = "move";
+			ldSrc.op = "mov";
 			ldSrc.optype = OpType::LD;
 			LDReg(ldSrc, src);
 			as->push_back(ldSrc);
 		}
 		rf.regStore[src->reg].insert(dst);
+		dst->reg = src->reg;
 	}
 	else {
-		int reg = GetBasicReg();
-		dst->reg = reg;
-		rf.regStore[reg].insert(dst);
+		Instruction i;
+		i.optype = OpType::LD;
+		i.op = "mov";
+		i.oprand1 = rf.regName[dst->reg];
+		i.oprand2 = to_string((*cs)[ic.valNum2].valNum1);
+		as->push_back(i);
+		return -1;
 	}
 
 	return 0;

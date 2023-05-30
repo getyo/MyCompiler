@@ -277,7 +277,7 @@ $$ BooleanExpr :  1 typeID
 //if语句定义
 IfStatement -> if ## 2.6 = UpdateCodeStart () ## TempStore ( BooleanExpr ) ## 2.0 = Gen ('jc',4.6,2.0) ; BackPatch (2.0,-1.0) ## Statement SubIfStatement			## 0.6 = 2.6 ; 0.7 = UpdateCodeStart () ##
 SubIfStatement -> else ## 2.0 = $1 ## IfStatement SubIfStatement 
-SubIfStatement -> else _NON Statement				## 0.6 = 3.6 ; 0.7 = 3.7 ; DoPatch (0.7) ##
+SubIfStatement -> else ## 2.0 = Label () ## TempStore Statement				## 0.6 = 3.6 ; 0.7 = 3.7 ; DoPatch (2.0) ##
 SubIfStatement -> _NON								## 0.7 = UpdateCodeStart () ; 0.7 = Label () ; DoPatch (0.7) ##
 $$ - IfStatement : 0 oldPatchFalg
 

@@ -45,15 +45,11 @@ struct RegFile {
 
 class RegManager{
 private:
-	RegFile rf;
 	AssemblyStore* as;
 	CodeStore* cs;
 	static RegManager* regManagerPtr;
 	RegManager(CodeStore *cs,AssemblyStore* as) :as(as),cs(cs) {}
-	Variable* GetOprand(int csSub);
 
-	string StOffset(Variable * v);
-	void RegSpill(int reg);
 	//返回eax，ebx，ecx，edx,edi,esi中的一个
 	int GetBasicReg();
 
@@ -63,7 +59,11 @@ private:
 	int ComputeReg(Instruction&, Triple&);
 	~RegManager(){}
 public:
+	RegFile rf;
 	
+	void RegSpill(int reg);
+	Variable* GetOprand(int csSub);
+	string GetAddr(Variable * v);
 	static RegManager* RegManagerFactory(CodeStore *cs,AssemblyStore * as);
 	int GetReg(Instruction&,Triple&);
 	static void Release() {

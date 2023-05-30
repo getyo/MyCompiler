@@ -28,6 +28,20 @@ unordered_map<string, int> Generator::icopStr2Int = {
 	{"label", 29}, {"fun",30}
 };
 
+bool Generator::ComputeOp(Triple& t) {
+	if ((t.icop >= ICOP_ADD && t.icop <= ICOP_REM) ||
+		(t.icop >= ICOP_AND && t.icop <= ICOP_BEQ))
+		return true;
+	else return false;
+}
+
+bool Generator::AssignOp(Triple& t) {
+	if (t.icop == ICOP_ASSIGN ||
+		(t.icop >= ICOP_ASSADD && t.icop <= ICOP_ASSDIV))
+		return true;
+	else return false;
+}
+
 Generator::Generator(CodeStore &cs) {
 	csPtr = &cs;
 }

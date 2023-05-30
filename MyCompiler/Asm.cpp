@@ -1,4 +1,5 @@
 #include "Assembly.h"
+#include <set>
 AssGen* AssGen::assGenPtr = nullptr;
 int AssGen::stBase = 0;
 
@@ -48,8 +49,31 @@ void AssGen::FunStart(Variable *f) {
 	}
 }
 
-void AssGen::FunEnd() {
+void AssGen::FunEnd(Triple &t) {
 	Instruction i;
+	if (t.valNum1 > 0) {
+		i.op = "mov";
+		i.optype = OpType::ASSIGN;
+		i.oprand1 = "eax";
+		//因为要使用eax，所以把eax所保存的变量全部保存回原地址
+		regMan->RegSpill(REG_EAX);
+
+		auto v = regMan->GetOprand(t.valNum1);
+		if (v != nullptr) {
+			if (!v->t->IsFunType()) {
+				if (v->reg == REG_EAX) goto next;
+				i.oprand2 = "[" + regMan->GetAddr(v) + "]";
+				regMan->rf.regStore[REG_EAX].insert(v);
+			}
+			else goto next;
+		}
+		else i.oprand2 = to_string((*ic)[t.valNum1].valNum1);
+		as->push_back(i);
+	}
+
+	next :
+	i.oprand1 = "";
+	i.oprand2 = "";
 	i.optype = OpType::OTHER;
 	i.op = "leave";
 	as->push_back(i);
@@ -89,12 +113,25 @@ void AssGen::GenJc(Triple& t) {
 	as->push_back(i);
 }
 
-void AssGen::Gen() {
+void AssGen::GenCall(Triple& t) {
 	Instruction i;
-	regMan = RegManager::RegManagerFactory(ic, as);
+	//首先要保存eax的内容，因为要用其保存返回值
+	regMan->RegSpill(REG_EAX);
 
-	int lastCmp;
-	for (auto& ic : *ic) {
+	i.optype = OpType::OTHER;
+	i.op = "call";
+	Variable* f = (Variable*)t.valNum1;
+	i.oprand1 = f->name;
+	i.oprand2 = "";
+	as->push_back(i);
+}
+
+void AssGen::Gen(Block &b) {
+	Instruction i;
+
+	int start = b.start;
+	for (auto it = ic->begin() + start; start < b.end; ++it, ++start) {
+		Triple& ic = *it;
 		i.oprand1=  "";
 		i.oprand2 = "";
 		switch (ic.icop)
@@ -105,7 +142,7 @@ void AssGen::Gen() {
 		}
 		case ICOP_ID: {
 			i.optype = OpType::LD;
-			i.op = "move";
+			i.op = "mov";
 			if(!regMan->GetReg(i,ic))
 				as->push_back(i);
 			break;
@@ -193,12 +230,7 @@ void AssGen::Gen() {
 			break;
 		}
 		case ICOP_CALL: {
-			i.optype = OpType::OTHER;
-			i.op = "call";
-			Variable* f = (Variable*)ic.valNum1;
-			i.oprand1 = f->name;
-			i.oprand2 = "";
-			as->push_back(i);
+			GenCall(ic);
 			break;
 		}
 		case ICOP_EQL: {
@@ -242,7 +274,7 @@ void AssGen::Gen() {
 			break;
 		}
 		case ICOP_RET: {
-			FunEnd();
+			FunEnd(ic);
 			break;
 		}
 		case ICOP_SEQ: {
@@ -271,6 +303,126 @@ void AssGen::Gen() {
 		default:
 			break;
 		}
+	}
+}
+
+void AssGen::PartBlock() {
+
+	//寻找leader
+	CodeStore& cs = *ic;
+	int size = cs.size();
+	blocks.reserve(100);
+	blocks.push_back(Block(0, 0));
+
+	bool followJmp = false;
+	vector<int> jmp;
+	jmp.push_back(-1);
+	for (int i = 0;i< size;i++){
+		auto& back = blocks.back();
+		if (followJmp) {
+			back.end = i;
+			jmp.push_back(-1);
+			blocks.push_back(Block(i, i));
+			followJmp = false;
+		}
+		switch (cs[i].icop)
+		{
+		case ICOP_JMP: {
+			followJmp = true;
+			jmp.back() = cs[i].valNum1;
+			break;
+		}
+		case ICOP_JC: { 
+			followJmp = true;
+			jmp.back() = cs[i].valNum2;
+			break;
+		}
+		case ICOP_CALL: {
+			followJmp = true;
+			Variable* f = (Variable*)cs[i].valNum1;
+			jmp.back() = f->addr;
+			break;
+		}
+		case ICOP_RET: {
+			followJmp = true;
+			break;
+		}
+		default:
+			break;
+		}
+	}
+	blocks.back().end = size;
+
+	//构建控制流图
+	size = blocks.size();
+	for (int i = 0; i < size;++i) {
+		if (i + 1 < size)
+			blocks[i].next = &blocks[i + 1];
+		else
+			blocks[i].next = nullptr;
+		if (jmp[i] != -1) {
+			for (auto& b : blocks) {
+				if (b.start == jmp[i])
+					blocks[i].jmp = &b;
+			}
+		}
+	}
+}
+
+bool AssGen::beforeGen = false;
+
+void AssGen::GlobalData() {
+	Instruction i;
+	i.op = "[bit32]";
+	as->push_back(i);
+	i.op = "section .data";
+	as->push_back(i);
+	
+
+	auto global = Environment::Global();
+	auto st = global->GetSymTable();
+
+	for (auto& p : st) {
+		Variable* v = p.second;
+		if (!v->t->IsFunType()) {
+			i.op = v->name + " dd 0";
+			as->push_back(i);
+		}
+	}
+}
+
+void AssGen::Gen() {
+	GlobalData();
+	Instruction i;
+	i.op = "section .text";
+	as->push_back(i);
+
+	regMan = RegManager::RegManagerFactory(ic, as);
+	PartBlock();
+	for (auto& b : blocks) {
+		beforeGen = true;
+		for (int i = b.end - 1; i >= b.start; --i) {
+			auto& t = (*ic)[i];
+			if (Generator::AssignOp(t) && (*ic)[t.valNum2].icop != ICOP_DIG) {
+				Variable* v = regMan->GetOprand(t.valNum1);
+				v->live = false;
+				v->lastUsed = Variable::UNUSED;
+			}
+			if (Generator::ComputeOp(t)) {
+				Variable* lhs = regMan->GetOprand(t.valNum1);
+				Variable* rhs = regMan->GetOprand(t.valNum2);
+				if (lhs != nullptr) {
+					lhs->live = true;
+					lhs->lastUsed = i;
+				}
+				if (rhs != nullptr) {
+					rhs->live = true;
+					rhs->lastUsed = i;
+				}
+			}
+		}
+		beforeGen = false;
+		Gen(b);
 	}
 }
 
