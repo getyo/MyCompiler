@@ -5,6 +5,9 @@
 #include "Triple.h"
 #include "AuxiliaryFunction.h"
 #include <string>
+#include "ControlBlock.h"
+using namespace std;
+extern CB cb;
 Parser* Parser::parserPtr = nullptr;
 extern SymbolTable symbolTable;
 int Parser::row;
@@ -76,7 +79,9 @@ void* Parser::GetAttrPtr(int pItr, int smbIndex, int attrIndex) {
 		case 4: {return &unterminalAttr.typeID; }
 		default: {
 			cerr << "Parser : Incorrect Unterminal Attribute index : " + attrIndex << "\n";
+#ifdef DEBUG
 			PrintStackTrace();
+#endif // DEBUG
 			abort();
 			break;
 		}
@@ -330,9 +335,8 @@ void Parser::PopToken(int cnt) {
 
 int Parser::Reduce(int productionIndex) {
 
-#ifdef _PARSER_REDUCE_PRINT
+
 	int preStatus = curStatus;
-#endif // _PARSER_ACTION_PRINT
 
 	Production &p = (*grammer)[productionIndex];
 	auto body = p.GetBody();
@@ -346,35 +350,37 @@ int Parser::Reduce(int productionIndex) {
 		
 		else {
 			cerr << "Parser : Reduce Error \n";
+#ifdef DEBUG
 			PrintStackTrace();
+#endif // DEBUG
 			abort();
 		}
 	}
 	auto headSwa = ExecuteAction(productionIndex,p.GetBody().size());
 	curStatus = statusStack.top();
 
-#ifdef _PARSER_REDUCE_PRINT
-	cout << "\nInput Token : " << Grammer::GetSymbolStr(curInputToken) << "\n";
-	cout << "ACTION : reduce\n";
-	cout << "\nCurStatus Status : Status " << preStatus << "\n";
-	collectionPtr->PrintStatus(preStatus);
-	cout << "\n";
-	cout << "Reduce Prouduction :";
-	grammer->operator[](-(action + 1)).Print();
-	cout << "\n";
-	PrintAttr(productionIndex, headSwa);
-	cout << "\n\nReturn Status : Status " << curStatus << "\n";
-	collectionPtr->PrintStatus(curStatus);
-#endif
+	if (cb.PrintParser) {
+		cout << "\nInput Token : " << Grammer::GetSymbolStr(curInputToken) << "\n";
+		cout << "ACTION : reduce\n";
+		cout << "\nCurStatus Status : Status " << preStatus << "\n";
+		collectionPtr->PrintStatus(preStatus);
+		cout << "\n";
+		cout << "Reduce Prouduction :";
+		grammer->operator[](-(action + 1)).Print();
+		cout << "\n";
+		PrintAttr(productionIndex, headSwa);
+		cout << "\n\nReturn Status : Status " << curStatus << "\n";
+		collectionPtr->PrintStatus(curStatus);
+	}
 
 	PopToken(body.size() + 1);
 	dotPosStack.pop();
 
-#ifdef _PARSER_REDUCE_PRINT
-	cout << "\nSymbolStack : \t";
-	symbolStack.Print();
-	cout << "\n\n";
-#endif // _PARSER_ACTION_PRINT
+	if (cb.PrintParser) {
+		cout << "\nSymbolStack : \t";
+		symbolStack.Print();
+		cout << "\n\n";
+	}
 
 	shift(headSwa);
 	curInputToken = (*tokenStream)[tokenIndex].kind;
@@ -410,19 +416,19 @@ void Parser::shift(SymbolWithAttr& swa) {
 	dotPosStack.top() += 1;
 
 
-
-#ifdef _PARSER_SHIFT_PRINT
-	cout << "\nInput Token : " << Grammer::GetSymbolStr(swa.symbol) << "\n";
-	cout << "ACTION : shift\n";
-	cout << "\nCurStatus Status : Status " << preStatus << "\n";
-	collectionPtr->PrintStatus(preStatus);
-	cout << "\n";
-	cout << "\nGoto : Status " << curStatus << "\n";
-	collectionPtr->PrintStatus(curStatus);
-	cout << "\nSymbolStack : \t";
-	symbolStack.Print();
-	cout << "\n\n";
-#endif // _PARSER_ACTION_PRINT
+	if (cb.PrintParser)
+	{
+		cout << "\nInput Token : " << Grammer::GetSymbolStr(swa.symbol) << "\n";
+		cout << "ACTION : shift\n";
+		cout << "\nCurStatus Status : Status " << preStatus << "\n";
+		collectionPtr->PrintStatus(preStatus);
+		cout << "\n";
+		cout << "\nGoto : Status " << curStatus << "\n";
+		collectionPtr->PrintStatus(curStatus);
+		cout << "\nSymbolStack : \t";
+		symbolStack.Print();
+		cout << "\n\n";
+	}
 }
 
 bool Parser::NewProduction(int inputSymbol,int curStatus,int preStatus) {
@@ -484,18 +490,18 @@ void Parser::shift(int symbol){
 		symbolStack.push(SymbolWithAttr(symbol));
 	dotPosStack.top() += 1;
 
-#ifdef _PARSER_SHIFT_PRINT
-	cout << "\nInput Token : " << Grammer::GetSymbolStr(curInputToken) << "\n";
-	cout << "ACTION : shift\n";
-	cout << "\nCurStatus Status : Status " << preStatus << "\n";
-	collectionPtr->PrintStatus(preStatus);
-	cout << "\n";
-	cout << "\nGoto : Status " << curStatus << "\n";
-	collectionPtr->PrintStatus(curStatus);
-	cout << "\nSymbolStack : \t";
-	symbolStack.Print();
-	cout << "\n\n";
-#endif // _PARSER_ACTION_PRINT
+	if (cb.PrintParser) {
+		cout << "\nInput Token : " << Grammer::GetSymbolStr(curInputToken) << "\n";
+		cout << "ACTION : shift\n";
+		cout << "\nCurStatus Status : Status " << preStatus << "\n";
+		collectionPtr->PrintStatus(preStatus);
+		cout << "\n";
+		cout << "\nGoto : Status " << curStatus << "\n";
+		collectionPtr->PrintStatus(curStatus);
+		cout << "\nSymbolStack : \t";
+		symbolStack.Print();
+		cout << "\n\n";
+	}
 }
 
 bool Parser::RedressNon() {

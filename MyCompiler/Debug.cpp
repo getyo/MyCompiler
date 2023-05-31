@@ -1,6 +1,6 @@
 #include "Debug.h"
 std::ofstream logOut("log.txt");
-
+#ifdef DEBUG
 void PrintStackTrace()
 {
     void* pStack[MAX_STACK_FRAMES];
@@ -49,3 +49,4 @@ void PrintAndOutputToLog(std::function<void()> print) {
     print();
     std::cout << "\n\n";
 }
+#endif

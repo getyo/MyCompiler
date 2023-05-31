@@ -82,7 +82,6 @@ public:
 	SymbolWithAttr& get(int index) {
 		if (index > 0) {
 			cerr << "SymbolStack.get can't accpet a index which is bigger than 0\n";
-			PrintStackTrace();
 			abort();
 		}
 		else return array[topIndex + index];

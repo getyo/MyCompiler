@@ -7,12 +7,23 @@
 #include <fstream>
 #include <functional>
 
-#define DEBUG 
-extern std::ofstream logOut;
+//#define DEBUG 
 #ifdef DEBUG
-//#define _PARSER
+extern std::ofstream logOut;
+void PrintAndOutputToLog(std::function<void()>);
+void PrintStackTrace();
+#define STACK_INFO_LEN  1024
+#define MAX_STACK_FRAMES 12
+#define ASSERT(expr,info) {if(!(expr)) {\
+		cerr << "\n" << info << "\n";\
+		PrintStackTrace();\
+		abort();\
+	}}
+
+
+#define _PARSER
 	#ifdef _PARSER
-		#define _GRAMMER_PRINT
+		//#define _GRAMMER_PRINT
 		//#define _LR0_PRINT
 		//#define _INIT_LOOKAHEAD_PRINT
 		//#define _COLLECTION_PRINT
@@ -25,16 +36,7 @@ extern std::ofstream logOut;
 		#define _ICP
 		#define _ENVP	
 	#endif // _GEN
-
+#else
+#define ASSERT(expr,info) ;
 #endif // DEBUG
 
-void PrintAndOutputToLog(std::function<void()>);
-void PrintStackTrace();
-#define ASSERT(expr,info) {if(!(expr)) {\
-		cerr << "\n" << info << "\n";\
-		PrintStackTrace();\
-		abort();\
-	}}
-
-#define STACK_INFO_LEN  1024
-#define MAX_STACK_FRAMES 12

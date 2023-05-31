@@ -3,8 +3,10 @@
 #include <stack>
 #include <queue>
 #include "Debug.h"
+#include "ControlBlock.h"
 using namespace std;
 
+extern CB cb;
 Collection* Collection::collectionPtr = nullptr;
 const int Collection::LOOKAHEAD_ATHAND = -3;
 const int Collection::NON_ENTRY = 99999999;
@@ -381,9 +383,9 @@ void Collection::LookAheadPorpagate() {
 Collection::Collection() {
 	//创建第一个状态，并向其中加入第一个Item
 	grammer = Grammer::GrammerFactory();
-#ifdef _GRAMMER_PRINT
-	grammer->Print();
-#endif // _GRAMMER_PRINT
+
+	if(cb.PrintGrammer)	grammer->Print();
+
 
 	grammerSymbolCnt = grammer->GrammerSymbolCnt();
 
@@ -395,20 +397,15 @@ Collection::Collection() {
 	ConstructLR0();
 	//Print();
 	//把非Kernel状态去除
-#ifdef _LR0_PRINT
-	Print();
-	cout << "\n\n";
-#endif // _LR0_PRINT
 	RemoveNonKernel();
 
 	//初始化kernel Item的lookahead
 	IntiLookAhead();
 	//构建LALR分析表
 	LookAheadPorpagate();
-#ifdef _COLLECTION_PRINT
-	PrintAndOutputToLog(std::bind(&Collection::Print, this));
-#endif // _COLLECTION_PRINT
 
+	if(cb.PrintParser) 
+		this->Print();
 }
 
 void Collection::PrintStatus(int status) {

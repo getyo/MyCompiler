@@ -96,7 +96,7 @@ void Lexeme::InitLex() {
 	Tree2Dfa();
 	DfaVec2Nfa();
 	Nfa2Dfa();
-	OutputDfa(unoptimizedDfa);
+	//OutputDfa(unoptimizedDfa);
 }
 
 string Lexeme::MakeErrorInfo(string symbol, int row, int col) const {
@@ -199,16 +199,9 @@ void Lexeme::PrintError() {
 
 Lexeme::Lexeme() {
 	this->input = nullptr;
-	if (!fileManager->IsDir(regInDir)) {
-		fileManager->CreateDir(regInDir);
-	}
-	regIn.open(regInDir + "\\reg.txt");
+	regIn.open("reg.txt");
 	if (!regIn.is_open())
-		cerr << "No input file :" << regInDir + "\\reg.txt";
-	if (!fileManager->CreateDir(regOutDir)) {
-		fileManager->CreateDir(regOutDir);
-	}
-	regOut.open(regOutDir + "\\dfa.txt");
+		cerr << "No input file :" << "reg.txt";
 }
 
 /*

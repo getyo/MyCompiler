@@ -15,7 +15,8 @@ vector<string*> Generator::labelSt;
 vector <string> Generator::icopInt2Str = {
 	"+","-","*","/","%","=","id","digit","+=","-=","*=","/=","LD","&&",\
 	"||","==","!=","<","<=",">",">=","jc","jmp","[]","call","para","ret",\
-	"start","end","label","fun"
+	"start","end","label","fun","preinc","postinc","predec","postdec","not",\
+	"neg"
 };
 unordered_map<string, int> Generator::icopStr2Int = {
 	{"+",0},{"-",1},{"*",2},{"/",3},{"%",4},\
@@ -25,8 +26,15 @@ unordered_map<string, int> Generator::icopStr2Int = {
 	{"<", 17}, { "<=",18 }, { ">",19 }, {">=",20},\
 	{"jc", 21}, { "jmp",22 }, { "[]",23 }, {"call",24},\
 	{"para", 25}, { "ret",26 }, { "start",27 }, {"end",28},\
-	{"label", 29}, {"fun",30}
+	{"label", 29}, { "fun",30 }, { "preinc",31 }, {"postinc",32},\
+	{"predec", 33}, { "postdec",34 }, { "not",35 }, {"neg",36}
 };
+
+bool Generator::UnaryOp(Triple& t) {
+	if (t.icop >= ICOP_PREINC && t.icop <= ICOP_NEG)
+		return true;
+	return false;
+}
 
 bool Generator::ComputeOp(Triple& t) {
 	if ((t.icop >= ICOP_ADD && t.icop <= ICOP_REM) ||
@@ -82,11 +90,26 @@ int Generator::InsertElem(int addr, int val) {
 	return index;
 }
 
-int Generator::Gen(int icop,  int code1,int code2) {
+int Generator::Gen(int icop, int code1, int code2) {
 	int valNum1 = code1, valNum2 = code2;
 #ifdef DEBUG
 	ASSERT(valNum1 != -1, "Code : tirple miss");
 #endif // DEBUG
+	if (code1 >= 0 && code1 <= csPtr->size()) {
+		Triple& t1 = (*csPtr)[code1];
+		if (t1.icop == ICOP_POSTINC
+			|| t1.icop == ICOP_POSTDEC) {
+			valNum1 = t1.valNum1;
+		}
+	}
+	if (code2 >= 0 && code2 <= csPtr->size()) {
+		Triple& t2 = (*csPtr)[code2];
+		if (t2.icop == ICOP_POSTINC
+			|| t2.icop == ICOP_POSTDEC) {
+			valNum2 = t2.valNum1;
+		}
+	}
+
 	Triple temp(icop, valNum1, valNum2);
 	if (icop == ICOP_CALL) Type::ClearFunPara();
 	int index = InsertTriple(temp);
@@ -147,7 +170,7 @@ void Generator::Print() {
 			string* s = (string*)t.valNum1;
 			cout << setw(13) << *s ;
 		}
-		else if (t.icop == ICOP_PARA || t.icop == ICOP_JMP || t.icop == ICOP_DIG || t.icop == ICOP_RET) {
+		else if (t.icop == ICOP_PARA || t.icop == ICOP_JMP || t.icop == ICOP_DIG || t.icop == ICOP_RET || UnaryOp(t)) {
 			cout << setw(15) << t.valNum1;
 		}
 		else cout << setw(15) <<t.valNum1 << setw(15) << t.valNum2;

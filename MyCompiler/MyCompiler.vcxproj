@@ -148,6 +148,7 @@
     <ClInclude Include="Assembly.h" />
     <ClInclude Include="AuxiliaryFunction.h" />
     <ClInclude Include="Collection.h" />
+    <ClInclude Include="ControlBlock.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="FiniteAutomata.h" />

@@ -72,6 +72,9 @@
     <ClInclude Include="Reg.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ControlBlock.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SyntaxTree.cpp">
