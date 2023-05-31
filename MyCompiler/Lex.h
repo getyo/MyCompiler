@@ -13,8 +13,6 @@ private:
 	ifstream regIn;
 	ofstream regOut;
 	ios* input;
-	string regInDir = "D:\\proj\\MyCompiler\\MyCompiler\\input";
-	string regOutDir = "output";
 	vector	<Ty_FollowPos> followPosTable;
 	vector <string> regArray;
 	vector <SyntalTreePtr> treeArray;

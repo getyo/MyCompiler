@@ -132,7 +132,8 @@ int RegManager::ComputeReg(Instruction& asmi, Triple& ic) {
 		as->push_back(ldLhs);
 	}
 	asmi.oprand1 = rf.regName[lhs->reg];
-	
+	if (Generator::UnaryOp(ic)) return 0;
+
 	//如果不是常数
 	if (rhs != nullptr) {
 		if (rhs->reg == REG_EMPTY) {

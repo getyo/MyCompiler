@@ -35,7 +35,7 @@ void AssGen::FunStart(Variable *f) {
 	as->push_back(i);
 
 	i.optype = OpType::ASSIGN;
-	i.op = "move";
+	i.op = "mov";
 	i.oprand1 = "ebp";
 	i.oprand2 = "esp";
 	as->push_back(i);
@@ -298,6 +298,36 @@ void AssGen::Gen(Block &b) {
 			i.optype = OpType::OTHER;
 			i.op = *((string*)ic.valNum1) + ":";
 			as->push_back(i);
+			break;
+		}
+		case ICOP_POSTINC: {}
+		case ICOP_PREINC: {
+			i.optype = OpType::COMPUTE;
+			i.op = "inc";
+			if (!regMan->GetReg(i, ic))
+				as->push_back(i);
+			break;
+		}
+		case ICOP_POSTDEC: {}
+		case ICOP_PREDEC: {
+			i.optype = OpType::COMPUTE;
+			i.op = "dec";
+			if (!regMan->GetReg(i, ic))
+				as->push_back(i);
+			break;
+		}
+		case ICOP_NOT: {
+			i.optype = OpType::COMPUTE;
+			i.op = "not";
+			if (!regMan->GetReg(i, ic))
+				as->push_back(i);
+			break;
+		}
+		case ICOP_NEG: {
+			i.optype = OpType::COMPUTE;
+			i.op = "neg";
+			if (!regMan->GetReg(i, ic))
+				as->push_back(i);
 			break;
 		}
 		default:

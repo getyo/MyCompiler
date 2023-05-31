@@ -30,6 +30,12 @@
 #define ICOP_END 28
 #define ICOP_LABEL 29
 #define ICOP_FUN 30
+#define ICOP_PREINC 31
+#define ICOP_POSTINC 32
+#define ICOP_PREDEC 33
+#define ICOP_POSTDEC 34
+#define ICOP_NOT 35
+#define ICOP_NEG 36
 
 #include <vector>
 #include <string>
@@ -116,6 +122,7 @@ public:
 	}
 	static string GetIcopStr(int icop);
 	static void Print();
+	static bool UnaryOp(Triple& t);
 	static bool ComputeOp(Triple &t);
 	static bool AssignOp(Triple& t);
 	static void Release() {

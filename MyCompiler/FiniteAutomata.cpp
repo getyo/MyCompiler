@@ -285,6 +285,7 @@ bool NFA::AddEdge(int from, int to, char c) {
 		&& c <= 127, "Incorrect status");
 #endif // DEBUG
 	transitionTable[from][c].insert(to);
+	return true;
 }
 
 bool NFA::HasEdge(int from, char c) const {

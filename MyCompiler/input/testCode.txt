@@ -1,10 +1,5 @@
-
-int a;
-int main(){
-	int a = 5,temp = 3;
-	while(a != temp){
-		if(a > temp) temp+= 1;
-		else temp-= 1;
-	}
+int main (){
+	while(cnt > 0) 
+		cnt--;
 	return 0;
 }
