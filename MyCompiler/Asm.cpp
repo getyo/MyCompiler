@@ -14,15 +14,10 @@ void AssGen::SetInput(CodeStore& cs) {
 }
 
 void AssGen::FunStart(Variable *f) {
-	int psize = 0;
 	auto fp = dynamic_cast<FunType*>(f->t);
-	auto e = f->e;
-	for (auto pt : fp->paraType) {
-		psize += Type::GetTypeWidth(pt);
-	}
-	//函数开始开辟栈空间时，使用空间并不计入实参
-	int stof = e->size() - psize;
-	stBase = psize;
+	auto e = f->funEnv;
+
+	int stof =  e->size();
 	Instruction i;
 
 	i.optype = OpType::LABEL;
@@ -292,7 +287,23 @@ void AssGen::Gen(Block &b) {
 			break;
 		}
 		case ICOP_SQUBAC: {
-			
+			Variable* a = regMan->GetOprand(ic.valNum1);
+			ArrayType* at = dynamic_cast<ArrayType*>(a->t);
+			//对于数组元素来说，将该元素当作变量插入符号表中
+			string lexeme = a->name + "[" +to_string(ic.valNum2)+ "]";
+			a->e->EnvPush(lexeme, at->elemID);
+			//获取相应的变量，并修改中间代码，方便ldreg处理
+			Variable* ae = a->e->EnvGet(lexeme);
+			ae->belong = a;
+			ic.valNum1 = (int)ae;
+			//负数的地址用来标识数组元素索引
+			ae->addr = -ic.valNum2;
+
+			i.optype = OpType::LD;
+			i.op = "mov";
+			if (!regMan->GetReg(i, ic))
+				as->push_back(i);
+			break;
 		}
 		case ICOP_LABEL: {
 			i.optype = OpType::OTHER;
@@ -435,8 +446,10 @@ void AssGen::Gen() {
 			auto& t = (*ic)[i];
 			if (Generator::AssignOp(t) && (*ic)[t.valNum2].icop != ICOP_DIG) {
 				Variable* v = regMan->GetOprand(t.valNum1);
-				v->live = false;
-				v->lastUsed = Variable::UNUSED;
+				if (v != nullptr) {
+					v->live = false;
+					v->lastUsed = Variable::UNUSED;
+				}
 			}
 			if (Generator::ComputeOp(t)) {
 				Variable* lhs = regMan->GetOprand(t.valNum1);

@@ -19,6 +19,7 @@ class Environment;
 #define REG_EMPTY -1
 
 #define MULTLD -1;
+#define ARRAYLD -2;
 enum class OpType	{
 	COMPUTE, ASSIGN, LD, ST, OTHER , LABEL
 };
@@ -53,7 +54,9 @@ private:
 	//返回eax，ebx，ecx，edx,edi,esi中的一个
 	int GetBasicReg();
 
+	string ArrayIndex(Variable* a, int index);
 	int STReg(Instruction&, Triple&);
+	int LDReg(Instruction&, Triple&);
 	int LDReg(Instruction&, Variable *);
 	int AssignReg(Instruction&, Triple&);
 	int ComputeReg(Instruction&, Triple&);

@@ -268,9 +268,9 @@ ActualPara -> Expr					## FunParaPush (1.1) ; 0.6 = $-1 ; 0.6 = Gen ('para',1.6,
 ActualPara -> _NON
 $$ CallExpr : 0 funEntryPtr 1 funtypeID 2 retType
 
-ArrayElem -> id [ digit ]  ## 5.0 = EnvGetType (1.0) ; 5.0 = GetElemType (5.0) ; 5.1 = EnvGetEntry (1.0) ; 5.7 = $-1 ; 5.6 = InsertElem (5.1,5.7) ; 5.6 = Gen ('[]',5.6 ,3.1) ## Index		## 0.0 = 5.1 ; 0.1 = 5.0 ; 0.6 = 5.6 ; 0.7 = 5.7 ##														
+ArrayElem -> id [ Expr ]  ## 5.0 = EnvGetType (1.0) ; 5.0 = GetElemType (5.0) ; 5.1 = EnvGetEntry (1.0) ; 5.7 = $-1 ; 5.6 = InsertElem (5.1,5.7) ; 5.6 = Gen ('[]',5.6 ,3.6) ## Index		## 0.0 = 5.1 ; 0.1 = 5.0 ; 0.6 = 5.6 ; 0.7 = 5.7 ##														
 Index -> _NON					## 0.0 = -1.0 ; 0.6 = -1.6 ; 0.7 = 0.6 + $1 ##
-Index -> [ digit ]	## 4.0 = GetElemType (-1.0) ; 4.6 = Gen ('[]', -1.6 , 2.1 ) ## Index		## 0.0 = 4.0 ; 0.6 = 4.6 ; 0.7 = 4.7 ##
+Index -> [ Expr ]	## 4.0 = GetElemType (-1.0) ; 4.6 = Gen ('[]', -1.6 , 2.6 ) ## Index		## 0.0 = 4.0 ; 0.6 = 4.6 ; 0.7 = 4.7 ##
 $$ - Index : 0 arrayTypeID
 $$ Index : 0 elemTypeID 
 $$ ArrayElem : 0 entryPtr 1 varTypeID 

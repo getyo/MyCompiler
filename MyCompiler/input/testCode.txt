@@ -1,5 +1,9 @@
+int cnt = 99;
 int main (){
-	while(cnt > 0) 
+	int array[100];
+	while(cnt > 0) {
+		array[cnt] = cnt;
 		cnt--;
+	}
 	return 0;
 }
