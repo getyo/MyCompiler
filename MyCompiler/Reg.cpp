@@ -81,6 +81,7 @@ string RegManager::GetAddr(Variable *v) {
 
 void RegManager::RegSpill(int reg){
 	for (auto& v : rf.regStore[reg]) {
+		if (!v->live) continue;
 		Instruction i;
 		i.op = "mov";
 		i.optype = OpType::ST;
@@ -113,6 +114,9 @@ int RegManager::LDReg(Instruction& i, Triple& t) {
 	Variable* v = (Variable*)t.valNum1;
 	if (dynamic_cast<ArrayType*>(v->t))
 		return ARRAYLD;
+	else if (v->addr < 0) {
+		return ARRAYLD;
+	}
 	return LDReg(i, v);
 }
 
@@ -157,26 +161,35 @@ int RegManager::ComputeReg(Instruction& asmi, Triple& ic) {
 	Variable* lhs = GetOprand(ic.valNum1);
 	Variable* rhs = GetOprand(ic.valNum2);
 
-	if (lhs->reg == REG_EMPTY){
+	if (lhs->addr < 0) {
+		asmi.oprand1 = GetAddr(lhs);
+	}
+	else if (lhs->reg == REG_EMPTY){
 		Instruction ldLhs;
 		ldLhs.op = "mov";
 		ldLhs.optype = OpType::LD;
 		LDReg(ldLhs,lhs);
 		as->push_back(ldLhs);
+		asmi.oprand1 = rf.regName[lhs->reg];
 	}
-	asmi.oprand1 = rf.regName[lhs->reg];
+	else asmi.oprand1 = rf.regName[lhs->reg];
+	
 	if (Generator::UnaryOp(ic)) return 0;
 
 	//如果不是常数
 	if (rhs != nullptr) {
-		if (rhs->reg == REG_EMPTY) {
+		if (rhs->addr < 0) {
+			asmi.oprand1 = GetAddr(rhs);
+		}
+		else if (rhs->reg == REG_EMPTY) {
 			Instruction rdLhs;
 			rdLhs.op = "mov";
 			rdLhs.optype = OpType::LD;
 			LDReg(rdLhs, rhs);
 			as->push_back(rdLhs);
+			asmi.oprand2 = rf.regName[rhs->reg];
 		}
-		asmi.oprand2 = rf.regName[rhs->reg];
+		else asmi.oprand2 = rf.regName[rhs->reg];
 	}
 	else {
 		//如果是常数，直接进行计算即可
@@ -185,13 +198,6 @@ int RegManager::ComputeReg(Instruction& asmi, Triple& ic) {
 	//进行计算后将结果变量保存在ic的valNum1
 	ic.valNum1 = (int)lhs;
 
-	if (Generator::AssignOp(ic)) {
-		if (rhs != nullptr && lhs != nullptr) {
-			rhs->reg = lhs->reg;
-			rf.regStore[rhs->reg].insert(rhs);
-		}
-	}
-
 	return 0;
 }
 
@@ -199,6 +205,29 @@ int RegManager::AssignReg(Instruction& asmi, Triple& ic) {
 	Variable* dst = GetOprand(ic.valNum1);
 	Variable* src = GetOprand(ic.valNum2);
 	
+	if (dst->addr < 0) {
+		Instruction i;
+		i.op = "mov";
+		i.oprand1 = "[" + GetAddr(dst) + "]";
+
+		//如果源操作数不是常数
+		if (src != nullptr) {
+			if (src->t->IsFunType())
+				i.oprand2 = rf.regName[REG_EAX];
+			else if (src->reg == REG_EMPTY) {
+				Instruction ldSrc;
+				ldSrc.op = "mov";
+				ldSrc.optype = OpType::LD;
+				LDReg(ldSrc, src);
+				as->push_back(ldSrc);
+			}
+			i.oprand2 = rf.regName[src->reg];
+		}
+		else i.oprand2 = (*cs)[ic.valNum2].valNum1;
+		as->push_back(i);
+		return 0;
+	}
+
 	//如果源操作数不是常数
 	if (src != nullptr) {
 		if (src->t->IsFunType()) {

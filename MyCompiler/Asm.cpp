@@ -295,6 +295,7 @@ void AssGen::Gen(Block &b) {
 			//获取相应的变量，并修改中间代码，方便ldreg处理
 			Variable* ae = a->e->EnvGet(lexeme);
 			ae->belong = a;
+			ae->live = false;
 			ic.valNum1 = (int)ae;
 			//负数的地址用来标识数组元素索引
 			ae->addr = -ic.valNum2;

@@ -18,8 +18,8 @@ class Environment;
 #define REG_ESP 7
 #define REG_EMPTY -1
 
-#define MULTLD -1;
-#define ARRAYLD -2;
+#define MULTLD -1
+#define ARRAYLD -2
 enum class OpType	{
 	COMPUTE, ASSIGN, LD, ST, OTHER , LABEL
 };
