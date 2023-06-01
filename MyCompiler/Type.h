@@ -80,11 +80,13 @@ struct Variable {
 	string name;
 	Environment * e;
 	//如果是函数则表示第一条指令的起始地址
-	unsigned int addr;
+	int addr;
 	//寄存器编号，详见Reg.h中的规定
 	int reg = REG_EMPTY;
 	bool live = true;
 	int lastUsed = UNUSED;
+	Variable* belong = nullptr;
+	Environment* funEnv = nullptr;
 	Variable(){}
 	Variable(int typeID, string name, int addr) :t( Type::GetTypePtr(typeID) ), name(name), addr(addr) {}
 	Variable(string typeName, string name, int addr) : Variable(Type::GetTypeID(typeName),name,addr) {}
@@ -97,14 +99,19 @@ class Environment {
 private:
 	static size_t getID();
 	static vector<Environment*> envAll;
+	static int* localSizePtr;
 	size_t envID;
 	unsigned int base;
 	unsigned int offset = 0;
+	int localVarSize = 0;
 	unordered_map<string,Variable *> symTable;
-	Environment* pre;
+	Environment* pre; 
 	Environment(Environment* pre);
 public:
-	int size() { return offset; }
+	int size() { 
+		if (localVarSize) return localVarSize;
+		else return offset;
+	}
 	const unordered_map<string, Variable*> & GetSymTable() const { return this->symTable; }
 	static Environment* Global(){ return envAll[0]; }
 	static size_t dataFieldSize;
@@ -114,6 +121,7 @@ public:
 	ArrayType* GetArrayType(string lex);
 	Environment* GetPre() { return pre; }
 	int GetRetType(string lex);
+	static void SetFunLocalVar() { Environment::localSizePtr = &curEnv->localVarSize; }
 	static Environment* NewEnv();
 	static Environment* PopEnv();
 	static int NewTemp(int typeID) { 

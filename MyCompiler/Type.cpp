@@ -127,6 +127,7 @@ Environment* Environment::curEnv = nullptr;
 size_t Environment::dataFieldSize = DATA_START;
 vector<Environment*> Environment::envAll;
 static size_t EnvID = 0;
+int* Environment::localSizePtr = nullptr;
 
 size_t Environment::getID() {
 	return EnvID++;
@@ -179,10 +180,17 @@ bool Environment::EnvPush(string &lexeme, int typeID) {
 		return false;
 	}
 	auto v = new Variable(typeID, lexeme, offset);
-	v->e = curEnv;
+	v->e = this;
 	symTable.insert({ lexeme, v });
-	dataFieldSize += v->t->width;
-	offset += v->t->width;
+	if (!v->t->IsFunType()) {
+		dataFieldSize += v->t->width;
+		offset += v->t->width;
+		//如果不是全局变量则添加局部变量
+		if (this != Global()) {
+			*Environment::localSizePtr += v->t->width;
+		}
+	}
+	else v->funEnv = curEnv;
 	return true;
 }
 

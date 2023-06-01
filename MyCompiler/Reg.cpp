@@ -49,9 +49,34 @@ string RegManager::GetAddr(Variable *v) {
 		return rf.regName[REG_ESI];
 	}
 	string s = rf.regName[ REG_EBP ];
-	if (v->addr >= AssGen::stBase) s += ("-" + to_string(v->addr - AssGen::stBase + 4));
-	else if (v->addr < AssGen::stBase) s += ("+" + to_string(AssGen::stBase - v->addr));
-	return s;
+	if (v->belong == nullptr) {
+		if (v->addr >= AssGen::stBase) s += ("-" + to_string(v->addr - AssGen::stBase + v->t->width));
+		else if (v->addr < AssGen::stBase) s += ("+" + to_string(AssGen::stBase +4 - v->addr));
+		return s;
+	}
+	//数组元素地址
+	else {
+		//计算数组地址
+		if (v->belong->addr >= AssGen::stBase) s += ("-" + to_string(v->belong->addr - AssGen::stBase + v->belong->t->width));
+		else if (v->belong->addr < AssGen::stBase) s += ("+" + to_string(AssGen::stBase - v->belong->addr));
+		
+		//计算下标索引
+		Variable* index = GetOprand(-v->addr);
+		//索引是常数
+		if (index == nullptr) {
+			s +=  ("+" + to_string((*cs)[-v->addr].valNum1 * v->t->width));
+		}
+		else {
+			Instruction i;
+			i.op = "mov";
+			i.optype = OpType::LD;
+			if (!LDReg(i, index))
+				as->push_back(i);
+			s += "+" + rf.regName[index->reg];
+		}
+
+		return s;
+	}
 }
 
 void RegManager::RegSpill(int reg){
@@ -84,6 +109,13 @@ int RegManager::GetBasicReg() {
 	return reg;
 }
 
+int RegManager::LDReg(Instruction& i, Triple& t) {
+	Variable* v = (Variable*)t.valNum1;
+	if (dynamic_cast<ArrayType*>(v->t))
+		return ARRAYLD;
+	return LDReg(i, v);
+}
+
 int RegManager::LDReg(Instruction &i, Variable* v) {
 
 	if (v->reg != REG_EMPTY) {
@@ -100,6 +132,7 @@ int RegManager::LDReg(Instruction &i, Variable* v) {
 	return 0;
 }
 
+//这里本质上是Push,RegSpill才是真正的Store
 int RegManager::STReg(Instruction& i, Triple& ic) {
 	Variable* v = GetOprand(ic.valNum1);
 #ifdef DEBUG
@@ -203,8 +236,7 @@ int RegManager::GetReg(Instruction& asmi, Triple& ic) {
 	case OpType::ASSIGN: { return AssignReg(asmi,ic); break; }
 	case OpType::COMPUTE: { return ComputeReg(asmi, ic); break; }
 	case OpType::LD: {	
-		//如果生成汇编直接带有LD指令，说明原来的中间代码是id varaddr的形式
-		return LDReg(asmi,(Variable*)ic.valNum1);
+		return LDReg(asmi,ic);
 		break; }
 	case OpType::ST: {
 		//如果生成的汇编是st类型，当且仅当实参入栈

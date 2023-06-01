@@ -109,6 +109,8 @@ int Generator::Gen(int icop, int code1, int code2) {
 			valNum2 = t2.valNum1;
 		}
 	}
+	if (icop == ICOP_START)
+		Environment::SetFunLocalVar();
 
 	Triple temp(icop, valNum1, valNum2);
 	if (icop == ICOP_CALL) Type::ClearFunPara();

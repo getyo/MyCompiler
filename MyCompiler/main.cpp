@@ -67,6 +67,7 @@ int main(int argc, char* argv[]) {
 	ifstream* sourceCode = new ifstream(sourceFile);
 	if (!sourceCode->is_open()) {
 		cerr << "input file cann't open : " << sourceFile;
+		exit(1);
 	}
 		
 	lex->SetInput(*sourceCode);
